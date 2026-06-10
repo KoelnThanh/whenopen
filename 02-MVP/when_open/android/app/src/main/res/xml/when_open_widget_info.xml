@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Widget-Metadaten (E14/E16): updatePeriodMillis=0 — Updates kommen
+     ereignisgetrieben + per AlarmManager/WorkManager aus der App. -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="250dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="3"
+    android:updatePeriodMillis="0"
+    android:initialLayout="@layout/when_open_widget"
+    android:configure="com.whenopen.when_open.WhenOpenWidgetConfigActivity"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/widget_beschreibung" />

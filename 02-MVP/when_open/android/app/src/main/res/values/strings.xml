@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android-seitige Strings (Widget-Konfiguration laeuft nativ, ohne Flutter-ARB) -->
+<resources>
+    <string name="widget_beschreibung">Zeigt auf einen Blick, welche deiner Orte gerade geöffnet sind.</string>
+    <string name="widget_konfig_titel">Widget einrichten</string>
+    <string name="widget_konfig_frage">Welche Orte soll dieses Widget zeigen?</string>
+    <string name="widget_alle_orte">Alle Orte</string>
+    <string name="widget_sonstige">Sonstige</string>
+    <string name="widget_hinzufuegen">Hinzufügen</string>
+    <string name="widget_abbrechen">Abbrechen</string>
+    <string name="widget_leer">Keine Einträge gespeichert — tippe hier, um zu starten</string>
+</resources>

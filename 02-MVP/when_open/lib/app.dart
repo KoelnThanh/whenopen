@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'l10n/app_localizations.dart';
 import 'screens/detail_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/kategorien_screen.dart';
 import 'screens/quick_entry/quick_entry_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -27,6 +28,10 @@ final GoRouter appRouter = GoRouter(
             editId: state.uri.queryParameters['editId'],
             kategorieId: state.uri.queryParameters['kategorie'],
           ),
+        ),
+        GoRoute(
+          path: 'kategorien',
+          builder: (context, state) => const KategorienScreen(),
         ),
         // Deep-Link-Ziel fuer Widget-Taps: whenopen://open/:id
         GoRoute(

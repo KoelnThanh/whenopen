@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart' show TimeOfDay;
-
 import '../l10n/app_localizations.dart';
 import '../models/location.dart';
 import '../models/open_status.dart';

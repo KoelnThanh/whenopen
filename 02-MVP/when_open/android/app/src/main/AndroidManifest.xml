@@ -1,4 +1,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- E16: AlarmManager (grenzgenaue Widget-Updates) + Neustart-Replan -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- Nur fuer den optionalen OSM-Import (P08b) -->
+    <uses-permission android:name="android.permission.INTERNET"/>
     <application
         android:label="WhenOpen"
         android:name="${applicationName}"
@@ -32,6 +38,35 @@
                 <data android:scheme="whenopen"/>
             </intent-filter>
         </activity>
+        <!-- Deep Links (whenopen://app/...) an go_router durchreichen -->
+        <meta-data
+            android:name="flutter_deeplinking_enabled"
+            android:value="true" />
+
+        <!-- P06: Home-Widget (E14) -->
+        <receiver
+            android:name=".WhenOpenWidgetProvider"
+            android:exported="true"
+            android:label="WhenOpen">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/when_open_widget_info"/>
+        </receiver>
+        <service
+            android:name=".WhenOpenWidgetService"
+            android:permission="android.permission.BIND_REMOTEVIEWS"/>
+        <activity
+            android:name=".WhenOpenWidgetConfigActivity"
+            android:exported="true"
+            android:theme="@android:style/Theme.DeviceDefault.Dialog">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
+            </intent-filter>
+        </activity>
+
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
         <meta-data

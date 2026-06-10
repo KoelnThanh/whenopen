@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:when_open/models/kategorie.dart';
 import 'package:when_open/models/location.dart';
 import 'package:when_open/models/opening_day.dart';
 import 'package:when_open/models/wochentag.dart';
