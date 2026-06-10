@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhenOpen — Mockups (v0.2)</title>
+<style>
+  :root{
+    --bg:#0f1115; --panel:#171a21; --ink:#e8eaed; --muted:#9aa0aa;
+    --line:#272b34; --primary:#2f6f6b; --primary-ink:#cfeae8;
+    --open:#28b765; --open-bg:rgba(40,183,101,.14);
+    --closed:#7a818c; --closed-bg:rgba(122,129,140,.12);
+    --warn:#e0a32e; --danger:#d9534f; --card:#1d212a; --chip:#222732;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.45}
+  header.page{padding:28px 24px 8px}
+  header.page h1{margin:0 0 4px;font-size:22px;letter-spacing:.2px}
+  header.page p{margin:0;color:var(--muted);font-size:14px;max-width:900px}
+  .changes{margin:14px 24px 0;padding:12px 16px;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:13px;color:var(--muted);max-width:900px}
+  .changes b{color:var(--ink)}
+  .changes ul{margin:6px 0 0;padding-left:18px}
+  .changes li{margin:3px 0}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;padding:16px 24px 22px;color:var(--muted);font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:7px}
+  .dot{width:10px;height:10px;border-radius:50%}
+  .dot.open{background:var(--open)} .dot.closed{background:var(--closed)} .dot.warn{background:var(--warn)}
+  .gallery{display:flex;gap:30px;flex-wrap:wrap;padding:0 24px 60px;align-items:flex-start}
+
+  .frame{width:310px}
+  .frame > .cap{font-size:13px;color:var(--muted);margin:0 0 8px 2px}
+  .frame > .cap b{color:var(--ink);font-weight:600}
+  .annot{font-size:12px;color:var(--muted);margin:10px 2px 0;padding-left:14px;border-left:2px solid var(--line)}
+  .annot li{margin:3px 0}
+  .annot .new{color:var(--primary-ink);font-weight:600}
+
+  .phone{background:#000;border-radius:34px;padding:10px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .screen{background:var(--bg);border-radius:26px;overflow:hidden;height:620px;position:relative;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;
+    padding:8px 16px 4px;font-size:12px;color:var(--muted)}
+  .appbar{background:var(--primary);color:#fff;padding:14px 16px;font-size:18px;font-weight:600;
+    display:flex;align-items:center;gap:10px}
+  .appbar .back{font-size:20px}
+  .appbar .grow{flex:1}
+  .body{flex:1;overflow:auto;padding:0 0 8px}
+
+  /* filter chips */
+  .chips{display:flex;gap:8px;padding:12px 14px;overflow-x:auto;border-bottom:1px solid var(--line)}
+  .chips .chip{flex:none;font-size:12px;padding:6px 13px;border-radius:16px;background:var(--chip);color:var(--muted);border:1px solid var(--line)}
+  .chips .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  /* category header */
+  .cathead{font-size:11px;letter-spacing:.8px;text-transform:uppercase;font-weight:700;color:var(--muted);
+    padding:14px 16px 6px;display:flex;justify-content:space-between}
+  .cathead .cnt{color:var(--line);color:#5b626d}
+
+  /* list rows */
+  .row{display:flex;align-items:center;gap:11px;padding:10px 16px}
+  .row .badge{width:11px;height:11px;border-radius:50%;flex:none}
+  .row .badge.open{background:var(--open)} .row .badge.closed{background:var(--closed)} .row .badge.warn{background:var(--warn)}
+  .row .name{font-size:14px;font-weight:500}
+  .row .name.muted{color:var(--muted);font-weight:400}
+  .row .v{margin-left:auto;font-size:12.5px;font-weight:500}
+  .row .v.open{color:var(--open)} .row .v.warn{color:var(--warn)} .row .v.closed{color:var(--muted)}
+  .row.tap .chev{margin-left:8px;color:#555c66}
+
+  /* WIDGET full screen */
+  .wall{height:620px;background:linear-gradient(165deg,#223038,#0e1217);padding:10px}
+  .wfull{background:rgba(18,22,28,.96);border-radius:22px;height:100%;display:flex;flex-direction:column;border:1px solid rgba(255,255,255,.06)}
+  .whead{display:flex;align-items:center;justify-content:space-between;padding:16px 16px 10px;border-bottom:1px solid var(--line)}
+  .whead .wt{font-weight:800;font-size:18px;color:#fff}
+  .whead .wd{font-size:12px;color:var(--muted);margin-top:2px}
+  .whead .loc{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+  .wbody{flex:1;overflow:auto}
+  .wfoot{padding:11px;text-align:center;border-top:1px solid var(--line)}
+  .wfoot a{color:var(--primary-ink);font-size:13px;text-decoration:none;font-weight:600}
+  .bang{color:var(--warn);font-weight:800}
+  /* widget header v0.3: Kategorie links, Datum rechts, kein Schriftzug */
+  .whead2{display:flex;align-items:center;justify-content:space-between;padding:15px 14px 13px;border-bottom:1px solid var(--line)}
+  .wcat{display:inline-flex;align-items:center;gap:7px;font-size:17px;font-weight:800;color:#fff}
+  .wcat .car{color:var(--muted);font-size:12px}
+  .wdate2{font-size:12px;color:var(--muted);text-align:right;line-height:1.3}
+  /* widget config dialog (beim Platzieren) */
+  .cfg{position:absolute;inset:0;background:rgba(0,0,0,.55);display:flex;align-items:center;justify-content:center;padding:22px}
+  .cfgbox{background:#1e232c;border:1px solid var(--line);border-radius:18px;width:100%;padding:18px 18px 12px;box-shadow:0 20px 50px rgba(0,0,0,.6)}
+  .cfgbox h3{margin:0 0 2px;font-size:16px}
+  .cfgbox .sub{font-size:12px;color:var(--muted);margin:0 0 12px}
+  .opt{display:flex;align-items:center;gap:11px;padding:11px 6px;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+  .opt .rb{width:18px;height:18px;border-radius:50%;border:2px solid #4a515b;flex:none}
+  .opt.sel{color:#fff}
+  .opt.sel .rb{border-color:var(--primary);background:radial-gradient(circle,var(--primary) 0 5px,transparent 6px)}
+  .cfgfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
+  .cfgfoot .btn{flex:none;padding:9px 16px}
+  /* Farb-Swatches */
+  .fieldlabel{font-size:12px;color:var(--muted);margin:8px 0 4px}
+  .swatches{display:flex;gap:10px;margin:2px 0 4px}
+  .swatches i{width:26px;height:26px;border-radius:50%;display:inline-block;border:2px solid transparent;cursor:default}
+  .swatches i.sel{border-color:#fff;box-shadow:0 0 0 2px rgba(255,255,255,.25)}
+  /* Kategorien-Verwaltung */
+  .catman{display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--line)}
+  .catman .cdot{width:13px;height:13px;border-radius:50%;flex:none}
+  .catman .cn{font-size:15px;font-weight:500}
+  .catman .cc{font-size:12px;color:var(--muted)}
+  .catman .grip{margin-left:auto;color:#5b626d;font-size:16px}
+  .catman .kebab{color:#5b626d;font-size:18px;padding-left:8px}
+  /* Popup-Menü */
+  .menu{position:absolute;right:14px;background:#1e232c;border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.55);min-width:210px;z-index:5}
+  .menu .mi{padding:12px 16px;font-size:14px;border-bottom:1px solid var(--line)}
+  .menu .mi.danger{color:var(--danger)}
+  .menu .mi:last-child{border-bottom:none}
+  /* Bottom-Sheet */
+  .scrim{position:absolute;inset:0;background:rgba(0,0,0,.5);z-index:4}
+  .sheet{position:absolute;left:0;right:0;bottom:0;z-index:5;background:#1b1f27;border-top-left-radius:18px;border-top-right-radius:18px;border-top:1px solid var(--line);padding:16px 16px 20px;box-shadow:0 -10px 30px rgba(0,0,0,.4)}
+  .sheet .sh{font-size:15px;font-weight:600;margin-bottom:1px}
+  .sheet .ssub{font-size:12px;color:var(--muted);margin-bottom:10px}
+  .sheetopt{display:flex;align-items:center;gap:11px;padding:11px 4px;border-bottom:1px solid var(--line);font-size:14px}
+  .sheetopt .cdot{width:12px;height:12px;border-radius:50%;flex:none}
+  .sheetopt.sel{font-weight:600}
+  .sheetopt .ck{margin-left:auto;color:var(--primary-ink)}
+  .sheetopt .scount{margin-left:auto;color:var(--muted);font-size:12px}
+  /* Bottom-Umschalter (Google-Tasks-Stil) */
+  .botbar{position:absolute;left:0;right:0;bottom:0;height:64px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;background:#141821;border-top:1px solid var(--line);z-index:3}
+  .botbar .sel{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink);background:var(--chip);border:1px solid var(--line);padding:9px 14px;border-radius:22px}
+  .botbar .sel .cdot{width:10px;height:10px;border-radius:50%}
+  .botbar .sel .car{color:var(--muted);font-size:11px}
+  .botbar .pdots{display:flex;gap:6px}
+  .botbar .pdots i{width:6px;height:6px;border-radius:50%;background:#3a414c}
+  .botbar .pdots i.on{background:var(--primary-ink)}
+  .botbar .addfab{width:50px;height:50px;border-radius:16px;background:var(--primary);color:#fff;font-size:24px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,.45)}
+
+  /* detail */
+  .week{padding:4px 0}
+  .wrow{display:flex;justify-content:space-between;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line);font-size:13.5px}
+  .wrow.today{background:rgba(47,111,107,.18)}
+  .wrow .wd{color:var(--muted);flex:none;width:42px} .wrow.today .wd{color:var(--primary-ink);font-weight:700}
+  .wrow .wh{text-align:right;font-variant-numeric:tabular-nums}
+  .wrow .wh.closed{color:var(--muted)}
+  .catpill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--primary-ink);background:rgba(47,111,107,.22);padding:3px 10px;border-radius:12px;margin:12px 16px 2px}
+  .field{display:flex;gap:12px;padding:12px 16px;border-bottom:1px solid var(--line);font-size:14px;align-items:center}
+  .field .ic{width:20px;color:var(--muted);text-align:center}
+  .field .lbl{color:var(--muted);font-size:11px}
+  .field a{color:var(--primary-ink);text-decoration:none}
+  .actions{display:flex;gap:10px;padding:14px 16px}
+  .btn{flex:1;text-align:center;padding:11px;border-radius:10px;font-size:14px;font-weight:600}
+  .btn.primary{background:var(--primary);color:#fff}
+  .btn.ghost{background:var(--chip);color:var(--ink)}
+  .btn.danger{background:transparent;color:var(--danger);border:1px solid rgba(217,83,79,.4)}
+  .maps-btn{margin:6px 16px 0;display:block;text-align:center;padding:11px;border-radius:10px;background:var(--chip);color:var(--primary-ink);font-size:14px;font-weight:600}
+
+  /* quick entry */
+  .stepbar{padding:12px 16px;border-bottom:1px solid var(--line)}
+  .track{height:6px;background:var(--line);border-radius:4px;overflow:hidden}
+  .track i{display:block;height:100%;background:var(--primary)}
+  .steplbl{font-size:12px;color:var(--muted);margin-top:7px}
+  .qe-body{padding:18px 16px}
+  .qe-body h2{font-size:19px;margin:0 0 4px}
+  .qe-body .hint{font-size:13px;color:var(--muted);margin:0 0 16px}
+  .choice{display:flex;gap:8px;margin:4px 0 16px}
+  .choice .c{flex:1;text-align:center;padding:11px 4px;border-radius:10px;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--muted)}
+  .choice .c.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .blockrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .blockrow .tcell{flex:1;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:9px 12px;display:flex;justify-content:space-between;align-items:center}
+  .blockrow .tcell .k{font-size:10px;color:var(--muted)}
+  .blockrow .tcell .vv{font-size:16px;font-variant-numeric:tabular-nums}
+  .blockrow .sep{color:var(--muted)}
+  .blockrow .del{color:var(--danger);font-size:16px;width:18px;text-align:center}
+  .addblock{display:inline-block;color:var(--primary-ink);font-size:13px;font-weight:600;padding:8px 0;margin-bottom:6px}
+  .blkhint{font-size:11px;color:var(--muted);margin:-2px 0 14px}
+  .input{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:13px 14px;font-size:15px;color:var(--ink);margin-bottom:12px;display:flex;align-items:center;justify-content:space-between}
+  .input .ph{color:var(--muted)}
+  .input.focus{border-color:var(--primary)}
+  .catgrid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .catgrid .c{font-size:13px;padding:8px 13px;border-radius:16px;border:1px solid var(--line);background:var(--card);color:var(--muted)}
+  .catgrid .c.sel{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .catgrid .c.add{border-style:dashed;color:var(--primary-ink)}
+  .qe-foot{padding:14px 16px;border-top:1px solid var(--line);display:flex;gap:10px}
+
+  .snack{position:absolute;left:14px;right:14px;bottom:20px;background:#2a2f38;color:#fff;
+    border-radius:10px;padding:13px 15px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.45);display:flex;justify-content:space-between;align-items:center}
+  .snack b{color:#7fe0b4;font-weight:700;letter-spacing:.3px}
+  .empty{padding:60px 28px;text-align:center;color:var(--muted);font-size:14px}
+  .sectionhdr{padding:32px 24px 4px;font-size:15px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;width:100%}
+  .fab{position:absolute;right:18px;bottom:18px;width:56px;height:56px;border-radius:18px;
+    background:var(--primary);color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;
+    box-shadow:0 6px 18px rgba(0,0,0,.45)}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>WhenOpen — Mockups <span style="color:var(--muted);font-weight:400;font-size:15px">v0.2 · Stand 2026-06-10</span></h1>
+  <p>Low-Fidelity-Wireframes nach den Scope-Entscheidungen (siehe <code>1.3-scope-entscheidungen.md</code>). Beispieltag: <b>Mittwoch, 10. Juni, ~09:30</b>. Material/Android-Stil. Personas-Mockups (<code>../personas/</code>) bleiben die Szenario-Referenz.</p>
+  <div class="changes"><b>Neu gegenüber v0.1:</b>
+    <ul>
+      <li><span class="bang">Flexible Zeitblöcke</span> — mehrere Pausen pro Tag (Behörden/Ärzte), z.B. „08:00–11:00 · 14:00–16:00 · 17:00–19:00"</li>
+      <li><b>Kategorien + Filter</b> — Liste nach Kategorie gruppiert; Umschalten über <b>Bottom-Umschalter + Auswahl-Sheet (Google-Tasks-Stil)</b> statt quer-scrollender Chips, Wischen blättert; Eintragslimit angehoben (kein 10er-Stopp); Kategorien verwaltbar (anlegen, umbenennen, zusammenführen, löschen) + Schnell-Umhängen per Lang-Tippen</li>
+      <li><b>Widget mit festem Filter</b> — eine Kategorie pro Widget (beim Platzieren gewählt), Kategorie links / Datum rechts, kein „WhenOpen"-Schriftzug, kein Quer-Scroll</li>
+      <li><b>Löschen mit „Rückgängig"</b>-SnackBar</li>
+      <li>Multi-Standort bleibt <b>v2</b> (Header-Platz dafür vorgesehen, noch ohne Umschalter)</li>
+    </ul>
+  </div>
+</header>
+<div class="legend">
+  <span><i class="dot open"></i> geöffnet</span>
+  <span><i class="dot closed"></i> geschlossen</span>
+  <span>24h-Format · Deutsch (i18n-vorbereitet)</span>
+</div>
+
+<div class="gallery">
+
+  <!-- ============ WIDGET ============ -->
+  <div class="sectionhdr">1 · Widget — ein fester Filter pro Widget, ohne Schriftzug</div>
+
+  <div class="frame">
+    <p class="cap"><b>Widget einrichten</b> · einmalig beim Platzieren</p>
+    <div class="phone"><div class="screen">
+      <div class="wall"></div>
+      <div class="cfg">
+        <div class="cfgbox">
+          <h3>Widget einrichten</h3>
+          <p class="sub">Welche Orte soll dieses Widget zeigen?</p>
+          <div class="opt"><span class="rb"></span>Alle Orte</div>
+          <div class="opt sel"><span class="rb"></span>Behörden</div>
+          <div class="opt"><span class="rb"></span>Gesundheit</div>
+          <div class="opt"><span class="rb"></span>Einkauf</div>
+          <div class="opt"><span class="rb"></span>Telefonisch</div>
+          <div class="cfgfoot"><span class="btn ghost">Abbrechen</span><span class="btn primary">Hinzufügen</span></div>
+        </div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Erscheint beim Platzieren des Widgets (Android Widget-Konfiguration).</li>
+      <li class="new">Nur wenn Kategorien existieren — sonst direkt „Alle Orte", keine Frage.</li>
+      <li>Mehrere Widgets nebeneinander möglich: z.B. „Behörden" + „Telefonisch".</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Widget · Filter „Behörden"</b> · Workflow 2</p>
+    <div class="phone"><div class="screen">
+      <div class="wall">
+        <div class="wfull">
+          <div class="whead2">
+            <span class="wcat">Behörden <span class="car">▾</span></span>
+            <span class="wdate2">Mi · 10. Juni</span>
+          </div>
+          <div class="wbody">
+            <div class="row"><span class="badge open"></span><span class="name">Bürgeramt</span><span class="v open">bis 12:00</span></div>
+            <div class="row"><span class="badge closed"></span><span class="name muted">KFZ-Zulassung</span><span class="v closed">Mi geschlossen</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">Einwohnermeldeamt</span><span class="v open">bis 12:00</span></div>
+            <div class="row"><span class="badge closed"></span><span class="name muted">Finanzamt</span><span class="v closed">ab Mo 08:00</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">Standesamt</span><span class="v open">bis 12:00</span></div>
+            <div class="row"><span class="badge closed"></span><span class="name muted">Sozialamt</span><span class="v closed">ab 14:00</span></div>
+          </div>
+          <div class="wfoot"><a href="#">In der App öffnen ›</a></div>
+        </div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Kein „WhenOpen"-Schriftzug — nur Kategorie (links) + Datum (rechts).</li>
+      <li class="new">Genau eine Kategorie → flache Liste, kein Quer-Scroll, ruhiges Bild.</li>
+      <li class="new">„▾" = Filter dieses Widgets ändern (Widget neu konfigurieren).</li>
+      <li>Tippen auf eine Zeile → Detailansicht (<code>whenopen://open/:id</code>).</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Widget · „Alle Orte"</b> · gruppiert (Fallback ohne Filter)</p>
+    <div class="phone"><div class="screen">
+      <div class="wall">
+        <div class="wfull">
+          <div class="whead2">
+            <span class="wcat">Alle Orte <span class="car">▾</span></span>
+            <span class="wdate2">Mi · 10. Juni</span>
+          </div>
+          <div class="wbody">
+            <div class="cathead">Behörden <span class="cnt">2</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">Bürgeramt</span><span class="v open">bis 12:00</span></div>
+            <div class="row"><span class="badge closed"></span><span class="name muted">KFZ-Zulassung</span><span class="v closed">Mi geschlossen</span></div>
+            <div class="cathead">Gesundheit <span class="cnt">2</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">Kinderarzt Müller</span><span class="v open">bis 11:00</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">Marien-Apotheke</span><span class="v open">bis 18:30</span></div>
+            <div class="cathead">Einkauf <span class="cnt">2</span></div>
+            <div class="row"><span class="badge open"></span><span class="name">REWE Dülken</span><span class="v open">bis 22:00</span></div>
+            <div class="row"><span class="badge closed"></span><span class="name muted">Hofladen Schmitz</span><span class="v closed">ab 14:00</span></div>
+          </div>
+          <div class="wfoot"><a href="#">Alle 18 Orte in der App ›</a></div>
+        </div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li>Für Nutzer ohne Kategorien oder die bewusst alles sehen wollen.</li>
+      <li class="new">Nur hier Gruppen-Überschriften — beim Kategorie-Widget unnötig.</li>
+    </ul>
+  </div>
+
+  <!-- ============ HAUPTLISTE ============ -->
+  <div class="sectionhdr">2 · Hauptliste &amp; Detailansicht</div>
+
+  <div class="frame">
+    <p class="cap"><b>Hauptliste</b> · Umschalter unten (Google-Tasks-Stil) · Workflow 3</p>
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>09:30</span><span>▢ ▣ ⬚ 84%</span></div>
+      <div class="appbar"><span class="grow">WhenOpen</span><span>⌕</span></div>
+      <div class="body" style="padding-bottom:74px">
+        <div class="cathead">Behörden</div>
+        <div class="row tap"><span class="badge open"></span><span class="name">Bürgeramt</span><span class="v open">bis 12:00</span><span class="chev">›</span></div>
+        <div class="row tap"><span class="badge closed"></span><span class="name muted">KFZ-Zulassung</span><span class="v closed">ab Do 08:00</span><span class="chev">›</span></div>
+        <div class="cathead">Gesundheit</div>
+        <div class="row tap"><span class="badge open"></span><span class="name">Kinderarzt Müller</span><span class="v open">bis 11:00</span><span class="chev">›</span></div>
+        <div class="row tap"><span class="badge open"></span><span class="name">Marien-Apotheke</span><span class="v open">bis 18:30</span><span class="chev">›</span></div>
+        <div class="cathead">Einkauf</div>
+        <div class="row tap"><span class="badge open"></span><span class="name">REWE Dülken</span><span class="v open">bis 22:00</span><span class="chev">›</span></div>
+        <div class="row tap"><span class="badge closed"></span><span class="name muted">Hofladen Schmitz</span><span class="v closed">ab 14:00</span><span class="chev">›</span></div>
+      </div>
+      <div class="botbar">
+        <span class="sel">Alle Orte <span class="car">⌃</span></span>
+        <span class="pdots"><i class="on"></i><i></i><i></i><i></i><i></i></span>
+        <span class="addfab">＋</span>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Statt quer-scrollender Chips: Umschalter <b>unten links</b> → öffnet Auswahl-Sheet.</li>
+      <li class="new"><b>Wischen</b> links/rechts blättert zwischen Kategorien (wie Listen in Google Tasks). Punkte = Position.</li>
+      <li class="new">„＋" unten rechts = neuer Eintrag, im aktiven Filter vorbelegt.</li>
+      <li>„Alle Orte" zeigt gruppiert; eine einzelne Kategorie zeigt flach.</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Ansicht umschalten</b> · Tippen auf den Umschalter</p>
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>09:30</span><span>▢ ▣ ⬚ 84%</span></div>
+      <div class="appbar"><span class="grow">WhenOpen</span><span>⌕</span></div>
+      <div class="body" style="padding-bottom:74px">
+        <div class="cathead">Behörden</div>
+        <div class="row"><span class="badge open"></span><span class="name">Bürgeramt</span><span class="v open">bis 12:00</span></div>
+        <div class="row"><span class="badge closed"></span><span class="name muted">KFZ-Zulassung</span><span class="v closed">ab Do 08:00</span></div>
+        <div class="cathead">Gesundheit</div>
+        <div class="row"><span class="badge open"></span><span class="name">Kinderarzt Müller</span><span class="v open">bis 11:00</span></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="sh">Anzeigen</div>
+        <div class="sheetopt sel"><span class="cdot" style="background:transparent;border:2px solid var(--muted)"></span>Alle Orte <span class="ck">✓</span></div>
+        <div class="sheetopt"><span class="cdot" style="background:#5b8def"></span>Behörden <span class="scount">6</span></div>
+        <div class="sheetopt"><span class="cdot" style="background:#28b765"></span>Gesundheit <span class="scount">4</span></div>
+        <div class="sheetopt"><span class="cdot" style="background:#e0843e"></span>Einkauf <span class="scount">3</span></div>
+        <div class="sheetopt"><span class="cdot" style="background:#9b6dd6"></span>Telefonisch <span class="scount">5</span></div>
+        <div class="sheetopt" style="color:var(--primary-ink)">＋ Neue Kategorie</div>
+        <div class="sheetopt" style="border-bottom:none;color:var(--primary-ink)">⚙ Kategorien verwalten</div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Ein Auswahl-Sheet von unten — kein horizontales Gescrolle.</li>
+      <li>„Alle Orte" + alle Kategorien (mit Anzahl), darunter direkt „Neue Kategorie" / „Verwalten".</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Detailansicht</b> · mehrere Zeitblöcke · Workflow 4</p>
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>09:30</span><span>▢ ▣ ⬚ 84%</span></div>
+      <div class="appbar"><span class="back">‹</span><span class="grow">Kinderarzt Müller</span><span>⋮</span></div>
+      <div class="body" style="padding-top:0">
+        <span class="catpill">Gesundheit</span>
+        <div class="week">
+          <div class="wrow"><span class="wd">Mo</span><span class="wh">08:00–11:00 · 14:00–16:00 · 17:00–19:00</span></div>
+          <div class="wrow"><span class="wd">Di</span><span class="wh">08:00–18:00</span></div>
+          <div class="wrow today"><span class="wd">Mi · heute</span><span class="wh">08:00–11:00 · 14:00–18:00</span></div>
+          <div class="wrow"><span class="wd">Do</span><span class="wh">08:00–18:00</span></div>
+          <div class="wrow"><span class="wd">Fr</span><span class="wh">08:00–13:00</span></div>
+          <div class="wrow"><span class="wd">Sa</span><span class="wh closed">Geschlossen</span></div>
+          <div class="wrow"><span class="wd">So</span><span class="wh closed">Geschlossen</span></div>
+        </div>
+        <div class="field"><span class="ic">📍</span><div><div class="lbl">Adresse</div><a>Musterstraße 1, 50667 Köln</a></div></div>
+        <div class="field"><span class="ic">📞</span><div><div class="lbl">Telefon</div><a>0221 123456</a></div></div>
+        <a class="maps-btn">In Google Maps öffnen ↗</a>
+        <div class="actions">
+          <span class="btn ghost">Bearbeiten</span>
+          <span class="btn danger">Löschen</span>
+        </div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Mehrere Blöcke je Tag mit „·" getrennt — Montag hat zwei Pausen.</li>
+      <li>Heutiger Tag dezent hervorgehoben. Kategorie als Pill oben.</li>
+      <li>Optionale Felder nur sichtbar, wenn befüllt.</li>
+    </ul>
+  </div>
+
+  <!-- ============ SCHNELLEINTRAG ============ -->
+  <div class="sectionhdr">3 · Schnelleintrag-Flow — Ziel: unter 2 Minuten</div>
+
+  <div class="frame">
+    <p class="cap"><b>Tageseingabe</b> · „+ weiterer Zeitblock"</p>
+    <div class="phone"><div class="screen">
+      <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+      <div class="stepbar"><div class="track"><i style="width:50%"></i></div><div class="steplbl">Schritt 4 von 10 · Mittwoch</div></div>
+      <div class="qe-body">
+        <h2>Mittwoch</h2>
+        <p class="hint">Öffnungszeiten — bei Pausen einfach mehrere Blöcke anlegen.</p>
+        <div class="choice">
+          <span class="c sel">Geöffnet</span><span class="c">Gleiche Zeiten</span><span class="c">Geschlossen</span>
+        </div>
+        <div class="blockrow">
+          <div class="tcell"><span class="k">öffnet</span><span class="vv">08:00</span></div>
+          <span class="sep">–</span>
+          <div class="tcell"><span class="k">schließt</span><span class="vv">11:00</span></div>
+          <span class="del">✕</span>
+        </div>
+        <div class="blockrow">
+          <div class="tcell"><span class="k">öffnet</span><span class="vv">14:00</span></div>
+          <span class="sep">–</span>
+          <div class="tcell"><span class="k">schließt</span><span class="vv">18:00</span></div>
+          <span class="del">✕</span>
+        </div>
+        <span class="addblock">＋ weiterer Zeitblock</span>
+        <div class="blkhint">Die Lücke zwischen zwei Blöcken ist automatisch die Pause.</div>
+      </div>
+      <div class="qe-foot"><span class="btn ghost">Zurück</span><span class="btn primary">Weiter</span></div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Ersetzt den festen „Mittagspause"-Toggle aus v0.1 durch beliebig viele Blöcke.</li>
+      <li>„Gleiche Zeiten" = Blöcke vom letzten geöffneten Tag übernehmen.</li>
+      <li>Flow jetzt 10 Schritte (Name · Mo–So · Kategorie · Zusatzinfos).</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Kategorie-Schritt</b> · 9/10</p>
+    <div class="phone"><div class="screen">
+      <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+      <div class="stepbar"><div class="track"><i style="width:90%"></i></div><div class="steplbl">Schritt 9 von 10 · Kategorie</div></div>
+      <div class="qe-body">
+        <h2>Welche Kategorie?</h2>
+        <p class="hint">Für Gruppierung &amp; Filter im Widget. Frei wählbar.</p>
+        <div class="catgrid">
+          <span class="c">Behörden</span><span class="c sel">Gesundheit</span><span class="c">Einkauf</span>
+          <span class="c">Telefonisch</span><span class="c">Familie</span><span class="c">Services</span>
+          <span class="c add">＋ Neue Kategorie</span>
+        </div>
+        <p class="hint" style="margin-top:8px">Ohne Auswahl landet der Ort unter „Sonstige".</p>
+      </div>
+      <div class="qe-foot"><span class="btn ghost">Zurück</span><span class="btn primary">Weiter</span></div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Neuer Schritt. Kategorie optional, frei erweiterbar.</li>
+      <li>Bestehende Kategorien als Chips, „＋ Neue Kategorie" für eigene.</li>
+    </ul>
+  </div>
+
+  <!-- ============ ZUSTÄNDE ============ -->
+  <div class="sectionhdr">4 · Sonderzustände</div>
+
+  <div class="frame">
+    <p class="cap"><b>Löschen mit „Rückgängig"</b> &amp; <b>Leerzustand</b></p>
+    <div class="phone"><div class="screen">
+      <div class="appbar"><span class="grow">WhenOpen</span></div>
+      <div class="body">
+        <div class="empty">Noch keine Orte gespeichert.<br><br>Tippe auf <b>+</b>, um deinen ersten Ort hinzuzufügen.</div>
+      </div>
+      <div class="snack"><span>„Kinderarzt Müller" gelöscht</span><b>RÜCKGÄNGIG</b></div>
+      <div class="fab">+</div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Löschen zeigt SnackBar mit „Rückgängig" (~5 s), erst danach endgültig.</li>
+      <li>Leerzustand motivierend statt leerer Seite.</li>
+    </ul>
+  </div>
+
+  <!-- ============ KATEGORIEN ============ -->
+  <div class="sectionhdr">5 · Kategorien — anlegen, verwalten, umhängen</div>
+
+  <div class="frame">
+    <p class="cap"><b>Neue Kategorie anlegen</b> · inline aus dem Eintrag</p>
+    <div class="phone"><div class="screen">
+      <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+      <div class="stepbar"><div class="track"><i style="width:90%"></i></div><div class="steplbl">Schritt 9 von 10 · Kategorie</div></div>
+      <div class="qe-body">
+        <h2>Welche Kategorie?</h2>
+        <div class="catgrid">
+          <span class="c">Behörden</span><span class="c">Gesundheit</span><span class="c">Einkauf</span>
+          <span class="c add">＋ Neue Kategorie</span>
+        </div>
+      </div>
+      <div class="cfg">
+        <div class="cfgbox">
+          <h3>Neue Kategorie</h3>
+          <p class="sub">Name und Farbe — frei wählbar.</p>
+          <div class="input focus" style="margin-bottom:4px"><span>Beratungsstellen</span></div>
+          <div class="fieldlabel">Farbe</div>
+          <div class="swatches">
+            <i style="background:#5b8def"></i><i class="sel" style="background:#28b765"></i><i style="background:#e0843e"></i><i style="background:#9b6dd6"></i><i style="background:#e0566f"></i>
+          </div>
+          <div class="cfgfoot"><span class="btn ghost">Abbrechen</span><span class="btn primary">Anlegen</span></div>
+        </div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Entsteht direkt beim Eintragen — kein Vorab-Pflegen nötig.</li>
+      <li>Wird sofort angelegt und dem Eintrag zugewiesen.</li>
+      <li>Optionale Farbe = Wiedererkennung in Liste &amp; Widget.</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Kategorien verwalten</b> · Einstellungen</p>
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>09:30</span><span>▢ ▣ ⬚ 84%</span></div>
+      <div class="appbar"><span class="back">‹</span><span class="grow">Kategorien</span></div>
+      <div class="body">
+        <div class="catman"><span class="cdot" style="background:#5b8def"></span><div><div class="cn">Behörden</div><div class="cc">6 Orte</div></div><span class="grip">≡</span><span class="kebab">⋮</span></div>
+        <div class="catman"><span class="cdot" style="background:#28b765"></span><div><div class="cn">Gesundheit</div><div class="cc">4 Orte</div></div><span class="grip">≡</span><span class="kebab">⋮</span></div>
+        <div class="catman"><span class="cdot" style="background:#e0843e"></span><div><div class="cn">Einkauf</div><div class="cc">3 Orte</div></div><span class="grip">≡</span><span class="kebab">⋮</span></div>
+        <div class="catman"><span class="cdot" style="background:#9b6dd6"></span><div><div class="cn">Telefonisch</div><div class="cc">5 Orte</div></div><span class="grip">≡</span><span class="kebab">⋮</span></div>
+        <div class="catman"><span class="cdot" style="background:#6b7280"></span><div><div class="cn">Sonstige</div><div class="cc">automatische Auffang-Kategorie</div></div></div>
+      </div>
+      <div class="menu" style="top:148px">
+        <div class="mi">Umbenennen</div>
+        <div class="mi">Farbe ändern</div>
+        <div class="mi">Mit anderer zusammenführen…</div>
+        <div class="mi danger">Löschen</div>
+      </div>
+      <div class="fab">+</div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Ein Ort für alle Kategorie-Änderungen; Reihenfolge per ≡ ziehen.</li>
+      <li class="new"><b>Umbenennen</b> wirkt überall sofort (stabile ID) — Widget bleibt korrekt.</li>
+      <li class="new"><b>Zusammenführen</b>: alle Einträge wandern in die Ziel-Kategorie.</li>
+      <li class="new"><b>Löschen</b>: betroffene Orte fallen auf „Sonstige" (mit Vorwarnung).</li>
+      <li>„Sonstige" ist automatisch &amp; nicht löschbar.</li>
+    </ul>
+  </div>
+
+  <div class="frame">
+    <p class="cap"><b>Schnell umhängen</b> · lang auf Listeneintrag tippen</p>
+    <div class="phone"><div class="screen">
+      <div class="statusbar"><span>09:30</span><span>▢ ▣ ⬚ 84%</span></div>
+      <div class="appbar"><span class="grow">WhenOpen</span><span>⌕</span></div>
+      <div class="body">
+        <div class="cathead">Behörden</div>
+        <div class="row"><span class="badge open"></span><span class="name">Bürgeramt</span><span class="v open">bis 12:00</span></div>
+        <div class="row"><span class="badge closed"></span><span class="name muted">KFZ-Zulassung</span><span class="v closed">ab Do 08:00</span></div>
+        <div class="cathead">Gesundheit</div>
+        <div class="row"><span class="badge open"></span><span class="name">Kinderarzt Müller</span><span class="v open">bis 11:00</span></div>
+      </div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="sh">Kategorie ändern</div>
+        <div class="ssub">Bürgeramt</div>
+        <div class="sheetopt sel"><span class="cdot" style="background:#5b8def"></span>Behörden <span class="ck">✓</span></div>
+        <div class="sheetopt"><span class="cdot" style="background:#28b765"></span>Gesundheit</div>
+        <div class="sheetopt"><span class="cdot" style="background:#e0843e"></span>Einkauf</div>
+        <div class="sheetopt"><span class="cdot" style="background:#9b6dd6"></span>Telefonisch</div>
+        <div class="sheetopt" style="border-bottom:none;color:var(--primary-ink)">＋ Neue Kategorie</div>
+      </div>
+    </div></div>
+    <ul class="annot">
+      <li class="new">Lang-Tippen auf eine Zeile → direkt umhängen, ohne Bearbeiten-Flow.</li>
+      <li>Auswahl wirkt sofort; Eintrag springt in die neue Gruppe.</li>
+    </ul>
+  </div>
+
+</div>
+</body>
+</html>

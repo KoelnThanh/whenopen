@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wann offen? - Persona Mockups</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background: #f8f9fa;
+            color: #1a1a1a;
+            padding: 40px 20px;
+        }
+        .header {
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto 40px;
+        }
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+        .header p {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 24px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .card-color {
+            height: 8px;
+        }
+        .card-body {
+            padding: 20px 24px;
+        }
+        .card-label {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+        }
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 6px;
+        }
+        .card-scenario {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+        .card-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: #8e8e93;
+            padding-top: 12px;
+            border-top: 1px solid #f0f0f0;
+        }
+        .card-meta strong { color: #1a1a1a; }
+        .card-arrow {
+            font-size: 14px;
+            color: #007aff;
+            font-weight: 600;
+            margin-top: 10px;
+            display: inline-block;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            font-size: 13px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Wann offen? &mdash; Persona Mockups</h1>
+        <p>
+            7 Personas, 7 Szenarien, 7 Widget-Ansichten.
+            Jedes Mockup zeigt, wie das Widget fuer eine konkrete Zielgruppe
+            in einer konkreten Alltagssituation aussieht.
+        </p>
+    </div>
+
+    <div class="grid">
+        <a class="card" href="01-landmama.html">
+            <div class="card-color" style="background: #34c759;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #34c759;">Persona 1</div>
+                <div class="card-title">Die Landmama</div>
+                <div class="card-scenario">
+                    Mittwochnachmittag, 14:30. Besorgungen auf dem Land mit
+                    unvorhersehbaren Oeffnungszeiten. Kinderarzt, Hofladen, Metzger.
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Viersen/Duelken</strong></div>
+                    <div>Eintraege: <strong>14</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="02-pendler.html">
+            <div class="card-color" style="background: #007aff;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #007aff;">Persona 2</div>
+                <div class="card-title">Der Pendler</div>
+                <div class="card-scenario">
+                    Freitag, 16:30. Arbeitet in Duesseldorf, wohnt in Neuss.
+                    Multi-Standort-View zeigt: Was hat am Wohnort noch offen?
+                </div>
+                <div class="card-meta">
+                    <div>Standorte: <strong>2</strong></div>
+                    <div>Eintraege: <strong>22</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="03-sozialarbeiter.html">
+            <div class="card-color" style="background: #ff9500;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #ff9500;">Persona 3</div>
+                <div class="card-title">Die Sozialarbeiterin</div>
+                <div class="card-scenario">
+                    Dienstag, 10:00. Behoerden, Beratungsstellen, Hotlines fuer Klienten
+                    koordinieren. Jedes Amt hat andere Zeiten.
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Duisburg</strong></div>
+                    <div>Eintraege: <strong>38</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="04-selbststaendige.html">
+            <div class="card-color" style="background: #5856d6;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #5856d6;">Persona 4</div>
+                <div class="card-title">Die Selbststaendige</div>
+                <div class="card-scenario">
+                    Donnerstag, 11:00. Luecke zwischen Kundenterminen.
+                    Steuerberater, Notar, Hotlines — was ist jetzt erreichbar?
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Koeln</strong></div>
+                    <div>Eintraege: <strong>18</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="05-pflegender-angehoeriger.html">
+            <div class="card-color" style="background: #ff2d55;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #ff2d55;">Persona 5</div>
+                <div class="card-title">Der pflegende Angehoerige</div>
+                <div class="card-scenario">
+                    Montag, 17:30. Nach der Arbeit noch Rezepte abholen.
+                    Aerzte zu, Apotheke noch offen, Pflege-Hotline nicht mehr erreichbar.
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Moenchengladbach</strong></div>
+                    <div>Eintraege: <strong>28</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="06-neubuerger.html">
+            <div class="card-color" style="background: #30d158;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #30d158;">Persona 6</div>
+                <div class="card-title">Die Neubuergerin</div>
+                <div class="card-scenario">
+                    Mittwoch, 09:00. Frisch nach Aachen gezogen. Ummeldung,
+                    KFZ-Stelle, Stadtwerke — alles noch neu und unbekannt.
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Aachen</strong></div>
+                    <div>Eintraege: <strong>12</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+
+        <a class="card" href="07-facility-manager.html">
+            <div class="card-color" style="background: #636366;"></div>
+            <div class="card-body">
+                <div class="card-label" style="background: #636366;">Persona 7</div>
+                <div class="card-title">Der Facility Manager</div>
+                <div class="card-scenario">
+                    Samstag, 08:30. Heizungsrohr geplatzt — wer hat am Wochenende
+                    auf? Grosshaendler zu, Baumaerkte offen.
+                </div>
+                <div class="card-meta">
+                    <div>Standort: <strong>Essen</strong></div>
+                    <div>Eintraege: <strong>32</strong></div>
+                </div>
+                <div class="card-arrow">Mockup ansehen &rarr;</div>
+            </div>
+        </a>
+    </div>
+
+    <div class="footer">
+        Wann offen? &mdash; Persona Mockups &middot; Erstellt am 14.02.2026
+    </div>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wann offen? - Facility Manager (Widget + App)</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; background: linear-gradient(135deg, #333, #555, #777); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+        .nav { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; width: 100%; max-width: 1200px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 10px; background: rgba(255,255,255,0.12); transition: background 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.25); }
+        .nav .current { flex: 1; text-align: center; color: #fff; font-size: 15px; font-weight: 600; }
+        .nav .dots { display: flex; gap: 6px; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.4); }
+        .nav .dots .active { color: #fff; }
+        .main { display: flex; gap: 32px; align-items: flex-start; flex-wrap: wrap; justify-content: center; }
+        .phone { width: 340px; background: #1a1a1a; border-radius: 44px; padding: 12px; box-shadow: 0 25px 80px rgba(0,0,0,0.4); flex-shrink: 0; }
+        .phone-label {
+            text-align: center; color: rgba(255,255,255,0.6);
+            font-size: 12px; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 10px;
+        }
+        .flow-arrow {
+            display: flex; align-items: center; justify-content: center;
+            color: rgba(255,255,255,0.5); font-size: 28px;
+            align-self: center; padding: 0 4px;
+        }
+        .screen { background: #f2f2f7; border-radius: 34px; overflow: hidden; }
+        .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 24px 6px; font-size: 13px; font-weight: 600; color: #1a1a1a; }
+        .statusbar-icons { display: flex; gap: 6px; font-size: 12px; }
+        .homescreen { padding: 16px; }
+        .widget { background: #fff; border-radius: 22px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .widget-location { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+        .widget-controls { display: flex; gap: 10px; color: #aaa; font-size: 16px; }
+        .widget-date { font-size: 12px; color: #8e8e93; margin-bottom: 14px; }
+        .category { font-size: 11px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 14px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; }
+        .category:first-of-type { margin-top: 0; }
+        .entry { display: flex; align-items: center; padding: 7px 0; }
+        .entry.highlighted { background: #e8f4fd; margin: 0 -10px; padding: 7px 10px; border-radius: 8px; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+        .dot.open { background: #34c759; box-shadow: 0 0 6px rgba(52,199,89,0.4); }
+        .dot.closed { background: #ff3b30; }
+        .entry-name { flex: 1; font-size: 14px; color: #1a1a1a; }
+        .entry-name.closed { color: #8e8e93; }
+        .entry-status { font-size: 12px; font-weight: 500; }
+        .entry-status.open { color: #34c759; }
+        .entry-status.closed { color: #ff3b30; }
+        .widget-footer { margin-top: 14px; text-align: center; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+        .widget-footer a { font-size: 13px; color: #007aff; text-decoration: none; font-weight: 500; }
+        .nav-hint { height: 4px; width: 120px; background: #1a1a1a; border-radius: 2px; margin: 20px auto 8px; }
+
+        /* App Detail View */
+        .app-header {
+            display: flex; align-items: center;
+            padding: 12px 20px; background: #fff;
+            border-bottom: 1px solid #e5e5ea;
+        }
+        .app-back { color: #007aff; font-size: 14px; font-weight: 500; margin-right: 12px; }
+        .app-title { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+        .app-content { padding: 16px; }
+        .detail-card {
+            background: #fff; border-radius: 16px;
+            padding: 20px; margin-bottom: 12px;
+            box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+        }
+        .detail-name { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 2px; }
+        .detail-type { font-size: 12px; color: #8e8e93; margin-bottom: 12px; }
+        .detail-type span {
+            background: #f0f0f0; padding: 2px 8px;
+            border-radius: 6px; font-weight: 500;
+        }
+        .detail-status {
+            display: inline-block; padding: 4px 12px;
+            border-radius: 8px; font-size: 13px; font-weight: 600;
+            margin-bottom: 12px;
+        }
+        .detail-status.open { background: #dcf5e0; color: #1b8a2e; }
+        .detail-hours { font-size: 14px; color: #444; line-height: 1.8; }
+        .detail-hours .today { font-weight: 600; color: #1a1a1a; }
+        .detail-note {
+            font-size: 13px; color: #666; padding: 10px 12px;
+            background: #fff8e1; border-radius: 8px; margin-top: 10px;
+        }
+        .quick-action {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 16px; background: #fff;
+            border-radius: 12px; margin-bottom: 8px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+        }
+        .quick-action:last-child { margin-bottom: 0; }
+        .qa-icon {
+            width: 36px; height: 36px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 16px; color: #fff; flex-shrink: 0;
+        }
+        .qa-icon.call { background: #34c759; }
+        .qa-icon.nav { background: #007aff; }
+        .qa-icon.web { background: #5856d6; }
+        .qa-icon.google { background: #ff9500; }
+        .qa-icon.edit { background: #8e8e93; }
+        .qa-icon.share { background: #ff2d55; }
+        .qa-label { font-size: 14px; color: #1a1a1a; font-weight: 500; }
+        .qa-sublabel { font-size: 12px; color: #8e8e93; }
+
+        .persona-card {
+            background: rgba(255,255,255,0.95); border-radius: 20px;
+            padding: 28px; max-width: 320px; min-width: 260px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            align-self: center;
+        }
+        .persona-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; background: #636366; display: inline-block; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+        .persona-title { font-size: 22px; font-weight: 800; color: #1a1a1a; margin-bottom: 6px; }
+        .persona-subtitle { font-size: 14px; color: #8e8e93; margin-bottom: 14px; }
+        .persona-scenario { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 16px; }
+        .persona-scenario strong { color: #1a1a1a; }
+        .persona-insight { font-size: 13px; color: #666; line-height: 1.5; padding: 12px; background: #f8f8f8; border-radius: 12px; margin-bottom: 16px; border-left: 3px solid #636366; }
+        .persona-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: #8e8e93; }
+        .stat-item { background: #f8f8f8; padding: 8px 12px; border-radius: 10px; }
+        .stat-item span { display: block; font-size: 18px; font-weight: 700; color: #1a1a1a; }
+        @media (max-width: 1100px) {
+            .main { flex-direction: column; align-items: center; }
+            .flow-arrow { transform: rotate(90deg); padding: 8px 0; }
+            .persona-card { max-width: 360px; }
+            .phones-row { flex-direction: column !important; align-items: center !important; }
+        }
+        .phones-row {
+            display: flex; gap: 16px; align-items: flex-start;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="06-neubuerger.html">&larr; Zurueck</a>
+        <div class="current">
+            7 / 7
+            <div class="dots">
+                <span>&#9679;</span><span>&#9679;</span><span>&#9679;</span><span>&#9679;</span>
+                <span>&#9679;</span><span>&#9679;</span><span class="active">&#9679;</span>
+            </div>
+        </div>
+        <a href="index.html">Uebersicht &rarr;</a>
+    </div>
+
+    <div class="main">
+        <div class="phones-row">
+            <!-- PHONE 1: Widget -->
+            <div>
+                <div class="phone-label">Widget (Homescreen)</div>
+                <div class="phone">
+                    <div class="screen">
+                        <div class="statusbar">
+                            <span>08:30</span>
+                            <div class="statusbar-icons"><span>4G</span><span>71%</span></div>
+                        </div>
+                        <div class="homescreen">
+                            <div class="widget">
+                                <div class="widget-header">
+                                    <div class="widget-location">Essen</div>
+                                    <div class="widget-controls">
+                                        <span>&lsaquo;</span><span>&bull;</span><span>&rsaquo;</span>
+                                    </div>
+                                </div>
+                                <div class="widget-date">Sa 15.02. &middot; 08:30</div>
+
+                                <div class="category">Baustoffe</div>
+                                <div class="entry">
+                                    <div class="dot open"></div>
+                                    <div class="entry-name">Bauhaus Essen</div>
+                                    <div class="entry-status open">bis 20:00</div>
+                                </div>
+                                <div class="entry">
+                                    <div class="dot open"></div>
+                                    <div class="entry-name">Hornbach</div>
+                                    <div class="entry-status open">bis 20:00</div>
+                                </div>
+                                <div class="entry">
+                                    <div class="dot closed"></div>
+                                    <div class="entry-name closed">Baustoffhandel Kremer</div>
+                                    <div class="entry-status closed">Sa geschlossen</div>
+                                </div>
+
+                                <div class="category">Handwerk & Zulieferer</div>
+                                <div class="entry">
+                                    <div class="dot closed"></div>
+                                    <div class="entry-name closed">Sonepar Elektro</div>
+                                    <div class="entry-status closed">Sa geschlossen</div>
+                                </div>
+                                <div class="entry">
+                                    <div class="dot closed"></div>
+                                    <div class="entry-name closed">Sanitaer Wagner</div>
+                                    <div class="entry-status closed">Sa geschlossen</div>
+                                </div>
+                                <div class="entry highlighted">
+                                    <div class="dot open"></div>
+                                    <div class="entry-name">Schluesseldienst Meier</div>
+                                    <div class="entry-status open">bis 14:00</div>
+                                </div>
+
+                                <div class="category">Entsorgung</div>
+                                <div class="entry">
+                                    <div class="dot open"></div>
+                                    <div class="entry-name">Wertstoffhof Essen</div>
+                                    <div class="entry-status open">bis 14:00</div>
+                                </div>
+                                <div class="entry">
+                                    <div class="dot closed"></div>
+                                    <div class="entry-name closed">Containerdienst Becker</div>
+                                    <div class="entry-status closed">Sa geschlossen</div>
+                                </div>
+
+                                <div class="widget-footer">
+                                    <a href="#">Alle 32 Orte &rarr;</a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nav-hint"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flow-arrow">&rarr;</div>
+
+            <!-- PHONE 2: App Detail -->
+            <div>
+                <div class="phone-label">App (Tap auf Eintrag)</div>
+                <div class="phone">
+                    <div class="screen">
+                        <div class="statusbar">
+                            <span>08:31</span>
+                            <div class="statusbar-icons"><span>4G</span><span>71%</span></div>
+                        </div>
+                        <div class="app-header">
+                            <span class="app-back">&lsaquo; Zurueck</span>
+                            <span class="app-title">Schluesseldienst Meier</span>
+                        </div>
+                        <div class="app-content">
+                            <div class="detail-card">
+                                <div class="detail-name">Schluesseldienst Meier</div>
+                                <div class="detail-type">
+                                    <span>Vor Ort</span> &middot; Handwerk & Zulieferer
+                                </div>
+                                <div class="detail-status open">Offen bis 14:00</div>
+                                <div class="detail-hours">
+                                    Mo-Fr &nbsp; 07:30 &ndash; 17:00<br>
+                                    <span class="today">Sa &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 08:00 &ndash; 14:00 &larr; heute</span><br>
+                                    So &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; geschlossen
+                                </div>
+                                <div class="detail-note">
+                                    Notiz: Notdienst-Nr. 0201-555-1234 (ausserhalb Oeffnungszeiten)
+                                </div>
+                            </div>
+
+                            <div class="quick-action">
+                                <div class="qa-icon call">&#9742;</div>
+                                <div>
+                                    <div class="qa-label">Anrufen</div>
+                                    <div class="qa-sublabel">0201-345-6789</div>
+                                </div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="qa-icon nav">&#9654;</div>
+                                <div>
+                                    <div class="qa-label">Navigation</div>
+                                    <div class="qa-sublabel">Altenessener Str. 47, 45141 Essen</div>
+                                </div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="qa-icon web">&#9741;</div>
+                                <div>
+                                    <div class="qa-label">Website oeffnen</div>
+                                    <div class="qa-sublabel">schluesseldienst-meier.de</div>
+                                </div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="qa-icon google">G</div>
+                                <div>
+                                    <div class="qa-label">Bei Google pruefen</div>
+                                    <div class="qa-sublabel">Zeiten abgleichen</div>
+                                </div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="qa-icon edit">&#9998;</div>
+                                <div>
+                                    <div class="qa-label">Bearbeiten</div>
+                                </div>
+                            </div>
+                            <div class="quick-action">
+                                <div class="qa-icon share">&#10132;</div>
+                                <div>
+                                    <div class="qa-label">Teilen</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="nav-hint"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="persona-card">
+            <div class="persona-label">Persona 7</div>
+            <div class="persona-title">Der Facility Manager</div>
+            <div class="persona-subtitle">Stefan, 45 &middot; Essen &middot; 3 Mietobjekte</div>
+            <div class="persona-scenario">
+                <strong>Samstag, 08:30.</strong> Heizungsrohr geplatzt. Stefan braucht
+                Material &mdash; aber Grosshaendler haben samstags zu. Ein Blick aufs
+                Widget: Bauhaus offen, Sonepar nicht. Schluesseldienst nur bis 14:00 &mdash;
+                er tippt drauf und ruft direkt an.
+            </div>
+            <div class="persona-insight">
+                Dieses Mockup zeigt den kompletten <strong>Flow: Widget &rarr; App &rarr; Aktion</strong>.
+                Tap auf einen Eintrag oeffnet die Detailansicht mit Quick Actions.
+                Alle Aktionen (Anrufen, Navi, Web) sind nur sichtbar, wenn Daten hinterlegt sind.
+            </div>
+            <div class="persona-stats">
+                <div class="stat-item"><span>32</span> Orte gespeichert</div>
+                <div class="stat-item"><span>5</span> Sa geschlossen</div>
+                <div class="stat-item"><span>8</span> Zulieferer</div>
+                <div class="stat-item"><span>3</span> Objekte betreut</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

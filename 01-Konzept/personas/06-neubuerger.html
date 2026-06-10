@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wann offen? - Neubuergerin</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Roboto, -apple-system, sans-serif; background: linear-gradient(135deg, #11998e, #38ef7d); display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 20px; }
+        .nav { display: flex; align-items: center; gap: 20px; margin-bottom: 24px; width: 100%; max-width: 780px; }
+        .nav a { color: rgba(255,255,255,0.8); text-decoration: none; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 10px; background: rgba(255,255,255,0.12); transition: background 0.2s; }
+        .nav a:hover { background: rgba(255,255,255,0.25); }
+        .nav .current { flex: 1; text-align: center; color: #fff; font-size: 15px; font-weight: 600; }
+        .nav .dots { display: flex; gap: 6px; justify-content: center; font-size: 10px; color: rgba(255,255,255,0.4); }
+        .nav .dots .active { color: #fff; }
+        .main { display: flex; gap: 40px; align-items: center; flex-wrap: wrap; justify-content: center; }
+        .phone { width: 360px; background: #1a1a1a; border-radius: 44px; padding: 12px; box-shadow: 0 25px 80px rgba(0,0,0,0.4); flex-shrink: 0; }
+        .screen { background: #f2f2f7; border-radius: 34px; overflow: hidden; }
+        .statusbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 24px 6px; font-size: 13px; font-weight: 600; color: #1a1a1a; }
+        .statusbar-icons { display: flex; gap: 6px; font-size: 12px; }
+        .homescreen { padding: 16px; }
+        .widget { background: #fff; border-radius: 22px; padding: 18px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+        .widget-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+        .widget-location { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+        .widget-controls { display: flex; gap: 10px; color: #aaa; font-size: 16px; }
+        .widget-date { font-size: 12px; color: #8e8e93; margin-bottom: 14px; }
+        .category { font-size: 11px; font-weight: 700; color: #8e8e93; text-transform: uppercase; letter-spacing: 0.8px; margin-top: 14px; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; }
+        .category:first-of-type { margin-top: 0; }
+        .entry { display: flex; align-items: center; padding: 7px 0; }
+        .dot { width: 9px; height: 9px; border-radius: 50%; margin-right: 10px; flex-shrink: 0; }
+        .dot.open { background: #34c759; box-shadow: 0 0 6px rgba(52,199,89,0.4); }
+        .dot.closed { background: #ff3b30; }
+        .entry-name { flex: 1; font-size: 14px; color: #1a1a1a; }
+        .entry-name.closed { color: #8e8e93; }
+        .entry-status { font-size: 12px; font-weight: 500; }
+        .entry-status.open { color: #34c759; }
+        .entry-status.closed { color: #ff3b30; }
+        .widget-footer { margin-top: 14px; text-align: center; padding-top: 10px; border-top: 1px solid #f0f0f0; }
+        .widget-footer a { font-size: 13px; color: #007aff; text-decoration: none; font-weight: 500; }
+        .nav-hint { height: 4px; width: 120px; background: #1a1a1a; border-radius: 2px; margin: 20px auto 8px; }
+        .persona-card { background: rgba(255,255,255,0.95); border-radius: 20px; padding: 28px; max-width: 340px; min-width: 280px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .persona-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #fff; background: #30d158; display: inline-block; padding: 3px 10px; border-radius: 20px; margin-bottom: 10px; }
+        .persona-title { font-size: 22px; font-weight: 800; color: #1a1a1a; margin-bottom: 6px; }
+        .persona-subtitle { font-size: 14px; color: #8e8e93; margin-bottom: 14px; }
+        .persona-scenario { font-size: 14px; color: #444; line-height: 1.6; margin-bottom: 16px; }
+        .persona-scenario strong { color: #1a1a1a; }
+        .persona-insight { font-size: 13px; color: #666; line-height: 1.5; padding: 12px; background: #f8f8f8; border-radius: 12px; margin-bottom: 16px; border-left: 3px solid #30d158; }
+        .persona-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12px; color: #8e8e93; }
+        .stat-item { background: #f8f8f8; padding: 8px 12px; border-radius: 10px; }
+        .stat-item span { display: block; font-size: 18px; font-weight: 700; color: #1a1a1a; }
+        @media (max-width: 800px) { .main { flex-direction: column; } .persona-card { max-width: 360px; } }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="05-pflegender-angehoeriger.html">&larr; Zurueck</a>
+        <div class="current">
+            6 / 7
+            <div class="dots">
+                <span>&#9679;</span><span>&#9679;</span><span>&#9679;</span><span>&#9679;</span>
+                <span>&#9679;</span><span class="active">&#9679;</span><span>&#9679;</span>
+            </div>
+        </div>
+        <a href="07-facility-manager.html">Weiter &rarr;</a>
+    </div>
+
+    <div class="main">
+        <div class="phone">
+            <div class="screen">
+                <div class="statusbar">
+                    <span>09:00</span>
+                    <div class="statusbar-icons"><span>WiFi</span><span>95%</span></div>
+                </div>
+                <div class="homescreen">
+                    <div class="widget">
+                        <div class="widget-header">
+                            <div class="widget-location">Aachen</div>
+                            <div class="widget-controls">
+                                <span>&lsaquo;</span><span>&bull;</span><span>&rsaquo;</span>
+                            </div>
+                        </div>
+                        <div class="widget-date">Mi 12.02. &middot; 09:00</div>
+
+                        <div class="category">Behoerden</div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Buergeramt Aachen</div>
+                            <div class="entry-status open">bis 12:00 !</div>
+                        </div>
+                        <div class="entry">
+                            <div class="dot closed"></div>
+                            <div class="entry-name closed">KFZ-Zulassungsstelle</div>
+                            <div class="entry-status closed">Mi geschlossen</div>
+                        </div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Einwohnermeldeamt</div>
+                            <div class="entry-status open">bis 12:00</div>
+                        </div>
+
+                        <div class="category">Versorgung</div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Stadtwerke Kundencenter</div>
+                            <div class="entry-status open">bis 16:00</div>
+                        </div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Sparkasse Aachen</div>
+                            <div class="entry-status open">bis 16:00</div>
+                        </div>
+
+                        <div class="category">Alltag</div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Rewe City Pontstr.</div>
+                            <div class="entry-status open">bis 22:00</div>
+                        </div>
+                        <div class="entry">
+                            <div class="dot open"></div>
+                            <div class="entry-name">Hausarztpraxis Dr. Yilmaz</div>
+                            <div class="entry-status open">bis 12:00</div>
+                        </div>
+                        <div class="entry">
+                            <div class="dot closed"></div>
+                            <div class="entry-name closed">Stadtbuecherei</div>
+                            <div class="entry-status closed">Mi ab 13:00</div>
+                        </div>
+
+                        <div class="widget-footer">
+                            <a href="#">Alle 12 Orte &rarr;</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="nav-hint"></div>
+            </div>
+        </div>
+
+        <div class="persona-card">
+            <div class="persona-label">Persona 6</div>
+            <div class="persona-title">Die Neubuergerin</div>
+            <div class="persona-subtitle">Aylin, 28 &middot; Aachen &middot; vor 3 Wochen zugezogen</div>
+            <div class="persona-scenario">
+                <strong>Mittwoch, 09:00.</strong> Aylin will sich heute ummelden.
+                Buergeramt hat bis 12:00 offen &mdash; aber die KFZ-Zulassung ist
+                mittwochs komplett zu. Sie hat gerade erst angefangen, ihre
+                wichtigsten Orte zu sammeln.
+            </div>
+            <div class="persona-insight">
+                Perfekte <strong>Onboarding-Persona</strong>: Startet mit wenigen Eintraegen
+                und baut die Liste organisch auf. Jeder neue Ort wird sofort zum Widget
+                hinzugefuegt. Teilen-Feature nuetzlich: Partner bekommt die gleiche Liste.
+            </div>
+            <div class="persona-stats">
+                <div class="stat-item"><span>12</span> Orte gespeichert</div>
+                <div class="stat-item"><span>3</span> Behoerden</div>
+                <div class="stat-item"><span>3 Wo</span> in Aachen</div>
+                <div class="stat-item"><span>+2/Wo</span> neue Eintraege</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

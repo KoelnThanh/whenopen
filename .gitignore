@@ -1,0 +1,56 @@
+# === WhenOpen ===
+# Redundantes Archiv (Inhalt liegt entpackt in 01-Konzept/personas/)
+01-Konzept/WhenOpen.zip
+
+# === Betriebssystem ===
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# === Editoren / IDEs ===
+*.iml
+*.ipr
+*.iws
+.idea/
+*.swp
+.history
+# .vscode/ bewusst nicht ignoriert – launch/tasks koennen versioniert werden
+
+# === Flutter / Dart / Pub (greift, sobald die App scaffolded ist) ===
+*.class
+*.log
+*.lock
+*.pyc
+migrate_working_dir/
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+build/
+/build/
+
+# Symbolication / Obfuscation
+app.*.symbols
+app.*.map.json
+
+# Android Build-Artefakte
+/android/app/debug
+/android/app/profile
+/android/app/release
+**/android/**/gradle-wrapper.jar
+**/android/.gradle
+**/android/local.properties
+**/android/key.properties
+*.keystore
+*.jks
+
+# iOS (fuer spaetere iOS-Vorbereitung)
+**/ios/Pods/
+**/ios/.symlinks/
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/Flutter.podspec
