@@ -18,9 +18,9 @@ Desktop.ini
 # .vscode/ bewusst nicht ignoriert – launch/tasks koennen versioniert werden
 
 # === Flutter / Dart / Pub (greift, sobald die App scaffolded ist) ===
+# Hinweis: pubspec.lock wird bewusst versioniert (App, kein Package)
 *.class
 *.log
-*.lock
 *.pyc
 migrate_working_dir/
 **/doc/api/

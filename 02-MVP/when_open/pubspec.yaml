@@ -1,0 +1,54 @@
+name: when_open
+description: "WhenOpen - persoenliche Oeffnungszeiten auf einen Blick. Android-App mit Home-Widget."
+publish_to: 'none'
+
+# versionName + versionCode fuer Android
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Navigation mit Deep-Link-Support (Widget-Tap -> Detailansicht)
+  go_router: ^16.0.0
+  # State Management
+  flutter_riverpod: ^2.6.1
+  # Android Home-Widget Integration (Dart <-> AppWidgetProvider)
+  home_widget: ^0.7.0
+  # JSON-Serialisierung
+  json_annotation: ^4.12.0
+  # UUIDs fuer Location- und Kategorie-IDs
+  uuid: ^4.5.1
+  # HTTP-Client fuer OSM/Nominatim (P08b)
+  http: ^1.2.2
+  # Datums-/Zeitformatierung, i18n-Vorbereitung
+  intl: any
+  # App-Dokumentenverzeichnis fuer die JSON-Datei
+  path_provider: ^2.1.5
+  # Google Maps / tel: / geo: oeffnen (P07)
+  url_launcher: ^6.3.1
+  # Export der JSON-Datei via Share-Intent
+  share_plus: ^10.1.2
+  # Grenzgenaue Widget-Updates (E16): Alarm auf naechste Block-Grenze
+  android_alarm_manager_plus: ^4.0.7
+  # Periodisches Sicherheitsnetz fuer Widget-Updates (E16)
+  workmanager: ^0.9.0+3
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.13
+  json_serializable: ^6.8.0
+
+flutter:
+  uses-material-design: true
+  generate: true # gen-l10n fuer ARB-Dateien (lib/l10n)
