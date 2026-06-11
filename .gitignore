@@ -4,6 +4,9 @@
 
 # E2E-/Verifikations-Screenshots (Wegwerf-Artefakte am Emulator)
 02-MVP/*.png
+# Handy-Screenshots (vom Nutzer zur Diagnose abgelegt)
+Screenshot_*.png
+Screenshot_*.jpg
 
 # Lokale Claude-Code-Einstellungen (personenbezogen, nicht teilen)
 .claude/settings.local.json

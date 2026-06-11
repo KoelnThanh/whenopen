@@ -27,12 +27,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 /// Eine "Ansicht" = eine Seite im PageView.
 /// kategorieId: null = Alle Orte, '' = Sonstige, sonst echte Kategorie-ID.
 class _Ansicht {
-  const _Ansicht.alle()
-      : kategorieId = null,
-        kategorie = null;
-  const _Ansicht.sonstige()
-      : kategorieId = '',
-        kategorie = null;
+  const _Ansicht.alle() : kategorieId = null, kategorie = null;
+  const _Ansicht.sonstige() : kategorieId = '', kategorie = null;
   const _Ansicht.fuer(Kategorie this.kategorie) : kategorieId = null;
 
   final Kategorie? kategorie;
@@ -44,20 +40,20 @@ class _Ansicht {
   String label(AppLocalizations l10n) => istAlle
       ? l10n.alleOrte
       : istSonstige
-          ? l10n.sonstige
-          : kategorie!.name;
+      ? l10n.sonstige
+      : kategorie!.name;
 
   Color? punktFarbe() => istAlle
       ? null
       : istSonstige
-          ? AppColors.kategorieFallback
-          : farbeAusHex(kategorie!.farbe);
+      ? AppColors.kategorieFallback
+      : farbeAusHex(kategorie!.farbe);
 
   bool enthaelt(Location location) => istAlle
       ? true
       : istSonstige
-          ? location.kategorie == null
-          : location.kategorie == kategorie!.id;
+      ? location.kategorie == null
+      : location.kategorie == kategorie!.id;
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen>
@@ -95,8 +91,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   /// kein Minuten-Polling.
   void _planeNaechsteAktualisierung(List<Location> locations) {
     _timer?.cancel();
-    final naechste =
-        OpenStatusService.naechsteAenderung(locations, DateTime.now());
+    final naechste = OpenStatusService.naechsteAenderung(
+      locations,
+      DateTime.now(),
+    );
     final dauer = naechste.difference(DateTime.now());
     _timer = Timer(dauer.isNegative ? const Duration(seconds: 1) : dauer, () {
       if (!mounted) return;
@@ -107,8 +105,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _zeigeLadefehlerFallsNoetig() async {
     if (_ladefehlerGezeigt) return;
     _ladefehlerGezeigt = true;
-    final hatteFehler =
-        await ref.read(appDataProvider.notifier).hatteLadefehler();
+    final hatteFehler = await ref
+        .read(appDataProvider.notifier)
+        .hatteLadefehler();
     if (!hatteFehler || !mounted) return;
     final l10n = AppLocalizations.of(context)!;
     await showDialog<void>(
@@ -127,12 +126,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   List<_Ansicht> _ansichten(
-      List<Kategorie> kategorien, List<Location> locations) {
+    List<Kategorie> kategorien,
+    List<Location> locations,
+  ) {
     return [
       const _Ansicht.alle(),
       for (final kategorie in kategorien) _Ansicht.fuer(kategorie),
-      if (kategorien.isNotEmpty &&
-          locations.any((l) => l.kategorie == null))
+      if (kategorien.isNotEmpty && locations.any((l) => l.kategorie == null))
         const _Ansicht.sonstige(),
     ];
   }
@@ -166,8 +166,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (asyncDaten.hasValue) {
       _planeNaechsteAktualisierung(locations);
-      WidgetsBinding.instance
-          .addPostFrameCallback((_) => _zeigeLadefehlerFallsNoetig());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _zeigeLadefehlerFallsNoetig(),
+      );
     }
 
     final ansichten = _ansichten(kategorien, locations);
@@ -232,12 +233,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               : aktiveAnsicht.kategorie?.id,
           onAuswahl: (auswahl) {
             final neueAnsichten = _ansichten(
-                ref.read(kategorienProvider), ref.read(locationsProvider));
+              ref.read(kategorienProvider),
+              ref.read(locationsProvider),
+            );
             final ziel = auswahl.istAlle
                 ? 0
-                : neueAnsichten.indexWhere((a) => auswahl.kategorieId == ''
-                    ? a.istSonstige
-                    : a.kategorie?.id == auswahl.kategorieId);
+                : neueAnsichten.indexWhere(
+                    (a) => auswahl.kategorieId == ''
+                        ? a.istSonstige
+                        : a.kategorie?.id == auswahl.kategorieId,
+                  );
             if (ziel >= 0) _geheZuSeite(ziel);
           },
           onVerwalten: () => context.push('/kategorien'),
@@ -272,12 +277,15 @@ class _AnsichtListe extends ConsumerWidget {
     }
 
     Widget tile(Location location) => LocationListTile(
-          location: location,
-          jetzt: jetzt,
-          onTap: () => context.push('/detail/${location.id}'),
-          onLongPress: () => zeigeKategorieAendernSheet(
-              context: context, ref: ref, location: location),
-        );
+      location: location,
+      jetzt: jetzt,
+      onTap: () => context.push('/detail/${location.id}'),
+      onLongPress: () => zeigeKategorieAendernSheet(
+        context: context,
+        ref: ref,
+        location: location,
+      ),
+    );
 
     // Einzelne Kategorie → flache Liste (Mockup).
     if (!ansicht.istAlle) {
@@ -297,11 +305,15 @@ class _AnsichtListe extends ConsumerWidget {
       kinder.addAll(gefiltert.map(tile));
     } else {
       for (final kategorie in kategorien) {
-        gruppe(kategorie.name,
-            gefiltert.where((l) => l.kategorie == kategorie.id).toList());
+        gruppe(
+          kategorie.name,
+          gefiltert.where((l) => l.kategorie == kategorie.id).toList(),
+        );
       }
-      gruppe(l10n.sonstige,
-          gefiltert.where((l) => l.kategorie == null).toList());
+      gruppe(
+        l10n.sonstige,
+        gefiltert.where((l) => l.kategorie == null).toList(),
+      );
     }
 
     return ListView(children: kinder);
@@ -330,9 +342,10 @@ class _GruppenKopf extends StatelessWidget {
               color: AppColors.muted,
             ),
           ),
-          Text('$anzahl',
-              style:
-                  const TextStyle(fontSize: 11, color: Color(0xFF5B626D))),
+          Text(
+            '$anzahl',
+            style: const TextStyle(fontSize: 11, color: Color(0xFF5B626D)),
+          ),
         ],
       ),
     );
@@ -348,11 +361,32 @@ class _Leerzustand extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(28),
-        child: Text(
-          '${l10n.homeLeerTitel}\n\n${l10n.homeLeerHinweis}',
-          textAlign: TextAlign.center,
-          style: const TextStyle(color: AppColors.muted, fontSize: 14),
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Icon(
+              Icons.schedule_outlined,
+              size: 72,
+              color: Color(0xFF3A414C),
+            ),
+            const SizedBox(height: 22),
+            Text(
+              l10n.homeLeerTitel,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: AppColors.ink,
+                fontSize: 17,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              l10n.homeLeerHinweis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(color: AppColors.muted, fontSize: 14),
+            ),
+          ],
         ),
       ),
     );
@@ -380,83 +414,100 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // SafeArea UM die feste Hoehe: der Abstand fuer die System-
+    // Navigationsleiste kommt additiv UNTER die 64px-Leiste, statt sie von
+    // innen aufzufressen. Sonst wird die Leiste auf 3-Tasten-Navigation
+    // (grosser unterer Inset) zusammengequetscht. Die Hintergrundfarbe liegt
+    // am aeusseren Container, damit sie auch den Inset-Streifen fuellt.
     return Container(
-      height: 64,
-      padding: const EdgeInsets.symmetric(horizontal: 14),
       decoration: const BoxDecoration(
         color: Color(0xFF141821),
         border: Border(top: BorderSide(color: AppColors.line)),
       ),
       child: SafeArea(
         top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            InkWell(
-              onTap: onUmschalter,
-              borderRadius: BorderRadius.circular(22),
-              child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
-                decoration: BoxDecoration(
-                  color: AppColors.chip,
-                  border: Border.all(color: AppColors.line),
-                  borderRadius: BorderRadius.circular(22),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (punktFarbe != null) ...[
-                      Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                            color: punktFarbe, shape: BoxShape.circle),
+        child: Container(
+          height: 64,
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                onTap: onUmschalter,
+                borderRadius: BorderRadius.circular(22),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 9,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.chip,
+                    border: Border.all(color: AppColors.line),
+                    borderRadius: BorderRadius.circular(22),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (punktFarbe != null) ...[
+                        Container(
+                          width: 10,
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: punktFarbe,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                      ],
+                      Text(
+                        label,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                       const SizedBox(width: 8),
+                      const Icon(
+                        Icons.keyboard_arrow_up,
+                        size: 16,
+                        color: AppColors.muted,
+                      ),
                     ],
-                    Text(label,
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w600)),
-                    const SizedBox(width: 8),
-                    const Icon(Icons.keyboard_arrow_up,
-                        size: 16, color: AppColors.muted),
+                  ),
+                ),
+              ),
+              if (seiten > 1)
+                Row(
+                  children: [
+                    for (var i = 0; i < seiten; i++)
+                      Container(
+                        width: 6,
+                        height: 6,
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: i == aktiveSeite
+                              ? AppColors.primaryInk
+                              : const Color(0xFF3A414C),
+                        ),
+                      ),
                   ],
                 ),
-              ),
-            ),
-            if (seiten > 1)
-              Row(
-                children: [
-                  for (var i = 0; i < seiten; i++)
-                    Container(
-                      width: 6,
-                      height: 6,
-                      margin: const EdgeInsets.symmetric(horizontal: 3),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: i == aktiveSeite
-                            ? AppColors.primaryInk
-                            : const Color(0xFF3A414C),
-                      ),
-                    ),
-                ],
-              ),
-            InkWell(
-              onTap: onNeu,
-              borderRadius: BorderRadius.circular(16),
-              child: Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(16),
+              InkWell(
+                onTap: onNeu,
+                borderRadius: BorderRadius.circular(16),
+                child: Container(
+                  width: 50,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(Icons.add, color: Colors.white, size: 26),
                 ),
-                child:
-                    const Icon(Icons.add, color: Colors.white, size: 26),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -478,15 +529,15 @@ class _OrtSuche extends SearchDelegate<String?> {
 
   @override
   List<Widget> buildActions(BuildContext context) => [
-        if (query.isNotEmpty)
-          IconButton(
-              icon: const Icon(Icons.clear), onPressed: () => query = ''),
-      ];
+    if (query.isNotEmpty)
+      IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+  ];
 
   @override
   Widget buildLeading(BuildContext context) => IconButton(
-      icon: const Icon(Icons.arrow_back),
-      onPressed: () => close(context, null));
+    icon: const Icon(Icons.arrow_back),
+    onPressed: () => close(context, null),
+  );
 
   Widget _treffer(BuildContext context) {
     final passend = locations
@@ -494,8 +545,11 @@ class _OrtSuche extends SearchDelegate<String?> {
         .toList();
     if (passend.isEmpty) {
       return Center(
-          child: Text(keineTreffer,
-              style: const TextStyle(color: AppColors.muted)));
+        child: Text(
+          keineTreffer,
+          style: const TextStyle(color: AppColors.muted),
+        ),
+      );
     }
     return ListView(
       children: [

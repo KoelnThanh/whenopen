@@ -243,3 +243,30 @@ an Größe spart. APK 53,2 → 57,9 MB.
 - Reines `flutter analyze`/Unit-Tests fangen R8-Stripping nicht — das ist ein Build-/
   Laufzeitthema. Wenn R8 später zurück soll: Keep-Regeln für WorkManager/Room/home_widget/
   alarm_manager + Gerätetest, oder `android.enableR8.fullMode=false`.
+
+## P09-Fix 2 — Untere Leiste auf 3-Tasten-Navigation (2026-06-11)
+
+**Symptom (Samsung-Handy, 3-Tasten-Navigation):** Untere Leiste gequetscht — „Alle Orte"
+nur als Schlitz, „+"-Button plattgedrückt, alles an die Navigationsleiste gepresst
+(„Screen nicht optimal ausgenutzt"). Auf dem Emulator mit **Gesten**-Navigation (kleiner
+Inset) fiel es nicht auf.
+
+**Ursache:** In `_BottomBar` lag die `SafeArea(top:false)` **innerhalb** des
+`Container(height: 64)`. Der Inset für die System-Navigationsleiste (bei 3-Tasten ~48 px)
+wurde so von den festen 64 px abgezogen → nur ~16 px für den 50-px-Button.
+
+**Fix (`home_screen.dart`):** Reihenfolge gedreht — `Container(bg) > SafeArea(top:false) >
+Container(height:64) > Row`. Der Navi-Abstand kommt jetzt additiv **unter** die 64-px-Leiste,
+die Hintergrundfarbe füllt den Inset-Streifen. Zusätzlich `_Leerzustand` aufgewertet
+(Uhr-Icon + klarere Typografie statt nur Text).
+
+**Reproduziert & verifiziert am Emulator:** auf **3-Tasten-Navigation** umgestellt
+(`adb shell cmd overlay enable …navbar.threebutton`) → Quetschung sichtbar; nach Fix sitzen
+„Alle Orte" + „+" in voller Größe sauber über der Navigationsleiste.
+
+**Was gelernt:**
+- Bei `Scaffold.bottomNavigationBar` die `SafeArea` **um** die fixe Höhe legen, nie hinein —
+  sonst frisst der System-Inset die Leiste.
+- Layout immer auch mit **3-Tasten-Navigation** prüfen (größerer unterer Inset als Gesten-Navi)
+  — `adb shell cmd overlay enable com.android.internal.systemui.navbar.threebutton` macht das
+  am Emulator testbar.
