@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:workmanager/workmanager.dart';
 
 import 'app.dart';
@@ -12,6 +13,9 @@ import 'widget/widget_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Datums-/Wochentagsnamen für den Header (DateFormat 'de').
+  await initializeDateFormatting('de', null);
 
   if (Platform.isAndroid) {
     // E16: ereignisgetriebene Widget-Updates nach jeder Datenaenderung.

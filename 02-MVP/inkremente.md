@@ -270,3 +270,43 @@ die Hintergrundfarbe füllt den Inset-Streifen. Zusätzlich `_Leerzustand` aufge
 - Layout immer auch mit **3-Tasten-Navigation** prüfen (größerer unterer Inset als Gesten-Navi)
   — `adb shell cmd overlay enable com.android.internal.systemui.navbar.threebutton` macht das
   am Emulator testbar.
+
+## P10 — Redesign v0.3 (Indigo, Hell/Dunkel) — Schritt 1: Marke + Home + Icon (2026-06-11)
+
+Auf Nutzerwunsch nach P09: UI-Facelift (neue Markenfarbe **Indigo**, Hell+Dunkel folgt System,
+Hero-Header statt nacktem AppBar-Balken) + **Logo B (PinTime)** als Icon + **JSON-Backup**.
+Umsetzung in verifizierten Teilschritten, jeder Commit lauffähig. Design-Referenz: v0.3-Sektion
+in `01-Konzept/mockups/whenopen-mockups.html`.
+
+**Was gebaut (Schritt 1):**
+- **Theme-Fundament** (`theme/app_theme.dart`): Markenfarbe Teal→**Indigo #6366F1**;
+  `AppPalette` als `ThemeExtension` mit Dunkel- *und* Hell-Instanz (neutrale Flächen-/Textfarben),
+  Zugriff über `context.col`. `buildDarkTheme()`/`buildLightTheme()` vorhanden (App nutzt aktuell
+  Dunkel; System-Umschaltung folgt in Schritt 3). Flache AppBar in Flächenfarbe statt farbigem Balken.
+- **Home-Redesign** (`screens/home_screen.dart`): **Hero-Header** mit Pin-Markenzeichen +
+  Wortmarke (Indigo-Akzent) + Datum (`DateFormat('EEEE, d. MMMM','de')`) + **Status-Übersicht
+  „X jetzt offen / Y geschlossen"**. Such-Lupe + ⋮-Menü (Kategorien verwalten) im Header.
+  Gruppenköpfe mit Kategorie-Farbpunkt. Bottom-Umschalter neu gestylt (Indigo-FAB-Verlauf,
+  Pillen-Seitenindikator).
+- **Listenzeile** (`widgets/location_list_tile.dart`): schlanke Karte mit **Kategorie-Akzentstreifen**
+  links + **farbiger Uhrzeit** (grün offen / grau zu) — kein Punkt, kein Kasten (Nutzer-Feedback).
+- **Logo-B-Icon**: `tool/gen_icon.py` neu → Indigo-Verlauf + weißer Karten-Pin mit Uhr;
+  `flutter_launcher_icons` (adaptive, `adaptive_icon_background #4F46E5`) + `flutter_native_splash`
+  (BG #0E1116) neu generiert.
+- **i18n**: `homeOffenZahl`/`homeZuZahl` in ARB; `initializeDateFormatting('de')` in `main.dart`.
+
+**Verifiziert:** `flutter analyze` sauber, **54 Unit-Tests grün**, Debug-APK am Emulator
+(Pixel_API35) mit Testdaten — Hero-Header, „6 offen/1 geschlossen", Akzentstreifen + farbige
+Uhrzeiten, Indigo-FAB per Screenshot bestätigt. Neues App-Icon (Pin+Uhr) sichtbar.
+
+**Was fehlt (Schritt 2/3):** Backup/Wiederherstellen (JSON-Export/Import) · Widget-Feinschliff
+(Punkt/Kasten raus) · Light-Mode flächendeckend (restliche ~70 Farbstellen der Nebenscreens auf
+`context.col` ziehen) + Hell-Modus am Emulator abnehmen, dann `themeMode: system` aktivieren.
+
+**Was gelernt:**
+- **Signatur-Konflikt live reproduziert:** Release-Build lag auf dem Emulator, Debug-Install →
+  `INSTALL_FAILED_UPDATE_INCOMPATIBLE` + `run-as: package not debuggable`. Bestätigt die Diagnose
+  zum „Datenverlust beim Aktualisieren": gleiche Signatur = In-Place-Update, sonst Deinstallation nötig.
+- `ThemeExtension` + `context.col`-Getter ist der saubere Weg für Hell/Dunkel; markenfeste Farben
+  (Primär, Status, Kategorie-Swatches) bleiben als `AppColors`-Konstanten, nur Neutrale kippen.
+- `DateFormat` mit Nicht-`en`-Locale braucht `initializeDateFormatting('de')` in `main()`.

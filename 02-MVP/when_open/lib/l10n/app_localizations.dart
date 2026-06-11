@@ -244,6 +244,18 @@ abstract class AppLocalizations {
   /// **'Tippe auf +, um deinen ersten Ort hinzuzufügen.'**
   String get homeLeerHinweis;
 
+  /// No description provided for @homeOffenZahl.
+  ///
+  /// In de, this message translates to:
+  /// **'jetzt offen'**
+  String get homeOffenZahl;
+
+  /// No description provided for @homeZuZahl.
+  ///
+  /// In de, this message translates to:
+  /// **'geschlossen'**
+  String get homeZuZahl;
+
   /// No description provided for @alleOrte.
   ///
   /// In de, this message translates to:

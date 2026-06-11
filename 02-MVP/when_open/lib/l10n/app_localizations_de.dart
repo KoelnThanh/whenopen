@@ -93,6 +93,12 @@ class AppLocalizationsDe extends AppLocalizations {
       'Tippe auf +, um deinen ersten Ort hinzuzufügen.';
 
   @override
+  String get homeOffenZahl => 'jetzt offen';
+
+  @override
+  String get homeZuZahl => 'geschlossen';
+
+  @override
   String get alleOrte => 'Alle Orte';
 
   @override

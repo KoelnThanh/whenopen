@@ -62,17 +62,17 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: "assets/icon/icon.png"
-  adaptive_icon_background: "#2F6F6B"
+  adaptive_icon_background: "#4F46E5"
   adaptive_icon_foreground: "assets/icon/icon_foreground.png"
   min_sdk_android: 26
 
 # P09 — Splash Screen (dunkler Brand-Hintergrund + zentriertes Icon)
 flutter_native_splash:
-  color: "#0F1115"
+  color: "#0E1116"
   image: assets/icon/icon_foreground.png
   android: true
   ios: false
   web: false
   android_12:
-    color: "#0F1115"
+    color: "#0E1116"
     image: assets/icon/icon_foreground.png

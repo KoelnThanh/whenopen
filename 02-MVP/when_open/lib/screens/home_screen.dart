@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/kategorie.dart';
@@ -17,6 +18,7 @@ import '../widgets/undo_delete.dart';
 
 /// Hauptliste (Workflow 3, E10): nach Kategorie gruppiert, Umschalten ueber
 /// Bottom-Umschalter + Auswahl-Sheet (Google-Tasks-Stil), Wischen blaettert.
+/// v0.3: Hero-Header (Marke + Datum + „X offen"-Uebersicht) statt AppBar.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -153,6 +155,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     context.push('/quick-entry$query');
   }
 
+  Future<void> _suche(List<Location> locations, AppLocalizations l10n) async {
+    final id = await showSearch<String?>(
+      context: context,
+      delegate: _OrtSuche(
+        locations: locations,
+        jetzt: _jetzt,
+        hint: l10n.sucheHint,
+        keineTreffer: l10n.keineTreffer,
+      ),
+    );
+    if (id != null && mounted && context.mounted) {
+      context.push('/detail/$id');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -177,47 +194,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
     final aktiveAnsicht = ansichten[_seite];
 
+    final offen = locations
+        .where((l) => OpenStatusService.isOpenNow(l, _jetzt).offen)
+        .length;
+    final zeigeUebersicht = asyncDaten.hasValue && locations.isNotEmpty;
+
+    // Kategorie-Farbe je Eintrag für den Akzentstreifen der Liste.
+    final katFarbe = {for (final k in kategorien) k.id: farbeAusHex(k.farbe)};
+    Color akzentFuer(Location l) =>
+        katFarbe[l.kategorie] ?? AppColors.kategorieFallback;
+
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.appTitle),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            tooltip: l10n.suche,
-            onPressed: () async {
-              final id = await showSearch<String?>(
-                context: context,
-                delegate: _OrtSuche(
-                  locations: locations,
-                  jetzt: _jetzt,
-                  hint: l10n.sucheHint,
-                  keineTreffer: l10n.keineTreffer,
-                ),
-              );
-              if (id != null && mounted && context.mounted) {
-                context.push('/detail/$id');
-              }
-            },
+      body: Column(
+        children: [
+          _HomeHeader(
+            l10n: l10n,
+            jetzt: _jetzt,
+            offen: zeigeUebersicht ? offen : null,
+            zu: zeigeUebersicht ? locations.length - offen : null,
+            onSuche: () => _suche(locations, l10n),
+            onVerwalten: () => context.push('/kategorien'),
+          ),
+          Expanded(
+            child: asyncDaten.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('$e')),
+              data: (_) => locations.isEmpty
+                  ? _Leerzustand(l10n: l10n)
+                  : PageView.builder(
+                      controller: _pageController,
+                      itemCount: ansichten.length,
+                      onPageChanged: (seite) => setState(() => _seite = seite),
+                      itemBuilder: (context, index) => _AnsichtListe(
+                        ansicht: ansichten[index],
+                        kategorien: kategorien,
+                        locations: locations,
+                        jetzt: _jetzt,
+                        l10n: l10n,
+                        akzentFuer: akzentFuer,
+                      ),
+                    ),
+            ),
           ),
         ],
-      ),
-      body: asyncDaten.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('$e')),
-        data: (_) => locations.isEmpty
-            ? _Leerzustand(l10n: l10n)
-            : PageView.builder(
-                controller: _pageController,
-                itemCount: ansichten.length,
-                onPageChanged: (seite) => setState(() => _seite = seite),
-                itemBuilder: (context, index) => _AnsichtListe(
-                  ansicht: ansichten[index],
-                  kategorien: kategorien,
-                  locations: locations,
-                  jetzt: _jetzt,
-                  l10n: l10n,
-                ),
-              ),
       ),
       bottomNavigationBar: _BottomBar(
         label: aktiveAnsicht.label(l10n),
@@ -253,6 +272,203 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 }
 
+/// Hero-Header (v0.3): Markenzeichen + Wortmarke, Datum, „X offen"-Uebersicht.
+class _HomeHeader extends StatelessWidget {
+  const _HomeHeader({
+    required this.l10n,
+    required this.jetzt,
+    required this.offen,
+    required this.zu,
+    required this.onSuche,
+    required this.onVerwalten,
+  });
+
+  final AppLocalizations l10n;
+  final DateTime jetzt;
+  final int? offen;
+  final int? zu;
+  final VoidCallback onSuche;
+  final VoidCallback onVerwalten;
+
+  @override
+  Widget build(BuildContext context) {
+    final col = context.col;
+    final datum = DateFormat('EEEE, d. MMMM', 'de').format(jetzt);
+    return SafeArea(
+      bottom: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 10, 6, 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const _Markenzeichen(),
+                const SizedBox(width: 11),
+                Text.rich(
+                  TextSpan(
+                    children: [
+                      TextSpan(
+                        text: 'When',
+                        style: TextStyle(color: col.ink),
+                      ),
+                      const TextSpan(
+                        text: 'Open',
+                        style: TextStyle(color: AppColors.primary),
+                      ),
+                    ],
+                    style: const TextStyle(
+                      fontSize: 21,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.4,
+                    ),
+                  ),
+                ),
+                const Spacer(),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  tooltip: l10n.suche,
+                  onPressed: onSuche,
+                ),
+                PopupMenuButton<int>(
+                  icon: const Icon(Icons.more_vert),
+                  onSelected: (_) => onVerwalten(),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(value: 0, child: Text(l10n.kategorienVerwalten)),
+                  ],
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.only(left: 2, top: 2),
+              child: Text(
+                datum,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                  color: col.muted,
+                ),
+              ),
+            ),
+            if (offen != null && zu != null) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Row(
+                  children: [
+                    _UebersichtKachel(
+                      zahl: offen!,
+                      label: l10n.homeOffenZahl,
+                      farbe: col.open,
+                      hervorgehoben: true,
+                    ),
+                    const SizedBox(width: 9),
+                    _UebersichtKachel(
+                      zahl: zu!,
+                      label: l10n.homeZuZahl,
+                      farbe: col.closed,
+                      hervorgehoben: false,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Indigo-Markenzeichen (Pin) als kleine Kachel im Header.
+class _Markenzeichen extends StatelessWidget {
+  const _Markenzeichen();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [AppColors.primary, AppColors.primaryDeep],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primaryDeep.withValues(alpha: 0.4),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: const Icon(Icons.location_on, color: Colors.white, size: 21),
+    );
+  }
+}
+
+/// Eine Kachel der Status-Uebersicht („4 jetzt offen" / „8 geschlossen").
+class _UebersichtKachel extends StatelessWidget {
+  const _UebersichtKachel({
+    required this.zahl,
+    required this.label,
+    required this.farbe,
+    required this.hervorgehoben,
+  });
+
+  final int zahl;
+  final String label;
+  final Color farbe;
+  final bool hervorgehoben;
+
+  @override
+  Widget build(BuildContext context) {
+    final col = context.col;
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+        decoration: BoxDecoration(
+          color: hervorgehoben ? farbe.withValues(alpha: 0.14) : col.card,
+          border: Border.all(
+            color: hervorgehoben ? Colors.transparent : col.line,
+          ),
+          borderRadius: BorderRadius.circular(15),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 9,
+              height: 9,
+              decoration: BoxDecoration(color: farbe, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 9),
+            Text(
+              '$zahl',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                height: 1,
+                color: hervorgehoben ? farbe : col.ink,
+              ),
+            ),
+            const SizedBox(width: 7),
+            Expanded(
+              child: Text(
+                label,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 11.5, height: 1.15, color: col.muted),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _AnsichtListe extends ConsumerWidget {
   const _AnsichtListe({
     required this.ansicht,
@@ -260,6 +476,7 @@ class _AnsichtListe extends ConsumerWidget {
     required this.locations,
     required this.jetzt,
     required this.l10n,
+    required this.akzentFuer,
   });
 
   final _Ansicht ansicht;
@@ -267,6 +484,7 @@ class _AnsichtListe extends ConsumerWidget {
   final List<Location> locations;
   final DateTime jetzt;
   final AppLocalizations l10n;
+  final Color Function(Location) akzentFuer;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -279,6 +497,7 @@ class _AnsichtListe extends ConsumerWidget {
     Widget tile(Location location) => LocationListTile(
       location: location,
       jetzt: jetzt,
+      akzent: akzentFuer(location),
       onTap: () => context.push('/detail/${location.id}'),
       onLongPress: () => zeigeKategorieAendernSheet(
         context: context,
@@ -289,14 +508,17 @@ class _AnsichtListe extends ConsumerWidget {
 
     // Einzelne Kategorie → flache Liste (Mockup).
     if (!ansicht.istAlle) {
-      return ListView(children: [for (final l in gefiltert) tile(l)]);
+      return ListView(
+        padding: const EdgeInsets.only(top: 4, bottom: 8),
+        children: [for (final l in gefiltert) tile(l)],
+      );
     }
 
     // "Alle Orte" → nach Kategorie gruppiert, "Sonstige" zuletzt.
     final kinder = <Widget>[];
-    void gruppe(String name, List<Location> orte) {
+    void gruppe(String name, Color? farbe, List<Location> orte) {
       if (orte.isEmpty) return;
-      kinder.add(_GruppenKopf(name: name, anzahl: orte.length));
+      kinder.add(_GruppenKopf(name: name, farbe: farbe, anzahl: orte.length));
       kinder.addAll(orte.map(tile));
     }
 
@@ -307,44 +529,67 @@ class _AnsichtListe extends ConsumerWidget {
       for (final kategorie in kategorien) {
         gruppe(
           kategorie.name,
+          farbeAusHex(kategorie.farbe),
           gefiltert.where((l) => l.kategorie == kategorie.id).toList(),
         );
       }
       gruppe(
         l10n.sonstige,
+        AppColors.kategorieFallback,
         gefiltert.where((l) => l.kategorie == null).toList(),
       );
     }
 
-    return ListView(children: kinder);
+    return ListView(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      children: kinder,
+    );
   }
 }
 
 class _GruppenKopf extends StatelessWidget {
-  const _GruppenKopf({required this.name, required this.anzahl});
+  const _GruppenKopf({
+    required this.name,
+    required this.farbe,
+    required this.anzahl,
+  });
 
   final String name;
+  final Color? farbe;
   final int anzahl;
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 14, 16, 6),
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 6),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+          if (farbe != null) ...[
+            Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(color: farbe, shape: BoxShape.circle),
+            ),
+            const SizedBox(width: 8),
+          ],
           Text(
             name.toUpperCase(),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              letterSpacing: 0.8,
-              fontWeight: FontWeight.w700,
-              color: AppColors.muted,
+              letterSpacing: 0.7,
+              fontWeight: FontWeight.w800,
+              color: col.muted,
             ),
           ),
+          const Spacer(),
           Text(
             '$anzahl',
-            style: const TextStyle(fontSize: 11, color: Color(0xFF5B626D)),
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: col.muted.withValues(alpha: 0.7),
+            ),
           ),
         ],
       ),
@@ -359,32 +604,37 @@ class _Leerzustand extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(
-              Icons.schedule_outlined,
-              size: 72,
-              color: Color(0xFF3A414C),
+            Container(
+              width: 96,
+              height: 96,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(28),
+              ),
+              child: Icon(Icons.add, size: 46, color: col.primaryInk),
             ),
             const SizedBox(height: 22),
             Text(
               l10n.homeLeerTitel,
               textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: AppColors.ink,
-                fontSize: 17,
-                fontWeight: FontWeight.w600,
+              style: TextStyle(
+                color: col.ink,
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 10),
             Text(
               l10n.homeLeerHinweis,
               textAlign: TextAlign.center,
-              style: const TextStyle(color: AppColors.muted, fontSize: 14),
+              style: TextStyle(color: col.muted, fontSize: 14),
             ),
           ],
         ),
@@ -414,99 +664,104 @@ class _BottomBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // SafeArea UM die feste Hoehe: der Abstand fuer die System-
-    // Navigationsleiste kommt additiv UNTER die 64px-Leiste, statt sie von
-    // innen aufzufressen. Sonst wird die Leiste auf 3-Tasten-Navigation
-    // (grosser unterer Inset) zusammengequetscht. Die Hintergrundfarbe liegt
-    // am aeusseren Container, damit sie auch den Inset-Streifen fuellt.
+    final col = context.col;
+    // SafeArea UM die feste Hoehe (siehe P09-Fix 2): der Navi-Inset kommt
+    // additiv UNTER die 64px-Leiste, statt sie zusammenzuquetschen.
     return Container(
-      decoration: const BoxDecoration(
-        color: Color(0xFF141821),
-        border: Border(top: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        color: col.surface,
+        border: Border(top: BorderSide(color: col.line)),
       ),
       child: SafeArea(
         top: false,
-        child: Container(
+        child: SizedBox(
           height: 64,
-          padding: const EdgeInsets.symmetric(horizontal: 14),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              InkWell(
-                onTap: onUmschalter,
-                borderRadius: BorderRadius.circular(22),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 9,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.chip,
-                    border: Border.all(color: AppColors.line),
-                    borderRadius: BorderRadius.circular(22),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (punktFarbe != null) ...[
-                        Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: punktFarbe,
-                            shape: BoxShape.circle,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                InkWell(
+                  onTap: onUmschalter,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: col.chip,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (punktFarbe != null) ...[
+                          Container(
+                            width: 9,
+                            height: 9,
+                            decoration: BoxDecoration(
+                              color: punktFarbe,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          label,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: col.ink,
                           ),
                         ),
                         const SizedBox(width: 8),
-                      ],
-                      Text(
-                        label,
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                        Icon(
+                          Icons.keyboard_arrow_up,
+                          size: 16,
+                          color: col.muted,
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(
-                        Icons.keyboard_arrow_up,
-                        size: 16,
-                        color: AppColors.muted,
-                      ),
+                      ],
+                    ),
+                  ),
+                ),
+                if (seiten > 1)
+                  Row(
+                    children: [
+                      for (var i = 0; i < seiten; i++)
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          width: i == aktiveSeite ? 18 : 6,
+                          height: 6,
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(3),
+                            color: i == aktiveSeite
+                                ? AppColors.primary
+                                : col.line,
+                          ),
+                        ),
                     ],
                   ),
-                ),
-              ),
-              if (seiten > 1)
-                Row(
-                  children: [
-                    for (var i = 0; i < seiten; i++)
-                      Container(
-                        width: 6,
-                        height: 6,
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: i == aktiveSeite
-                              ? AppColors.primaryInk
-                              : const Color(0xFF3A414C),
-                        ),
+                InkWell(
+                  onTap: onNeu,
+                  borderRadius: BorderRadius.circular(16),
+                  child: Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [AppColors.primary, AppColors.primaryDeep],
                       ),
-                  ],
-                ),
-              InkWell(
-                onTap: onNeu,
-                borderRadius: BorderRadius.circular(16),
-                child: Container(
-                  width: 50,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.add, color: Colors.white, size: 26),
                   ),
-                  child: const Icon(Icons.add, color: Colors.white, size: 26),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -514,7 +769,7 @@ class _BottomBar extends StatelessWidget {
   }
 }
 
-/// Einfache Namenssuche ueber alle Orte (AppBar-Lupe).
+/// Einfache Namenssuche ueber alle Orte (Header-Lupe).
 class _OrtSuche extends SearchDelegate<String?> {
   _OrtSuche({
     required this.locations,
@@ -547,7 +802,7 @@ class _OrtSuche extends SearchDelegate<String?> {
       return Center(
         child: Text(
           keineTreffer,
-          style: const TextStyle(color: AppColors.muted),
+          style: TextStyle(color: context.col.muted),
         ),
       );
     }

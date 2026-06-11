@@ -5,7 +5,9 @@ import '../models/location.dart';
 import '../services/open_status_service.dart';
 import '../theme/app_theme.dart';
 
-/// Eine Zeile der Hauptliste: Status-Punkt, Name, Statustext, Chevron.
+/// Eine Zeile der Hauptliste (v0.3): schlanke Karte mit Kategorie-Akzentstreifen
+/// links, Name und farbiger Uhrzeit (grün offen / grau zu) rechts — kein Kasten,
+/// kein Punkt.
 class LocationListTile extends StatelessWidget {
   const LocationListTile({
     super.key,
@@ -13,6 +15,7 @@ class LocationListTile extends StatelessWidget {
     required this.jetzt,
     required this.onTap,
     this.onLongPress,
+    this.akzent,
   });
 
   final Location location;
@@ -20,54 +23,84 @@ class LocationListTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onLongPress;
 
+  /// Farbe des Akzentstreifens (Kategorie). Null → Markenfarbe.
+  final Color? akzent;
+
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     final status = OpenStatusService.isOpenNow(location, jetzt);
     final statusText = OpenStatusService.statusText(status, l10n);
 
-    return InkWell(
-      onTap: onTap,
-      onLongPress: onLongPress,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            Container(
-              width: 11,
-              height: 11,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: status.offen ? AppColors.open : AppColors.closed,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: col.card,
+        borderRadius: BorderRadius.circular(13),
+        child: InkWell(
+          onTap: onTap,
+          onLongPress: onLongPress,
+          borderRadius: BorderRadius.circular(13),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(13),
+              border: Border.all(color: col.line),
             ),
-            const SizedBox(width: 11),
-            Expanded(
-              child: Text(
-                location.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight:
-                      status.offen ? FontWeight.w500 : FontWeight.w400,
-                  color: status.offen ? AppColors.ink : AppColors.muted,
+            child: Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Container(
+                    width: 5,
+                    decoration: BoxDecoration(
+                      color: akzent ?? AppColors.primary,
+                      borderRadius: const BorderRadius.horizontal(
+                        right: Radius.circular(4),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(17, 13, 12, 13),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          location.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight:
+                                status.offen ? FontWeight.w600 : FontWeight.w500,
+                            color: status.offen ? col.ink : col.muted,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        statusText,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: status.offen ? col.open : col.muted,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Icon(
+                        Icons.chevron_right,
+                        size: 18,
+                        color: col.muted.withValues(alpha: 0.5),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              statusText,
-              style: TextStyle(
-                fontSize: 12.5,
-                fontWeight: FontWeight.w500,
-                color: status.offen ? AppColors.open : AppColors.muted,
-              ),
-            ),
-            const SizedBox(width: 8),
-            const Icon(Icons.chevron_right,
-                size: 18, color: Color(0xFF555C66)),
-          ],
+          ),
         ),
       ),
     );
