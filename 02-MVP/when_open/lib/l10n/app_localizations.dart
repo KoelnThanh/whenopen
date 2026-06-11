@@ -819,6 +819,72 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Daten exportieren'**
   String get exportTeilen;
+
+  /// No description provided for @menueSichern.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten sichern'**
+  String get menueSichern;
+
+  /// No description provided for @menueWiederherstellen.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten wiederherstellen'**
+  String get menueWiederherstellen;
+
+  /// No description provided for @sichernBetreff.
+  ///
+  /// In de, this message translates to:
+  /// **'WhenOpen-Sicherung'**
+  String get sichernBetreff;
+
+  /// No description provided for @sichernFehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Sichern fehlgeschlagen'**
+  String get sichernFehler;
+
+  /// No description provided for @wiederherstellenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten wiederherstellen?'**
+  String get wiederherstellenTitel;
+
+  /// No description provided for @wiederherstellenText.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.'**
+  String get wiederherstellenText;
+
+  /// No description provided for @wiederherstellenHint.
+  ///
+  /// In de, this message translates to:
+  /// **'JSON-Inhalt der Sicherung einfügen'**
+  String get wiederherstellenHint;
+
+  /// No description provided for @wiederherstellenAktion.
+  ///
+  /// In de, this message translates to:
+  /// **'Wiederherstellen'**
+  String get wiederherstellenAktion;
+
+  /// No description provided for @wiederherstellenErfolg.
+  ///
+  /// In de, this message translates to:
+  /// **'Daten wiederhergestellt.'**
+  String get wiederherstellenErfolg;
+
+  /// No description provided for @wiederherstellenFehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine gültige WhenOpen-Sicherung — nichts geändert.'**
+  String get wiederherstellenFehler;
+
+  /// No description provided for @abbrechen.
+  ///
+  /// In de, this message translates to:
+  /// **'Abbrechen'**
+  String get abbrechen;
 }
 
 class _AppLocalizationsDelegate

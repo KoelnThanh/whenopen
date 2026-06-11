@@ -310,3 +310,34 @@ Uhrzeiten, Indigo-FAB per Screenshot bestätigt. Neues App-Icon (Pin+Uhr) sichtb
 - `ThemeExtension` + `context.col`-Getter ist der saubere Weg für Hell/Dunkel; markenfeste Farben
   (Primär, Status, Kategorie-Swatches) bleiben als `AppColors`-Konstanten, nur Neutrale kippen.
 - `DateFormat` mit Nicht-`en`-Locale braucht `initializeDateFormatting('de')` in `main()`.
+
+## P10 — Schritt 2: JSON-Backup/Wiederherstellen + Feinschliff (2026-06-11)
+
+**Was gebaut:**
+- **Repository** (`location_repository.dart`): `exportKopie()` schreibt eine datierte, teilbare
+  Kopie (`whenopen-sicherung-<datum>.json`) ins Temp-Verzeichnis; `importJson(String)` validiert
+  zuerst (Wurzel mit `version` + Liste `eintraege`, sonst `FormatException`), **sichert die aktuelle
+  Datei** (`whenopen_backup_<ts>.json`) und schreibt erst dann — Bestandsdaten bleiben bei Fehler intakt.
+- **Provider**: `exportKopie()` + `importJson()` (lädt danach Zustand + Widget neu).
+- **UI** (`home_screen.dart`): ⋮-Menü erweitert → „Kategorien verwalten / Daten sichern / Daten
+  wiederherstellen". „Sichern" öffnet den System-Teilen-Dialog (Drive/E-Mail/Dateien).
+  „Wiederherstellen" = Einfügen-Dialog (JSON-Inhalt der Sicherung einfügen → bestätigen → Import).
+- **Feinschliff**: Akzentstreifen der Listenzeile kleiner + eingerückt (läuft nicht mehr über die
+  Kartenecken); **Logo B überarbeitet** — Uhr liest sich nicht mehr nur als Punkt: klares
+  Indigo-Zifferblatt (Ring + 10:10-Zeiger) mit **grünem „offen"-Mittelpunkt** auf weißer Pin-Fläche.
+
+**Verifiziert:** `analyze` sauber, **58 Tests grün** (4 neue Import-/Backup-Tests), am Emulator:
+⋮-Menü mit 3 Einträgen, „Daten sichern" → Teilen-Dialog mit `whenopen-sicherung-2026-06-11.json`
+(Quick Share/Drive/Gmail) bestätigt; neues Launcher-Icon (Pin+Uhr) im App-Drawer sichtbar;
+eingerückte Akzentstreifen.
+
+**Verworfen:** `file_picker` für den Datei-Dialog beim Import — Versionskonflikt
+(`file_picker@8.1.2` ist gegen android-34 kompiliert, seine Transitive
+`flutter_plugin_android_lifecycle` verlangt compileSdk 36 von allen Konsumenten →
+`:file_picker:checkDebugAarMetadata` schlägt fehl). Statt die Build-Kette (R8-empfindlich) zu
+destabilisieren: **abhängigkeitsfreier Einfüge-Dialog**. Datei-Auswahl ggf. später, wenn eine
+kompatible Plugin-Kombination steht.
+
+**Was fehlt (Schritt 3):** Light-Mode flächendeckend (restliche ~70 `AppColors.*`-Stellen der
+Nebenscreens auf `context.col`) · Hell/Dunkel-Umschalter im ⋮-Menü · Widget-Feinschliff (Punkt/Kasten
+raus) · dann Hell-Modus am Emulator abnehmen.

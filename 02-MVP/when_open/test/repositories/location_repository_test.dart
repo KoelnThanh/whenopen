@@ -299,4 +299,49 @@ void main() {
       expect(daten.eintraege.single.kategorie, isNull);
     });
   });
+
+  group('Backup / Wiederherstellen (P10)', () {
+    test('importJson ersetzt die Daten bei gueltiger Sicherung', () async {
+      await repo.saveLocation(_testLocation(id: 'alt', name: 'Alter Ort'));
+
+      await repo.importJson(_spezifikationsBeispiel);
+
+      final daten = await repo.laden();
+      expect(daten.eintraege.map((e) => e.id), ['uuid-1234']);
+      expect(daten.kategorien.single.name, 'Familie');
+    });
+
+    test('importJson sichert die bisherige Datei vor dem Ueberschreiben',
+        () async {
+      await repo.saveLocation(_testLocation(id: 'alt'));
+
+      await repo.importJson(_spezifikationsBeispiel);
+
+      final backups = tempDir.listSync().whereType<File>().where(
+            (f) => f.uri.pathSegments.last.startsWith('whenopen_backup_'),
+          );
+      expect(backups, isNotEmpty);
+    });
+
+    test('importJson wirft bei kaputtem JSON, Daten bleiben unangetastet',
+        () async {
+      await repo.saveLocation(_testLocation(id: 'bleibt'));
+
+      await expectLater(
+          repo.importJson('{ kein json'), throwsFormatException);
+
+      final daten = await repo.laden();
+      expect(daten.eintraege.single.id, 'bleibt');
+    });
+
+    test('importJson wirft bei fremdem JSON ohne version/eintraege', () async {
+      await repo.saveLocation(_testLocation(id: 'bleibt'));
+
+      await expectLater(
+          repo.importJson('{"foo": 1}'), throwsFormatException);
+
+      final daten = await repo.laden();
+      expect(daten.eintraege.single.id, 'bleibt');
+    });
+  });
 }

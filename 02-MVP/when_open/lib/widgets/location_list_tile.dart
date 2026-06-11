@@ -50,21 +50,19 @@ class LocationListTile extends StatelessWidget {
             child: Stack(
               children: [
                 Positioned(
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
+                  left: 7,
+                  top: 11,
+                  bottom: 11,
                   child: Container(
-                    width: 5,
+                    width: 4,
                     decoration: BoxDecoration(
                       color: akzent ?? AppColors.primary,
-                      borderRadius: const BorderRadius.horizontal(
-                        right: Radius.circular(4),
-                      ),
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(17, 13, 12, 13),
+                  padding: const EdgeInsets.fromLTRB(19, 13, 12, 13),
                   child: Row(
                     children: [
                       Expanded(

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/kategorie.dart';
@@ -170,6 +171,76 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
+  /// Daten sichern: datierte JSON-Kopie über den Teilen-Dialog ausgeben
+  /// (Drive, E-Mail, Dateien …) — die Absicherung gegen Datenverlust.
+  Future<void> _sichern() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final datei = await ref.read(appDataProvider.notifier).exportKopie();
+      await Share.shareXFiles(
+        [XFile(datei.path)],
+        subject: l10n.sichernBetreff,
+      );
+    } catch (_) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sichernFehler)));
+    }
+  }
+
+  /// Daten wiederherstellen: Inhalt einer Sicherungsdatei einfügen →
+  /// bestätigen → importieren. Der Import validiert und sichert die
+  /// Bestandsdaten vorher (siehe LocationRepository.importJson).
+  Future<void> _wiederherstellen() async {
+    final l10n = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    final inhalt = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.wiederherstellenTitel),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(l10n.wiederherstellenText),
+            const SizedBox(height: 12),
+            TextField(
+              controller: controller,
+              minLines: 4,
+              maxLines: 7,
+              autofocus: true,
+              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              decoration: InputDecoration(hintText: l10n.wiederherstellenHint),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.abbrechen),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, controller.text),
+            child: Text(l10n.wiederherstellenAktion),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+    if (inhalt == null || inhalt.trim().isEmpty || !mounted) return;
+
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      await ref.read(appDataProvider.notifier).importJson(inhalt);
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.wiederherstellenErfolg)),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.wiederherstellenFehler)),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -214,6 +285,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             zu: zeigeUebersicht ? locations.length - offen : null,
             onSuche: () => _suche(locations, l10n),
             onVerwalten: () => context.push('/kategorien'),
+            onSichern: _sichern,
+            onWiederherstellen: _wiederherstellen,
           ),
           Expanded(
             child: asyncDaten.when(
@@ -281,6 +354,8 @@ class _HomeHeader extends StatelessWidget {
     required this.zu,
     required this.onSuche,
     required this.onVerwalten,
+    required this.onSichern,
+    required this.onWiederherstellen,
   });
 
   final AppLocalizations l10n;
@@ -289,6 +364,8 @@ class _HomeHeader extends StatelessWidget {
   final int? zu;
   final VoidCallback onSuche;
   final VoidCallback onVerwalten;
+  final VoidCallback onSichern;
+  final VoidCallback onWiederherstellen;
 
   @override
   Widget build(BuildContext context) {
@@ -332,9 +409,39 @@ class _HomeHeader extends StatelessWidget {
                 ),
                 PopupMenuButton<int>(
                   icon: const Icon(Icons.more_vert),
-                  onSelected: (_) => onVerwalten(),
+                  onSelected: (wert) {
+                    switch (wert) {
+                      case 0:
+                        onVerwalten();
+                      case 1:
+                        onSichern();
+                      case 2:
+                        onWiederherstellen();
+                    }
+                  },
                   itemBuilder: (context) => [
-                    PopupMenuItem(value: 0, child: Text(l10n.kategorienVerwalten)),
+                    PopupMenuItem(
+                      value: 0,
+                      child: _MenueZeile(
+                        icon: Icons.category_outlined,
+                        text: l10n.kategorienVerwalten,
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 1,
+                      child: _MenueZeile(
+                        icon: Icons.backup_outlined,
+                        text: l10n.menueSichern,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 2,
+                      child: _MenueZeile(
+                        icon: Icons.restore,
+                        text: l10n.menueWiederherstellen,
+                      ),
+                    ),
                   ],
                 ),
               ],
@@ -405,6 +512,25 @@ class _Markenzeichen extends StatelessWidget {
         ],
       ),
       child: const Icon(Icons.location_on, color: Colors.white, size: 21),
+    );
+  }
+}
+
+/// Eintrag im ⋮-Menü: Icon + Text.
+class _MenueZeile extends StatelessWidget {
+  const _MenueZeile({required this.icon, required this.text});
+
+  final IconData icon;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 20, color: context.col.muted),
+        const SizedBox(width: 12),
+        Text(text),
+      ],
     );
   }
 }

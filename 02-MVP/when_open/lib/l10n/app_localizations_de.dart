@@ -401,4 +401,39 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get exportTeilen => 'Daten exportieren';
+
+  @override
+  String get menueSichern => 'Daten sichern';
+
+  @override
+  String get menueWiederherstellen => 'Daten wiederherstellen';
+
+  @override
+  String get sichernBetreff => 'WhenOpen-Sicherung';
+
+  @override
+  String get sichernFehler => 'Sichern fehlgeschlagen';
+
+  @override
+  String get wiederherstellenTitel => 'Daten wiederherstellen?';
+
+  @override
+  String get wiederherstellenText =>
+      'Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.';
+
+  @override
+  String get wiederherstellenHint => 'JSON-Inhalt der Sicherung einfügen';
+
+  @override
+  String get wiederherstellenAktion => 'Wiederherstellen';
+
+  @override
+  String get wiederherstellenErfolg => 'Daten wiederhergestellt.';
+
+  @override
+  String get wiederherstellenFehler =>
+      'Keine gültige WhenOpen-Sicherung — nichts geändert.';
+
+  @override
+  String get abbrechen => 'Abbrechen';
 }

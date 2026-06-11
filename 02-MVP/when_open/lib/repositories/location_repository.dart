@@ -108,6 +108,44 @@ class LocationRepository {
   /// Pfad der Datendatei (fuer Export via Share-Intent).
   Future<String> exportPath() async => _datei.path;
 
+  // ── Backup / Wiederherstellen (P10) ─────────────────────────────────
+
+  /// Schreibt eine datierte, teilbare Kopie der aktuellen Daten ins
+  /// Temp-Verzeichnis und gibt die Datei zurueck (fuer den Teilen-Dialog).
+  Future<File> exportKopie() async {
+    final daten = await laden();
+    final tmp = await getTemporaryDirectory();
+    final datum = DateTime.now().toIso8601String().split('T').first;
+    final ziel = File('${tmp.path}/whenopen-sicherung-$datum.json');
+    const encoder = JsonEncoder.withIndent('  ');
+    await ziel.writeAsString(encoder.convert(daten.toJson()), flush: true);
+    return ziel;
+  }
+
+  /// Stellt Daten aus einem JSON-String wieder her. Validiert zuerst — bei
+  /// ungueltigem Inhalt wirft die Methode und die aktuellen Daten bleiben
+  /// unangetastet. Vor dem Ueberschreiben wird die aktuelle Datei gesichert.
+  Future<void> importJson(String inhalt) async {
+    final dynamic roh = jsonDecode(inhalt);
+    if (roh is! Map<String, dynamic> ||
+        roh['version'] == null ||
+        roh['eintraege'] is! List) {
+      throw const FormatException('Keine gültige WhenOpen-Sicherung');
+    }
+    // Wirft bei falschem Schema (z. B. kaputte Eintraege) — bewusst vor dem
+    // Speichern, damit die Bestandsdaten erst nach erfolgreicher Pruefung
+    // ersetzt werden.
+    final daten = WhenOpenData.fromJson(roh);
+    if (await _datei.exists()) {
+      final ts = DateTime.now()
+          .toIso8601String()
+          .replaceAll(':', '-')
+          .replaceAll('.', '-');
+      await _datei.copy('${_verzeichnis.path}/whenopen_backup_$ts.json');
+    }
+    await speichern(daten);
+  }
+
   // ── Kategorien (E15) ────────────────────────────────────────────────
 
   Future<Kategorie> addKategorie(String name, {String? farbe}) async {

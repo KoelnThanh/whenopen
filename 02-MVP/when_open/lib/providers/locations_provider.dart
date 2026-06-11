@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/kategorie.dart';
@@ -90,6 +92,15 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
   }
 
   Future<String> exportPath() async => (await _repo).exportPath();
+
+  /// Datierte, teilbare Sicherungskopie (P10).
+  Future<File> exportKopie() async => (await _repo).exportKopie();
+
+  /// Wiederherstellen aus JSON; lädt danach Zustand + Widget neu.
+  Future<void> importJson(String inhalt) async {
+    await (await _repo).importJson(inhalt);
+    await _nachAenderung();
+  }
 }
 
 final appDataProvider =

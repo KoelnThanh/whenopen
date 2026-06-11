@@ -142,5 +142,17 @@
   "ok": "OK",
   "speichernFehlgeschlagen": "Speichern fehlgeschlagen",
 
-  "exportTeilen": "Daten exportieren"
+  "exportTeilen": "Daten exportieren",
+
+  "menueSichern": "Daten sichern",
+  "menueWiederherstellen": "Daten wiederherstellen",
+  "sichernBetreff": "WhenOpen-Sicherung",
+  "sichernFehler": "Sichern fehlgeschlagen",
+  "wiederherstellenTitel": "Daten wiederherstellen?",
+  "wiederherstellenText": "Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.",
+  "wiederherstellenHint": "JSON-Inhalt der Sicherung einfügen",
+  "wiederherstellenAktion": "Wiederherstellen",
+  "wiederherstellenErfolg": "Daten wiederhergestellt.",
+  "wiederherstellenFehler": "Keine gültige WhenOpen-Sicherung — nichts geändert.",
+  "abbrechen": "Abbrechen"
 }

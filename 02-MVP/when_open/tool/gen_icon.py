@@ -19,7 +19,7 @@ C = N * S          # Arbeitsleinwand
 INDIGO = (99, 102, 241, 255)       # #6366F1
 INDIGO_DEEP = (79, 70, 229, 255)   # #4F46E5
 WHITE = (246, 248, 251, 255)
-PIN_INNER = (90, 95, 227, 255)     # Uhrflaeche (etwas dunkler als BG)
+GREEN = (52, 211, 153, 255)        # #34D399 „offen"-Akzent (Uhr-Mittelpunkt)
 
 
 def lerp(a, b, t):
@@ -48,25 +48,28 @@ def thick_line(draw, x0, y0, x1, y1, width, fill):
 
 
 def draw_pin(draw, cx, cy, r):
-    """Karten-Pin (weiss): Kopf-Kreis + Spitze nach unten, darin eine Uhr."""
+    """Karten-Pin (weiss) mit klarer Zifferblatt-Uhr (Indigo) im Kopf."""
     # Spitze (Dreieck) unter dem Kopf
     tip_y = cy + r * 2.15
     draw.polygon(
-        [(cx - r * 0.66, cy + r * 0.62),
-         (cx + r * 0.66, cy + r * 0.62),
+        [(cx - r * 0.64, cy + r * 0.60),
+         (cx + r * 0.64, cy + r * 0.60),
          (cx, tip_y)],
         fill=WHITE,
     )
-    # Kopf-Kreis
+    # Kopf-Kreis (weisse Flaeche)
     draw.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE)
-    # Uhrflaeche
-    ir = r * 0.62
-    draw.ellipse([cx - ir, cy - ir, cx + ir, cy + ir], fill=PIN_INNER)
-    # Zeiger (freundliche Stellung), weiss
-    cw = max(3, int(r * 0.10))
-    thick_line(draw, cx, cy, cx, cy - ir * 0.62, cw, WHITE)          # nach oben
-    thick_line(draw, cx, cy, cx + ir * 0.52, cy + ir * 0.30, cw, WHITE)  # nach unten rechts
-    draw.ellipse([cx - cw, cy - cw, cx + cw, cy + cw], fill=WHITE)   # Mittelpunkt
+    # Uhr-Ring (Indigo) auf der weissen Flaeche — liest sich auch klein
+    ring_w = max(4, int(r * 0.11))
+    rr = r * 0.60
+    draw.ellipse([cx - rr, cy - rr, cx + rr, cy + rr], outline=INDIGO, width=ring_w)
+    # Zeiger (freundliche 10:10-Stellung), Indigo
+    hw = max(4, int(r * 0.12))
+    thick_line(draw, cx, cy, cx, cy - rr * 0.66, hw, INDIGO)              # Minute nach oben
+    thick_line(draw, cx, cy, cx + rr * 0.46, cy - rr * 0.30, hw, INDIGO)  # Stunde oben-rechts
+    # Mittelpunkt gruen (= „offen"-Akzent, wiederkehrende Mikro-Marke)
+    cr = max(4, int(r * 0.13))
+    draw.ellipse([cx - cr, cy - cr, cx + cr, cy + cr], fill=GREEN)
 
 
 def build_full():
