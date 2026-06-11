@@ -8,4 +8,5 @@
     <color name="widget_open">#28B765</color>
     <color name="widget_closed">#7A818C</color>
     <color name="widget_primary_ink">#CFEAE8</color>
+	<color name="ic_launcher_background">#2F6F6B</color>
 </resources>

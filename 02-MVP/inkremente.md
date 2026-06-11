@@ -174,3 +174,37 @@ durchgespielt und per Screenshot belegt:
 
 **Offen für P09 (Release):** App-Icon/Splash (noch Flutter-Default), Release-Signierung,
 Play-Store-Listing + Privacy Policy, Widget-Config-Activity visuell abnehmen.
+
+## P09 — Finalisierung & Play Store (2026-06-11)
+
+**Was gebaut (Code-/Inhaltsseite, kontofrei):**
+- **App-Icon** (Marke: Uhr 10:10 + grüner Haken auf Teal #2F6F6B): Quell-PNGs per Pillow
+  erzeugt (`tool/gen_icon.py` → `assets/icon/icon.png` + `icon_foreground.png`),
+  `flutter_launcher_icons` generiert alle mipmaps + Adaptive Icon (minSdk 26).
+  Ersetzt Flutter-Default — am Emulator verifiziert.
+- **Splash** via `flutter_native_splash`: dunkler Brand-BG #0F1115 + zentriertes Icon,
+  inkl. Android-12-Styles (`values-v31`, `windowSplashScreenAnimatedIcon`).
+- **Strings**: kein hartkodierter Anzeigetext (alles über ARB), `flutter analyze` sauber,
+  App-Label „WhenOpen".
+- **Release-Signierung**: Keystore `android/whenopen-release.jks` (Upload-Key, RSA 2048,
+  10000 Tage) + `android/key.properties`; `build.gradle.kts` lädt sie und signiert den
+  Release-Build (Fallback Debug-Key, wenn key.properties fehlt). Beide Secrets gitignored.
+- **Release-AAB**: `flutter build appbundle --release` → `app-release.aab` **52,1 MB**
+  (< 150 MB), mit `jarsigner -verify` bestätigt: signiert mit **CN=WhenOpen** (nicht Debug).
+- **Privacy Policy** `docs/privacy-policy.md` (keine Datensammlung, lokal; OSM-Suche sendet
+  nur den Suchbegriff an Nominatim) — bereit für GitHub Pages.
+- **Play-Store-Listing** `04-Release/play-store-listing.md` (Kurz-/Langbeschreibung DE,
+  Kategorie Produktivität, Screenshot-/Einreichungs-Hinweise).
+
+**Was fehlt (kontoabhängig, durch Auftraggeber):**
+- Google-Play-Developer-Konto ($25) — Voraussetzung für Upload.
+- GitHub Pages aktivieren → Privacy-Policy-URL ins Listing eintragen.
+- AAB hochladen (Internal Testing), Store-Screenshots aufnehmen, Repo public + `git tag v1.0.0`.
+
+**Was gelernt:**
+- Adaptive-Icon-Vordergrund muss in der Safe-Zone (~innere 66 %) liegen → `icon_foreground.png`
+  bewusst kleiner gezeichnet als das volle `icon.png`.
+- `key.properties`/`*.jks` vor dem ersten Commit gegen `.gitignore` geprüft (`git check-ignore`)
+  — Keystore-Verlust = keine App-Updates mehr (bei Play App Signing nur Upload-Key, rücksetzbar).
+- `flutter_native_splash` legt für Android 12+ eigene `values-v31`-Styles an; der alte
+  `windowBackground`-Splash gilt nur < API 31.
