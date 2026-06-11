@@ -1,0 +1,127 @@
+{
+  "version": "2.0",
+  "kategorien": [
+    { "id": "kat-behoerden", "name": "Behörden", "farbe": "#5b8def", "sortierung": 0 },
+    { "id": "kat-gesundheit", "name": "Gesundheit", "farbe": "#28b765", "sortierung": 1 },
+    { "id": "kat-einkauf", "name": "Einkauf", "farbe": "#e0843e", "sortierung": 2 }
+  ],
+  "eintraege": [
+    {
+      "id": "ort-buergeramt",
+      "name": "Bürgeramt",
+      "adresse": "Rathausplatz 1, 41747 Viersen",
+      "telefon": "02162 101-0",
+      "kategorie": "kat-behoerden",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:00" }, { "von": "14:00", "bis": "18:00" } ] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:00" } ] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:00" } ] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:00" }, { "von": "14:00", "bis": "18:00" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:00" } ] },
+        { "wochentag": "sa", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-kfz",
+      "name": "KFZ-Zulassung",
+      "kategorie": "kat-behoerden",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "15:30" } ] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "15:30" } ] },
+        { "wochentag": "mi", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "17:30" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "12:30" } ] },
+        { "wochentag": "sa", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-kinderarzt",
+      "name": "Kinderarzt Müller",
+      "adresse": "Musterstraße 1, 50667 Köln",
+      "telefon": "0221 123456",
+      "google_maps_link": "https://maps.google.com/?q=Kinderarzt",
+      "kategorie": "kat-gesundheit",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "11:00" }, { "von": "14:00", "bis": "16:00" }, { "von": "17:00", "bis": "19:00" } ] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "18:00" } ] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "11:00" }, { "von": "14:00", "bis": "18:00" } ] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "18:00" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "08:00", "bis": "13:00" } ] },
+        { "wochentag": "sa", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-apotheke",
+      "name": "Marien-Apotheke",
+      "telefon": "02162 55555",
+      "kategorie": "kat-gesundheit",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": true, "zeiten": [ { "von": "08:30", "bis": "18:30" } ] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "08:30", "bis": "18:30" } ] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "08:30", "bis": "18:30" } ] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "08:30", "bis": "18:30" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "08:30", "bis": "18:30" } ] },
+        { "wochentag": "sa", "geoeffnet": true, "zeiten": [ { "von": "09:00", "bis": "13:00" } ] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-rewe",
+      "name": "REWE Dülken",
+      "kategorie": "kat-einkauf",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "sa", "geoeffnet": true, "zeiten": [ { "von": "07:00", "bis": "22:00" } ] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-hofladen",
+      "name": "Hofladen Schmitz",
+      "kategorie": "kat-einkauf",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "di", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "14:00", "bis": "18:00" } ] },
+        { "wochentag": "do", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "14:00", "bis": "18:00" } ] },
+        { "wochentag": "sa", "geoeffnet": true, "zeiten": [ { "von": "09:00", "bis": "14:00" } ] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    },
+    {
+      "id": "ort-stadtbuecherei",
+      "name": "Stadtbücherei",
+      "erstellt_am": "2026-06-10T08:00:00Z",
+      "geaendert_am": "2026-06-10T08:00:00Z",
+      "oeffnungszeiten": [
+        { "wochentag": "mo", "geoeffnet": false, "zeiten": [] },
+        { "wochentag": "di", "geoeffnet": true, "zeiten": [ { "von": "10:00", "bis": "18:00" } ] },
+        { "wochentag": "mi", "geoeffnet": true, "zeiten": [ { "von": "10:00", "bis": "18:00" } ] },
+        { "wochentag": "do", "geoeffnet": true, "zeiten": [ { "von": "10:00", "bis": "18:00" } ] },
+        { "wochentag": "fr", "geoeffnet": true, "zeiten": [ { "von": "10:00", "bis": "18:00" } ] },
+        { "wochentag": "sa", "geoeffnet": true, "zeiten": [ { "von": "10:00", "bis": "13:00" } ] },
+        { "wochentag": "so", "geoeffnet": false, "zeiten": [] }
+      ]
+    }
+  ]
+}

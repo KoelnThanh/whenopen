@@ -2,6 +2,12 @@
 # Redundantes Archiv (Inhalt liegt entpackt in 01-Konzept/personas/)
 01-Konzept/WhenOpen.zip
 
+# E2E-/Verifikations-Screenshots (Wegwerf-Artefakte am Emulator)
+02-MVP/*.png
+
+# Lokale Claude-Code-Einstellungen (personenbezogen, nicht teilen)
+.claude/settings.local.json
+
 # === Betriebssystem ===
 .DS_Store
 Thumbs.db

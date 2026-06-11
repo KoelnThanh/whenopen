@@ -33,7 +33,13 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
     final repo = await _repo;
     final daten = await repo.laden();
     state = AsyncData(daten);
-    await onDatenGeaendert?.call(daten);
+    // Widget-Update darf das Speichern nie blockieren oder scheitern
+    // lassen — das WorkManager-Netz (E16) faengt verpasste Updates ab.
+    try {
+      await onDatenGeaendert?.call(daten);
+    } catch (_) {
+      // bewusst geschluckt
+    }
   }
 
   Future<void> addLocation(Location location) async {

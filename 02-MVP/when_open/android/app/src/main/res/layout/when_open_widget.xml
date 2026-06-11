@@ -38,7 +38,9 @@
             android:textSize="12sp" />
     </LinearLayout>
 
-    <View
+    <!-- Trennlinie: FrameLayout statt View — RemoteViews erlaubt nur
+         eine feste View-Whitelist (plain View ist nicht inflatebar) -->
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="@color/widget_line" />

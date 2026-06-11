@@ -63,3 +63,114 @@ App-Code: [`when_open/`](when_open/) · Arbeitspakete: [`../01-Konzept/arbeitspa
 - `lookupAppLocalizations(Locale('de'))` macht ARB-Strings ohne BuildContext nutzbar —
   wichtig für Widget-Hintergrundprozess und Tests
 - Grenzfall-Konvention dokumentiert: exakt `von` = offen, exakt `bis` = geschlossen
+
+## P04 — Schnelleintrag-Flow (2026-06-10, committet 4989d53)
+
+**Was gebaut:**
+- `QuickEntryScreen` als 10-Schritt-Flow (Name · Mo–So · Kategorie · Zusatzinfos),
+  Fortschrittsbalken + Schrittanzeige; derselbe Screen dient via `editId` als Bearbeiten (P05)
+- Mehrblock-Tageseditor `DayEntryStep` (E9): „＋ weiterer Zeitblock" statt Pausen-Toggle,
+  Zeitpicker je Block; Vorschlagswert-Logik (`vorschlagFuer`: letzter gültiger Tag)
+- `KategorieStep` (E15) mit Chips + „Neue Kategorie"-Dialog (Name/Farbe)
+- `QuickEntryState` hält den Flow-Zustand, `toLocation`/`fromLocation` Mapping
+- `ValidationService` (Pflichtfelder, von<bis, Block-Überlappung E9, https-URL P07) —
+  Fehler springen zum betroffenen Schritt + SnackBar
+- E11: weicher Hinweis ab 50 Einträgen, kein harter Block
+
+**Was fehlt:** —
+
+**Was gelernt:**
+- Step-State außerhalb des Widgets (in `QuickEntryState`) halten, damit Zurück/Vor
+  keine Eingaben verliert; `ValueKey(tag)` erzwingt frischen Block-Editor je Wochentag
+
+## P05 — Hauptliste & Detailansicht (2026-06-10, committet 4989d53)
+
+**Was gebaut:**
+- `HomeScreen`: nach Kategorie gruppiert, **Bottom-Umschalter + PageView** (Google-Tasks-Stil,
+  E10) — Wischen blättert zwischen „Alle Orte"/Kategorien/„Sonstige"; FAB legt im aktiven
+  Filter vorbelegt an; Suche (AppBar-Icon); Timer auf `naechsteAenderung` (E16)
+- `DetailScreen`: Wochenübersicht mit Mehrblock-Zeiten („·"-getrennt), „heute"-Hervorhebung,
+  Kategorie-Pill, Adresse/Telefon als Quick-Actions (P07), Bearbeiten/Löschen
+- `KategorienScreen` („Kategorien verwalten"): Umbenennen/Farbe/Zusammenführen/Löschen
+- Löschen mit **Undo-SnackBar** (`undo_delete.dart`, E13); Schnell-Umhängen per Lang-Tippen
+  (`kategorie_sheets.dart`); `location_list_tile.dart` mit Status-Punkt + Statustext
+- Korrupte-Datei-Hinweis-Dialog (einmalig, aus `letzterLadefehler`)
+
+**Was fehlt:** —
+
+**Was gelernt:**
+- PageView + Bottom-Sheet-Auswahl ersetzt Chip-Streifen sauber; aktive Seite = aktiver Filter
+  hält FAB-Vorbelegung und Widget-Konzept (E14) konsistent
+
+## P06 — Android Widget (2026-06-10/11)
+
+**Was gebaut:**
+- Nativer `WhenOpenWidgetProvider` (AppWidgetProvider) + `WhenOpenWidgetService`
+  (RemoteViewsService) — Liste aus vorberechneten Dart-Daten (`home_widget`-SharedPrefs,
+  Key `widget_daten`)
+- E14: fester Kategorie-Filter pro Widget-Instanz, `WhenOpenWidgetConfigActivity` beim
+  Platzieren; Kopf Kategorie links „▾" / Datum rechts, kein Schriftzug. „Alle Orte" →
+  nach Kategorie gruppiert, fester Filter → flache Liste
+- Zeilen-Tap: PendingIntent-Template + Fill-In `whenopen://app/open/<id>` → Detailansicht;
+  Kopf-Tap → Konfig; Leerzustand-Tap → App
+- E16-Verdrahtung (`WidgetService` in Dart): Push nach jeder Datenänderung + beim
+  In-den-Hintergrund-Gehen (`AppLifecycleListener.onPause`), grenzgenauer
+  `AndroidAlarmManager.oneShotAt` auf die nächste Block-Grenze (self-rescheduling, +5 s Puffer),
+  WorkManager ~15 min als Sicherheitsnetz
+
+**Was fehlt:** Widget-Konfig-Screen am Gerät noch nicht durchgespielt (Filter wird gesetzt,
+visuelle Abnahme der Config-Activity offen).
+
+**Was gelernt (E2E am Emulator, 2026-06-11):**
+- **„Can't load widget"** kam von einem nackten `<View>` als Trennlinie — RemoteViews erlaubt
+  nur eine View-Whitelist; `<FrameLayout>` ist inflatebar, `<View>` nicht. Fix behebt den Crash.
+- `android_alarm_manager_plus` braucht **manuell deklarierte** Service/Receiver im Manifest —
+  der Plugin-Manifest-Merge liefert sie auf Flutter 3.44 nicht.
+- Widget-Push darf das Speichern nie scheitern lassen → `onDatenGeaendert`-Hook schluckt Fehler
+  (WorkManager-Netz fängt verpasste Updates).
+- Deep-Link `whenopen://app/open/<id>` über `am start` und über echten Widget-Zeilen-Tap
+  verifiziert → öffnet korrekte Detailansicht.
+
+## P07 — Google Maps URL-Integration (2026-06-10, committet 4989d53)
+
+**Was gebaut:**
+- `UrlService` (kein SDK/Key): `openGoogleMaps` (https-Validierung + Browser-Fallback),
+  `openAddressInMaps` (`geo:`-Scheme → Maps-Web-Fallback), `openPhone` (`tel:`)
+- Manifest `<queries>` für https/tel/geo; Integration in `DetailScreen` (Adresse/Telefon tippbar)
+
+**Was fehlt:** —
+
+**Was gelernt:**
+- `LaunchMode.externalApplication` + `<queries>` nötig ab Android 11 (Package Visibility)
+
+## P08b — OSM-Import-Assistent (2026-06-10, committet 4989d53)
+
+**Was gebaut:**
+- `NominatimService` (HTTP, User-Agent gesetzt) + `NominatimResult`-Modell
+- `OpeningHoursParser`: OSM-`opening_hours` → 7×`OpeningDay` mit Mehrblock-Tagen (E9);
+  deckt `Mo-Fr`, Tageslisten, `Su off`, `,`-Blöcke, Kleinschreibung/Leerraum ab;
+  unbekannte Formate → `null` (Crash-frei, dann Handeingabe)
+- Schnelleintrag-Einstieg „Ort aus dem Web übernehmen" → `OsmSearchStep` → `OsmConfirmStep`
+  („Daten prüfen") → Felder vorbefüllen, Nutzer läuft normal durch und kann alles anpassen
+- **8 Parser-Unit-Tests grün**
+
+**Was fehlt:** `24/7`/`sunrise-sunset` werden bewusst nicht geparst (→ Handeingabe).
+
+**Was gelernt (E2E am Emulator, 2026-06-11):**
+- Live-Nominatim-Suche „Apotheke Viersen" liefert echte Treffer; realer
+  `opening_hours`-String wird korrekt in Mehrblock-Tage geparst (Mo 08:30–13:00 · 14:30–18:30,
+  Mi nur vormittags, So geschlossen) und in „Daten prüfen" angezeigt.
+
+## Verifikation — End-to-End am Emulator (2026-06-11)
+
+**Stand:** 54 Unit-Tests grün, `flutter analyze` sauber, Debug-APK baut/installiert auf
+Pixel_API35 (Android 15). Mit kanonischen Testdaten (`02-MVP/testdaten.json`, 7 Orte/3 Kategorien)
+durchgespielt und per Screenshot belegt:
+- Hauptliste: Gruppierung + Status-Badges (offen grün „bis 12:00" / geschlossen grau „morgen ab …"), Seiten-Umschalter
+- Detail (Bürgeramt): Mehrblock-Zeiten, „Do · heute"-Hervorhebung, Behörden-Pill, Adresse/Telefon
+- Schnelleintrag: Schritt 1/10 + OSM-Einstieg
+- OSM-Import: Suche → Trefferliste → „Daten prüfen" mit geparsten Mehrblock-Zeiten
+- Widget: rendert (Filter „Behörden", „Do · 11. Juni"), Zeilen-Tap → Detail via Deep-Link
+
+**Offen für P09 (Release):** App-Icon/Splash (noch Flutter-Default), Release-Signierung,
+Play-Store-Listing + Privacy Policy, Widget-Config-Activity visuell abnehmen.
