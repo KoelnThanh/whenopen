@@ -564,5 +564,374 @@
   </div>
 
 </div>
+
+<!-- ================================================================== -->
+<!-- v0.3 — REDESIGN (Indigo · hell + dunkel)                            -->
+<!-- Eigene, gescopte Styles (Prefix r-/.rd) — kollidiert nicht mit oben -->
+<!-- ================================================================== -->
+<style>
+  .rd{--rad:22px}
+  .rd .r-dark{
+    --r-bg:#0E1116; --r-surface:#161A22; --r-card:#1F242E; --r-elev:#242B39;
+    --r-ink:#ECEFF3; --r-muted:#98A0AD; --r-line:#272D38; --r-faint:#2A3140;
+    --r-primary:#6366F1; --r-primary-2:#A5B4FC; --r-on-primary:#fff;
+    --r-open:#34D399; --r-open-bg:rgba(52,211,153,.15);
+    --r-closed:#8A929E; --r-closed-bg:rgba(138,146,158,.13);
+    --r-shadow:0 8px 24px rgba(0,0,0,.45);
+  }
+  .rd .r-light{
+    --r-bg:#F4F6FA; --r-surface:#FFFFFF; --r-card:#FFFFFF; --r-elev:#FFFFFF;
+    --r-ink:#19212E; --r-muted:#5C6573; --r-line:#E7EBF1; --r-faint:#EEF1F6;
+    --r-primary:#5B5FE3; --r-primary-2:#4F46E5; --r-on-primary:#fff;
+    --r-open:#16A34A; --r-open-bg:rgba(22,163,74,.11);
+    --r-closed:#6B7280; --r-closed-bg:rgba(107,114,128,.10);
+    --r-shadow:0 8px 24px rgba(80,90,140,.16);
+  }
+  .rd .r-gallery{display:flex;gap:30px;flex-wrap:wrap;padding:6px 24px 60px;align-items:flex-start}
+  .rd .palette{display:flex;gap:10px;flex-wrap:wrap;padding:4px 24px 18px}
+  .rd .sw{display:inline-flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);background:var(--card);border:1px solid var(--line);border-radius:20px;padding:5px 12px 5px 6px}
+  .rd .sw b{width:18px;height:18px;border-radius:50%;display:inline-block}
+
+  .rd .r-frame{width:320px}
+  .rd .r-frame > .cap{font-size:13px;color:var(--muted);margin:0 0 8px 2px}
+  .rd .r-frame > .cap b{color:var(--ink);font-weight:600}
+  .rd .annot{font-size:12px;color:var(--muted);margin:10px 2px 0;padding-left:14px;border-left:2px solid var(--line)}
+  .rd .annot li{margin:3px 0}
+  .rd .annot .new{color:#A5B4FC;font-weight:600}
+
+  .rd .r-device{border-radius:38px;padding:9px;box-shadow:0 16px 44px rgba(0,0,0,.5)}
+  .rd .r-device.dark{background:#05070a}
+  .rd .r-device.light{background:#cfd6e2}
+  .rd .r-screen{border-radius:30px;overflow:hidden;height:640px;position:relative;display:flex;flex-direction:column;
+    background:var(--r-bg);color:var(--r-ink);font-family:"Segoe UI",Roboto,system-ui,sans-serif}
+  .rd .r-status{display:flex;justify-content:space-between;align-items:center;padding:9px 18px 2px;font-size:12px;color:var(--r-muted)}
+
+  /* HERO header — Wortmarke + Logo-Chip + Datum + Status-Zusammenfassung */
+  .rd .r-hero{padding:10px 18px 14px}
+  .rd .r-brand{display:flex;align-items:center;gap:11px}
+  .rd .r-mark{flex:none;border-radius:13px;box-shadow:0 4px 12px rgba(79,70,229,.40)}
+  .rd .r-word{font-size:21px;font-weight:800;letter-spacing:-.4px}
+  .rd .r-word .pen{background:linear-gradient(120deg,var(--r-primary),var(--r-primary-2));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .rd .r-grow{flex:1}
+  .rd .r-ico{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--r-faint);color:var(--r-muted);font-size:17px}
+  .rd .r-date{font-size:13px;color:var(--r-muted);margin:9px 2px 12px;font-weight:500}
+  .rd .r-summary{display:flex;gap:9px}
+  .rd .r-stat{flex:1;display:flex;align-items:center;gap:9px;background:var(--r-card);border:1px solid var(--r-line);border-radius:15px;padding:9px 12px}
+  .rd .r-stat .n{font-size:20px;font-weight:800;line-height:1}
+  .rd .r-stat .l{font-size:11.5px;color:var(--r-muted);line-height:1.2}
+  .rd .r-stat .pip{width:9px;height:9px;border-radius:50%}
+  .rd .r-stat.on{background:var(--r-open-bg);border-color:transparent}
+  .rd .r-stat.on .n{color:var(--r-open)} .rd .r-stat.on .pip{background:var(--r-open)}
+  .rd .r-stat.off .pip{background:var(--r-closed)}
+
+  .rd .r-body{flex:1;overflow:auto;padding:4px 0 78px}
+  .rd .r-cat{font-size:11px;letter-spacing:.7px;text-transform:uppercase;font-weight:800;color:var(--r-muted);padding:16px 18px 7px;display:flex;gap:8px;align-items:center}
+  .rd .r-cat .cdot{width:8px;height:8px;border-radius:50%}
+  .rd .r-cat .cnt{margin-left:auto;font-weight:700;color:var(--r-muted);opacity:.7}
+
+  /* Listenzeile — Akzentstreifen (Kategorie) + Name/Sub + Status-Pill */
+  .rd .r-row{display:flex;align-items:center;gap:12px;margin:4px 12px;padding:9px 12px 9px 0;
+    background:var(--r-card);border:1px solid var(--r-line);border-radius:13px;position:relative;overflow:hidden}
+  .rd .r-row .r-acc{width:5px;align-self:stretch;border-radius:0 4px 4px 0;background:var(--c,var(--r-primary));flex:none}
+  .rd .r-info{flex:1;min-width:0}
+  .rd .r-name{font-size:15px;font-weight:650}
+  .rd .r-row.zu .r-name{color:var(--r-muted);font-weight:550}
+  .rd .r-sub{font-size:12px;color:var(--r-muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .rd .r-pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 11px;border-radius:11px;flex:none;white-space:nowrap}
+  .rd .r-pill i{width:7px;height:7px;border-radius:50%}
+  .rd .r-pill.open{color:var(--r-open);background:var(--r-open-bg)} .rd .r-pill.open i{background:var(--r-open)}
+  .rd .r-pill.zu{color:var(--r-closed);background:var(--r-closed-bg)} .rd .r-pill.zu i{background:var(--r-closed)}
+  .rd .r-chev{color:var(--r-muted);opacity:.5;font-size:17px;padding-right:13px}
+
+  /* Bottom-Umschalter (unverändert in Funktion, neu in Optik) */
+  .rd .r-bottom{position:absolute;left:0;right:0;bottom:0;height:70px;display:flex;align-items:center;justify-content:space-between;
+    padding:0 16px;background:color-mix(in srgb,var(--r-surface) 92%, transparent);backdrop-filter:blur(8px);border-top:1px solid var(--r-line)}
+  .rd .r-seg{display:inline-flex;align-items:center;gap:9px;font-size:14px;font-weight:700;color:var(--r-ink);background:var(--r-faint);padding:10px 15px;border-radius:14px}
+  .rd .r-seg .cdot{width:9px;height:9px;border-radius:50%}
+  .rd .r-seg .car{color:var(--r-muted);font-size:11px}
+  .rd .r-dots{display:flex;gap:6px}
+  .rd .r-dots i{width:6px;height:6px;border-radius:50%;background:var(--r-faint)}
+  .rd .r-dots i.on{width:18px;border-radius:3px;background:var(--r-primary)}
+  .rd .r-add{width:52px;height:52px;border-radius:17px;color:#fff;font-size:26px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(135deg,var(--r-primary),var(--r-primary-2));box-shadow:0 6px 18px rgba(79,70,229,.5)}
+
+  /* Detail */
+  .rd .r-dhead{background:linear-gradient(135deg,var(--r-primary),var(--r-primary-2));color:#fff;padding:14px 16px 18px}
+  .rd .r-dtop{display:flex;align-items:center;gap:12px;font-size:13px;opacity:.92}
+  .rd .r-dtop .sp{flex:1}
+  .rd .r-dname{font-size:24px;font-weight:800;margin:10px 0 8px;letter-spacing:-.3px}
+  .rd .r-dnow{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:700;background:rgba(255,255,255,.18);padding:7px 13px;border-radius:11px}
+  .rd .r-dnow i{width:8px;height:8px;border-radius:50%;background:#86EFAC}
+  .rd .r-week{padding:6px 0}
+  .rd .r-wrow{display:flex;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid var(--r-line);font-size:13.5px}
+  .rd .r-wrow.today{background:var(--r-faint)}
+  .rd .r-wrow .d{color:var(--r-muted);width:74px;flex:none} .rd .r-wrow.today .d{color:var(--r-primary-2);font-weight:800}
+  .rd .r-wrow .h{text-align:right;font-variant-numeric:tabular-nums}
+  .rd .r-wrow .h.zu{color:var(--r-muted)}
+  .rd .r-field{display:flex;gap:13px;align-items:center;padding:13px 18px;border-bottom:1px solid var(--r-line);font-size:14px}
+  .rd .r-field .ic{width:34px;height:34px;border-radius:10px;background:var(--r-faint);display:flex;align-items:center;justify-content:center;color:var(--r-primary-2);flex:none}
+  .rd .r-field .l{color:var(--r-muted);font-size:11px} .rd .r-field a{color:var(--r-ink);text-decoration:none}
+  .rd .r-acts{display:flex;gap:10px;padding:16px 18px}
+  .rd .r-btn{flex:1;text-align:center;padding:13px;border-radius:13px;font-size:14px;font-weight:700}
+  .rd .r-btn.pri{color:#fff;background:linear-gradient(135deg,var(--r-primary),var(--r-primary-2))}
+  .rd .r-btn.ghost{background:var(--r-faint);color:var(--r-ink)}
+
+  /* Widget */
+  .rd .r-wall{height:640px;padding:14px;background:radial-gradient(120% 80% at 20% 0%,#312E81 0%,#0B1020 55%)}
+  .rd .r-widget{background:color-mix(in srgb,var(--r-surface) 90%, transparent);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.07);border-radius:24px;height:100%;display:flex;flex-direction:column;overflow:hidden}
+  .rd .r-whead{display:flex;align-items:center;justify-content:space-between;padding:15px 16px 13px;border-bottom:1px solid var(--r-line)}
+  .rd .r-wcat{display:inline-flex;align-items:center;gap:9px;font-size:16px;font-weight:800}
+  .rd .r-wcat .m{width:8px;height:18px;border-radius:4px;background:var(--r-primary-2)}
+  .rd .r-wdate{font-size:12px;color:var(--r-muted);text-align:right}
+  .rd .r-wbody{flex:1;overflow:auto;padding:4px 0}
+  .rd .r-wrowx{display:flex;align-items:center;gap:11px;padding:11px 16px}
+  .rd .r-wrowx .nm{font-size:14px;font-weight:600;flex:1}
+  .rd .r-wrowx.zu .nm{color:var(--r-muted);font-weight:500}
+  .rd .r-wtime{font-size:13px;font-weight:700;white-space:nowrap}
+  .rd .r-wtime.open{color:var(--r-open)} .rd .r-wtime.zu{color:var(--r-closed)}
+
+  /* Schnelleintrag */
+  .rd .r-qtop{display:flex;align-items:center;gap:12px;padding:14px 16px 4px;font-size:14px;font-weight:700}
+  .rd .r-prog{margin:12px 16px 0}
+  .rd .r-track{height:7px;background:var(--r-faint);border-radius:5px;overflow:hidden}
+  .rd .r-track i{display:block;height:100%;border-radius:5px;background:linear-gradient(90deg,var(--r-primary),var(--r-primary-2))}
+  .rd .r-steplbl{font-size:12px;color:var(--r-muted);margin:8px 16px 0}
+  .rd .r-qbody{padding:18px 16px}
+  .rd .r-qbody h2{font-size:21px;margin:0 0 5px;letter-spacing:-.3px}
+  .rd .r-qbody .hint{font-size:13px;color:var(--r-muted);margin:0 0 16px}
+  .rd .r-seg3{display:flex;gap:8px;margin:4px 0 18px}
+  .rd .r-seg3 .c{flex:1;text-align:center;padding:12px 4px;border-radius:12px;font-size:13px;font-weight:700;border:1px solid var(--r-line);background:var(--r-card);color:var(--r-muted)}
+  .rd .r-seg3 .c.sel{color:#fff;background:linear-gradient(135deg,var(--r-primary),var(--r-primary-2));border-color:transparent}
+  .rd .r-blk{display:flex;align-items:center;gap:10px;margin-bottom:11px}
+  .rd .r-tcell{flex:1;background:var(--r-card);border:1px solid var(--r-line);border-radius:13px;padding:11px 14px}
+  .rd .r-tcell .k{font-size:10px;color:var(--r-muted)} .rd .r-tcell .vv{font-size:17px;font-variant-numeric:tabular-nums;font-weight:600}
+  .rd .r-tcell.focus{border-color:var(--r-primary);box-shadow:0 0 0 3px var(--r-open-bg)}
+  .rd .r-addblk{display:inline-block;color:var(--r-primary-2);font-size:13px;font-weight:700;padding:6px 0}
+  .rd .r-qfoot{position:absolute;left:0;right:0;bottom:0;padding:14px 16px;border-top:1px solid var(--r-line);display:flex;gap:10px;background:var(--r-surface)}
+  .rd .r-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;text-align:center;padding:40px}
+  .rd .r-empty .big{width:96px;height:96px;border-radius:28px;background:var(--r-open-bg);display:flex;align-items:center;justify-content:center;font-size:46px;color:var(--r-primary-2);margin-bottom:22px}
+  .rd .r-empty h3{font-size:19px;margin:0 0 8px} .rd .r-empty p{font-size:14px;color:var(--r-muted);margin:0;max-width:230px}
+</style>
+
+<div class="rd">
+  <!-- gemeinsamer Gradient für die Logo-Marken im Header -->
+  <svg width="0" height="0" style="position:absolute"><defs>
+    <linearGradient id="igGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#4F46E5"/>
+    </linearGradient></defs></svg>
+
+  <div class="sectionhdr" style="color:#A5B4FC">★ v0.3 · REDESIGN — Indigo, hell + dunkel (folgt System)</div>
+  <header class="page" style="padding-top:8px">
+    <p>Modernisierungs-Vorschlag <b>ohne strukturellen Umbau</b>: dieselben Screens (AppBar → Liste → Bottom-Umschalter),
+      aber neue Markenfarbe <b>Indigo</b>, ein <b>Hero-Header</b> mit Datum + „X jetzt offen"-Zusammenfassung statt nacktem Schriftzug,
+      <b>gefüllte Status-Pills</b> und <b>Kategorie-Akzentstreifen</b> in Karten-Zeilen. Links jeweils <b>dunkel</b>, rechts <b>hell</b>.</p>
+  </header>
+  <div class="palette">
+    <span class="sw"><b style="background:#6366F1"></b>Indigo · Primär #6366F1</span>
+    <span class="sw"><b style="background:#A5B4FC"></b>Indigo hell #A5B4FC</span>
+    <span class="sw"><b style="background:#34D399"></b>offen #34D399</span>
+    <span class="sw"><b style="background:#8A929E"></b>geschlossen</span>
+    <span class="sw"><b style="background:#0E1116;border:1px solid #272D38"></b>BG dunkel</span>
+    <span class="sw"><b style="background:#F4F6FA;border:1px solid #E7EBF1"></b>BG hell</span>
+  </div>
+
+  <div class="r-gallery">
+
+    <!-- HAUPTLISTE DUNKEL -->
+    <div class="r-frame">
+      <p class="cap"><b>Hauptliste · dunkel</b> · Hero-Header + Status-Zusammenfassung</p>
+      <div class="r-device dark"><div class="r-screen r-dark">
+        <div class="r-status"><span>9:30</span><span>5G  ▣  84%</span></div>
+        <div class="r-hero">
+          <div class="r-brand">
+            <svg class="r-mark" viewBox="0 0 96 96" width="34" height="34"><rect width="96" height="96" rx="24" fill="url(#igGrad)"/><path d="M48 20c-12 0-21 9-21 21 0 16 21 35 21 35s21-19 21-35c0-12-9-21-21-21Z" fill="#fff"/><circle cx="48" cy="41" r="13" fill="url(#igGrad)"/><path d="M48 33v8l5 3" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
+            <span class="r-word">When<span class="pen">Open</span></span>
+            <span class="r-grow"></span>
+            <span class="r-ico">⌕</span>
+          </div>
+          <div class="r-date">Mittwoch, 11. Juni</div>
+          <div class="r-summary">
+            <div class="r-stat on"><span class="pip"></span><div><div class="n">4</div><div class="l">jetzt offen</div></div></div>
+            <div class="r-stat off"><span class="pip"></span><div><div class="n">8</div><div class="l">geschlossen</div></div></div>
+          </div>
+        </div>
+        <div class="r-body">
+          <div class="r-cat"><span class="cdot" style="background:#6366F1"></span>Behörden <span class="cnt">3</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#6366F1"></span><div class="r-info"><div class="r-name">Bürgeramt</div></div><span class="r-wtime open">bis 12:00</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#6366F1"></span><div class="r-info"><div class="r-name">KFZ-Zulassung</div></div><span class="r-wtime zu">ab Do 08:00</span><span class="r-chev">›</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#6366F1"></span><div class="r-info"><div class="r-name">Standesamt</div></div><span class="r-wtime open">bis 12:00</span><span class="r-chev">›</span></div>
+          <div class="r-cat"><span class="cdot" style="background:#34D399"></span>Gesundheit <span class="cnt">3</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#34D399"></span><div class="r-info"><div class="r-name">Kinderarzt Müller</div></div><span class="r-wtime open">bis 11:00</span><span class="r-chev">›</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#34D399"></span><div class="r-info"><div class="r-name">Marien-Apotheke</div></div><span class="r-wtime open">bis 18:30</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#34D399"></span><div class="r-info"><div class="r-name">Zahnarzt Dr. Cem</div></div><span class="r-wtime zu">ab 14:00</span><span class="r-chev">›</span></div>
+          <div class="r-cat"><span class="cdot" style="background:#F59E0B"></span>Einkauf <span class="cnt">2</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#F59E0B"></span><div class="r-info"><div class="r-name">REWE Dülken</div></div><span class="r-wtime open">bis 22:00</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#F59E0B"></span><div class="r-info"><div class="r-name">Hofladen Schmitz</div></div><span class="r-wtime zu">ab 14:00</span><span class="r-chev">›</span></div>
+        </div>
+        <div class="r-bottom">
+          <span class="r-seg">Alle Orte <span class="car">⌃</span></span>
+          <span class="r-dots"><i class="on"></i><i></i><i></i><i></i></span>
+          <span class="r-add">＋</span>
+        </div>
+      </div></div>
+      <ul class="annot">
+        <li class="new">Statt Teal-Vollbalken: heller Hero mit Logo-Mark, Wortmarke (Indigo-Verlauf) + Datum.</li>
+        <li class="new">„4 jetzt offen / 8 geschlossen" füllt den leeren Kopf mit echtem Mehrwert.</li>
+        <li class="new">Zeilen als schlanke Karten mit Kategorie-Akzentstreifen + schlichter farbiger Uhrzeit (grün offen / grau zu), kein Kasten.</li>
+      </ul>
+    </div>
+
+    <!-- HAUPTLISTE HELL -->
+    <div class="r-frame">
+      <p class="cap"><b>Hauptliste · hell</b> · identisches Layout, Light-Theme</p>
+      <div class="r-device light"><div class="r-screen r-light">
+        <div class="r-status"><span>9:30</span><span>5G  ▣  84%</span></div>
+        <div class="r-hero">
+          <div class="r-brand">
+            <svg class="r-mark" viewBox="0 0 96 96" width="34" height="34"><rect width="96" height="96" rx="24" fill="url(#igGrad)"/><path d="M48 20c-12 0-21 9-21 21 0 16 21 35 21 35s21-19 21-35c0-12-9-21-21-21Z" fill="#fff"/><circle cx="48" cy="41" r="13" fill="url(#igGrad)"/><path d="M48 33v8l5 3" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
+            <span class="r-word">When<span class="pen">Open</span></span>
+            <span class="r-grow"></span>
+            <span class="r-ico">⌕</span>
+          </div>
+          <div class="r-date">Mittwoch, 11. Juni</div>
+          <div class="r-summary">
+            <div class="r-stat on"><span class="pip"></span><div><div class="n">4</div><div class="l">jetzt offen</div></div></div>
+            <div class="r-stat off"><span class="pip"></span><div><div class="n">8</div><div class="l">geschlossen</div></div></div>
+          </div>
+        </div>
+        <div class="r-body">
+          <div class="r-cat"><span class="cdot" style="background:#5B5FE3"></span>Behörden <span class="cnt">3</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#5B5FE3"></span><div class="r-info"><div class="r-name">Bürgeramt</div></div><span class="r-wtime open">bis 12:00</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#5B5FE3"></span><div class="r-info"><div class="r-name">KFZ-Zulassung</div></div><span class="r-wtime zu">ab Do 08:00</span><span class="r-chev">›</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#5B5FE3"></span><div class="r-info"><div class="r-name">Standesamt</div></div><span class="r-wtime open">bis 12:00</span><span class="r-chev">›</span></div>
+          <div class="r-cat"><span class="cdot" style="background:#16A34A"></span>Gesundheit <span class="cnt">3</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#16A34A"></span><div class="r-info"><div class="r-name">Kinderarzt Müller</div></div><span class="r-wtime open">bis 11:00</span><span class="r-chev">›</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#16A34A"></span><div class="r-info"><div class="r-name">Marien-Apotheke</div></div><span class="r-wtime open">bis 18:30</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#16A34A"></span><div class="r-info"><div class="r-name">Zahnarzt Dr. Cem</div></div><span class="r-wtime zu">ab 14:00</span><span class="r-chev">›</span></div>
+          <div class="r-cat"><span class="cdot" style="background:#E08A1E"></span>Einkauf <span class="cnt">2</span></div>
+          <div class="r-row"><span class="r-acc" style="--c:#E08A1E"></span><div class="r-info"><div class="r-name">REWE Dülken</div></div><span class="r-wtime open">bis 22:00</span><span class="r-chev">›</span></div>
+          <div class="r-row zu"><span class="r-acc" style="--c:#E08A1E"></span><div class="r-info"><div class="r-name">Hofladen Schmitz</div></div><span class="r-wtime zu">ab 14:00</span><span class="r-chev">›</span></div>
+        </div>
+        <div class="r-bottom">
+          <span class="r-seg">Alle Orte <span class="car">⌃</span></span>
+          <span class="r-dots"><i class="on"></i><i></i><i></i><i></i></span>
+          <span class="r-add">＋</span>
+        </div>
+      </div></div>
+      <ul class="annot">
+        <li>Gleiche Komponenten, nur andere Theme-Tokens — keine zweite Logik nötig.</li>
+        <li class="new">Light = luftiger, kontrastreich; ideal für draußen/Tag.</li>
+      </ul>
+    </div>
+
+    <!-- DETAIL DUNKEL -->
+    <div class="r-frame">
+      <p class="cap"><b>Detailansicht · dunkel</b> · Indigo-Header mit Live-Status</p>
+      <div class="r-device dark"><div class="r-screen r-dark">
+        <div class="r-status"><span>9:30</span><span>5G  ▣  84%</span></div>
+        <div class="r-dhead">
+          <div class="r-dtop"><span>‹ Zurück</span><span class="sp"></span><span>⋮</span></div>
+          <div class="r-dname">Kinderarzt Müller</div>
+          <span class="r-dnow"><i></i>Jetzt geöffnet · bis 11:00</span>
+        </div>
+        <div class="r-week">
+          <div class="r-wrow"><span class="d">Montag</span><span class="h">08–11 · 14–16 · 17–19</span></div>
+          <div class="r-wrow"><span class="d">Dienstag</span><span class="h">08:00–18:00</span></div>
+          <div class="r-wrow today"><span class="d">Mittwoch · heute</span><span class="h">08:00–11:00 · 14:00–18:00</span></div>
+          <div class="r-wrow"><span class="d">Donnerstag</span><span class="h">08:00–18:00</span></div>
+          <div class="r-wrow"><span class="d">Freitag</span><span class="h">08:00–13:00</span></div>
+          <div class="r-wrow"><span class="d">Samstag</span><span class="h zu">Geschlossen</span></div>
+          <div class="r-wrow"><span class="d">Sonntag</span><span class="h zu">Geschlossen</span></div>
+        </div>
+        <div class="r-field"><span class="ic">📍</span><div><div class="l">Adresse</div><a>Musterstraße 1, 50667 Köln</a></div></div>
+        <div class="r-field"><span class="ic">📞</span><div><div class="l">Telefon</div><a>0221 123456</a></div></div>
+        <div class="r-acts"><span class="r-btn pri">In Maps öffnen ↗</span><span class="r-btn ghost">Bearbeiten</span></div>
+      </div></div>
+      <ul class="annot">
+        <li class="new">Indigo-Verlaufskopf trägt Name + sofort sichtbaren Live-Status.</li>
+        <li>Wochenraster mit „heute"-Hervorhebung; Felder mit Icon-Kacheln.</li>
+        <li>Detail ginge im Light-Theme analog (Kopf bleibt Indigo, Body hell).</li>
+      </ul>
+    </div>
+
+    <!-- WIDGET DUNKEL -->
+    <div class="r-frame">
+      <p class="cap"><b>Widget · dunkel</b> · ein Filter, Indigo-Akzent</p>
+      <div class="r-device dark"><div class="r-screen r-dark">
+        <div class="r-wall">
+          <div class="r-widget">
+            <div class="r-whead"><span class="r-wcat"><span class="m"></span>Behörden</span><span class="r-wdate">Mi · 11. Juni</span></div>
+            <div class="r-wbody">
+              <div class="r-wrowx"><span class="nm">Bürgeramt</span><span class="r-wtime open">bis 12:00</span></div>
+              <div class="r-wrowx zu"><span class="nm">KFZ-Zulassung</span><span class="r-wtime zu">Mi geschlossen</span></div>
+              <div class="r-wrowx"><span class="nm">Einwohnermeldeamt</span><span class="r-wtime open">bis 12:00</span></div>
+              <div class="r-wrowx zu"><span class="nm">Finanzamt</span><span class="r-wtime zu">ab Mo 08:00</span></div>
+              <div class="r-wrowx"><span class="nm">Standesamt</span><span class="r-wtime open">bis 12:00</span></div>
+              <div class="r-wrowx zu"><span class="nm">Sozialamt</span><span class="r-wtime zu">ab 14:00</span></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <ul class="annot">
+        <li class="new">Status als farbige Uhrzeit (grün = offen, grau = zu) — ohne Punkt, ohne Kasten, ruhiges Bild.</li>
+        <li>Kategorie links (Indigo-Marker), Datum rechts, kein Schriftzug (wie E14).</li>
+      </ul>
+    </div>
+
+    <!-- SCHNELLEINTRAG HELL -->
+    <div class="r-frame">
+      <p class="cap"><b>Schnelleintrag · hell</b> · Verlaufs-Fortschritt + Segment-Choice</p>
+      <div class="r-device light"><div class="r-screen r-light">
+        <div class="r-status"><span>9:30</span><span>5G  ▣  84%</span></div>
+        <div class="r-qtop"><span>‹</span><span>Neuer Ort</span></div>
+        <div class="r-prog"><div class="r-track"><i style="width:40%"></i></div></div>
+        <div class="r-steplbl">Schritt 4 von 10 · Mittwoch</div>
+        <div class="r-qbody">
+          <h2>Mittwoch</h2>
+          <p class="hint">Öffnungszeiten — bei Pausen einfach mehrere Blöcke anlegen.</p>
+          <div class="r-seg3"><span class="c sel">Geöffnet</span><span class="c">Wie zuvor</span><span class="c">Geschlossen</span></div>
+          <div class="r-blk"><div class="r-tcell focus"><div class="k">öffnet</div><div class="vv">08:00</div></div><span>–</span><div class="r-tcell"><div class="k">schließt</div><div class="vv">11:00</div></div></div>
+          <div class="r-blk"><div class="r-tcell"><div class="k">öffnet</div><div class="vv">14:00</div></div><span>–</span><div class="r-tcell"><div class="k">schließt</div><div class="vv">18:00</div></div></div>
+          <span class="r-addblk">＋ weiterer Zeitblock</span>
+        </div>
+        <div class="r-qfoot"><span class="r-btn ghost">Zurück</span><span class="r-btn pri">Weiter</span></div>
+      </div></div>
+      <ul class="annot">
+        <li class="new">Fortschrittsbalken als Indigo-Verlauf; aktiver Wert mit weichem Fokus-Ring.</li>
+        <li>Segment-Buttons mit Verlaufs-Füllung statt flachem Block.</li>
+      </ul>
+    </div>
+
+    <!-- LEERZUSTAND HELL -->
+    <div class="r-frame">
+      <p class="cap"><b>Leerzustand · hell</b> · einladend statt leer</p>
+      <div class="r-device light"><div class="r-screen r-light">
+        <div class="r-status"><span>9:30</span><span>5G  ▣  84%</span></div>
+        <div class="r-hero">
+          <div class="r-brand">
+            <svg class="r-mark" viewBox="0 0 96 96" width="34" height="34"><rect width="96" height="96" rx="24" fill="url(#igGrad)"/><path d="M48 20c-12 0-21 9-21 21 0 16 21 35 21 35s21-19 21-35c0-12-9-21-21-21Z" fill="#fff"/><circle cx="48" cy="41" r="13" fill="url(#igGrad)"/><path d="M48 33v8l5 3" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"/></svg>
+            <span class="r-word">When<span class="pen">Open</span></span>
+          </div>
+        </div>
+        <div class="r-empty">
+          <div class="big">＋</div>
+          <h3>Noch keine Orte</h3>
+          <p>Tippe auf das Plus, um deinen ersten Ort hinzuzufügen — oder importiere ihn aus dem Web.</p>
+        </div>
+        <div class="r-bottom">
+          <span class="r-seg">Alle Orte <span class="car">⌃</span></span>
+          <span class="r-dots"><i class="on"></i></span>
+          <span class="r-add">＋</span>
+        </div>
+      </div></div>
+      <ul class="annot">
+        <li class="new">Große, freundliche Aufforderung statt nüchternem Zentriertext.</li>
+        <li>Verweist direkt auf den OSM-Import als zweiten Weg.</li>
+      </ul>
+    </div>
+
+  </div>
+</div>
+
 </body>
 </html>
