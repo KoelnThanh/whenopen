@@ -208,3 +208,38 @@ Play-Store-Listing + Privacy Policy, Widget-Config-Activity visuell abnehmen.
   — Keystore-Verlust = keine App-Updates mehr (bei Play App Signing nur Upload-Key, rücksetzbar).
 - `flutter_native_splash` legt für Android 12+ eigene `values-v31`-Styles an; der alte
   `windowBackground`-Splash gilt nur < API 31.
+
+## P09-Fix — Release-Crash (R8/WorkManager) (2026-06-11)
+
+**Symptom (auf echtem Handy, Release-APK):** App öffnet und schließt sofort; Widget lässt
+sich nicht hinzufügen („erscheint nichts"). Im Debug/Emulator trat es nie auf.
+
+**Diagnose:** Release-APK auf den Emulator gespielt (Release-Crash ist build-, nicht
+gerätespezifisch → ohne Handy reproduzierbar), `logcat` mitgeschnitten:
+```
+FATAL EXCEPTION: main — Unable to get provider androidx.startup.InitializationProvider:
+  java.lang.NoSuchMethodException: androidx.work.impl.WorkDatabase_Impl.<init> []
+  at androidx.work.WorkManagerInitializer...
+```
+R8 (in AGP 8 standardmäßig „full mode") hatte die per Reflexion instanziierte
+`WorkDatabase_Impl` von WorkManager/Room entfernt/umbenannt. Da WorkManager über
+`androidx.startup`-ContentProvider **vor** jeder Activity initialisiert, stirbt der ganze
+App-Prozess beim Start — egal ob App-Start oder Widget-Konfiguration (gleicher Prozess),
+daher beide Symptome.
+
+**Fix:** Minification + Resource-Shrinking für den Release-Build abgeschaltet
+(`build.gradle.kts` → `isMinifyEnabled = false`, `isShrinkResources = false`). Für dieses
+kleine MVP kostet R8 mehr (Reflexions-Bugs bei WorkManager/home_widget/alarm_manager) als es
+an Größe spart. APK 53,2 → 57,9 MB.
+
+**Verifiziert (Release-APK am Emulator):** App startet ohne FATAL, Schnelleintrag („+" →
+„Schritt 1 von 10"), Widget-Config-Activity startet crashfrei. Reparierte APK an Auftraggeber.
+
+**Was gelernt:**
+- **Immer einen Release-Build auf Gerät/Emulator testen, nicht nur Debug** — R8-Reflexions-
+  Crashes sind release-only und im Debug unsichtbar.
+- Release-Crashes lassen sich ohne das Zielgerät reproduzieren: dieselbe Release-APK auf den
+  Emulator, `adb logcat` → echte Exception statt Raten.
+- Reines `flutter analyze`/Unit-Tests fangen R8-Stripping nicht — das ist ein Build-/
+  Laufzeitthema. Wenn R8 später zurück soll: Keep-Regeln für WorkManager/Room/home_widget/
+  alarm_manager + Gerätetest, oder `android.enableR8.fullMode=false`.

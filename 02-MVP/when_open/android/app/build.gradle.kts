@@ -53,6 +53,13 @@ android {
             } else {
                 signingConfigs.getByName("debug")
             }
+            // R8/Minification AUS: R8 (full mode) entfernt die per Reflexion
+            // genutzten Klassen von WorkManager/Room (-> Crash beim App-Start:
+            // NoSuchMethodException WorkDatabase_Impl.<init>) sowie potenziell
+            // home_widget/alarm_manager. Fuer dieses kleine MVP kostet Shrinking
+            // mehr als es bringt. Spaeter ggf. wieder an MIT Keep-Regeln + Test.
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }
