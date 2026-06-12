@@ -484,6 +484,48 @@ abstract class AppLocalizations {
   /// **'Abbrechen'**
   String get qeAbbrechen;
 
+  /// No description provided for @qeStartFrage.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie möchtest du den Ort anlegen?'**
+  String get qeStartFrage;
+
+  /// No description provided for @qeStartHinweis.
+  ///
+  /// In de, this message translates to:
+  /// **'Am einfachsten übernimmst du einen echten Ort — Adresse und Öffnungszeiten kommen dann automatisch mit.'**
+  String get qeStartHinweis;
+
+  /// No description provided for @qeStartSuchenInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Nach Name suchen, Daten aus OpenStreetMap übernehmen.'**
+  String get qeStartSuchenInfo;
+
+  /// No description provided for @qeStartUmkreisInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Orte rund um deine Heimatadresse durchsuchen.'**
+  String get qeStartUmkreisInfo;
+
+  /// No description provided for @qeStartOder.
+  ///
+  /// In de, this message translates to:
+  /// **'oder'**
+  String get qeStartOder;
+
+  /// No description provided for @qeManuell.
+  ///
+  /// In de, this message translates to:
+  /// **'Manuell eingeben'**
+  String get qeManuell;
+
+  /// No description provided for @qeManuellInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Name und Öffnungszeiten selbst eintippen.'**
+  String get qeManuellInfo;
+
   /// No description provided for @valNameFehlt.
   ///
   /// In de, this message translates to:
@@ -1246,35 +1288,35 @@ abstract class AppLocalizations {
   /// **'Super — „Orte in der Nähe“ ist jetzt freigeschaltet.'**
   String get onboardingAdresseGesetzt;
 
-  /// No description provided for @onboardingEmailTitel.
+  /// No description provided for @onboardingWidgetTitel.
   ///
   /// In de, this message translates to:
-  /// **'Fragen oder Feedback?'**
-  String get onboardingEmailTitel;
+  /// **'Das Herzstück: das Widget'**
+  String get onboardingWidgetTitel;
 
-  /// No description provided for @onboardingEmailText.
+  /// No description provided for @onboardingWidgetText.
   ///
   /// In de, this message translates to:
-  /// **'Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.'**
-  String get onboardingEmailText;
+  /// **'WhenOpen spielt seine Stärke erst auf dem Startbildschirm aus: Das Widget zeigt dir auf einen Blick, welche Orte gerade geöffnet sind — ganz ohne die App zu öffnen. Richtig nützlich wird die App also erst, wenn du das Widget anlegst.'**
+  String get onboardingWidgetText;
 
-  /// No description provided for @onboardingEmailButton.
+  /// No description provided for @onboardingWidgetSchritt1.
   ///
   /// In de, this message translates to:
-  /// **'E-Mail schreiben'**
-  String get onboardingEmailButton;
+  /// **'Tippe lange auf eine freie Stelle des Startbildschirms.'**
+  String get onboardingWidgetSchritt1;
 
-  /// No description provided for @onboardingSpendenTitel.
+  /// No description provided for @onboardingWidgetSchritt2.
   ///
   /// In de, this message translates to:
-  /// **'WhenOpen unterstützen'**
-  String get onboardingSpendenTitel;
+  /// **'Wähle „Widgets“ und suche WhenOpen.'**
+  String get onboardingWidgetSchritt2;
 
-  /// No description provided for @onboardingSpendenText.
+  /// No description provided for @onboardingWidgetSchritt3.
   ///
   /// In de, this message translates to:
-  /// **'Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.'**
-  String get onboardingSpendenText;
+  /// **'Zieh das Widget auf den Startbildschirm — fertig.'**
+  String get onboardingWidgetSchritt3;
 
   /// No description provided for @onboardingFertigTitel.
   ///
@@ -1285,7 +1327,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboardingFertigText.
   ///
   /// In de, this message translates to:
-  /// **'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.'**
+  /// **'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an — und denk ans Widget auf dem Startbildschirm.'**
   String get onboardingFertigText;
 
   /// No description provided for @tutorialQeHinweis.
@@ -1293,6 +1335,30 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen.'**
   String get tutorialQeHinweis;
+
+  /// No description provided for @spendeDialogTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Gefällt dir WhenOpen?'**
+  String get spendeDialogTitel;
+
+  /// No description provided for @spendeDialogText.
+  ///
+  /// In de, this message translates to:
+  /// **'Du hast schon {anzahl} Orte gespeichert — schön, dass dir die App hilft! Sie ist und bleibt kostenlos. Wenn du magst, spendier mir einen Kaffee oder schick mir kurz Feedback.'**
+  String spendeDialogText(int anzahl);
+
+  /// No description provided for @spendeDialogFeedback.
+  ///
+  /// In de, this message translates to:
+  /// **'Feedback'**
+  String get spendeDialogFeedback;
+
+  /// No description provided for @spendeDialogSpaeter.
+  ///
+  /// In de, this message translates to:
+  /// **'Später'**
+  String get spendeDialogSpaeter;
 }
 
 class _AppLocalizationsDelegate

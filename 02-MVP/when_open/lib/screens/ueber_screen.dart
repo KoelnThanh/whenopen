@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../l10n/app_localizations.dart';
 import '../services/url_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
 
 // ─────────────────────────────────────────────────────────────────────────
 //  SPENDENLINK — hier eintragen (von Thanh).
@@ -87,7 +88,7 @@ class UeberScreen extends StatelessWidget {
           children: [
             // Markenkopf — Pin + Wortmarke + Tagline, zentriert.
             const SizedBox(height: 8),
-            const Center(child: _Markenzeichen()),
+            const Center(child: WhenOpenLogo(size: 64)),
             const SizedBox(height: 14),
             Center(
               child: Text.rich(
@@ -225,35 +226,6 @@ class UeberScreen extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Indigo-Markenzeichen (Pin) — größere Variante des Header-Logos.
-class _Markenzeichen extends StatelessWidget {
-  const _Markenzeichen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 64,
-      height: 64,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryDeep],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDeep.withValues(alpha: 0.4),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: const Icon(Icons.location_on, color: Colors.white, size: 36),
     );
   }
 }

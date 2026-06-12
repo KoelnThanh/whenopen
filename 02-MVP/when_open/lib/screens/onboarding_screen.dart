@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/app_einstellungen.dart';
 import '../providers/locations_provider.dart';
-import '../services/url_service.dart';
 import '../theme/app_theme.dart';
 import '../widgets/heimat_adresse_eingabe.dart';
-import 'ueber_screen.dart' show kKontaktEmail, kSpendenUrl;
 
-/// Erstnutzer-Tutorial (Hybrid): erklaerende Themen-Karten (Kategorien, Daten,
-/// Adresse, E-Mail, optional Spenden) mit Abschluss-CTA, der direkt in den
-/// gefuehrten ersten Eintrag fuehrt. Wird aus dem HomeScreen geoeffnet, wenn
-/// die App leer ist und der Tutorial-Status noch [TutorialStatus.offen] ist.
+/// Erstnutzer-Tutorial (Hybrid): erklaerende Themen-Karten (Widget, Kategorien,
+/// Daten, Adresse) mit Abschluss-CTA, der direkt in den gefuehrten ersten
+/// Eintrag fuehrt. Wird aus dem HomeScreen geoeffnet, wenn die App leer ist und
+/// der Tutorial-Status noch [TutorialStatus.offen] ist. E-Mail/Spende kommen
+/// bewusst NICHT hier vor, sondern erst ab dem 5. gespeicherten Ort (Punkt 3,
+/// siehe HomeScreen._zeigeSpendenhinweisFallsNoetig).
 class OnboardingScreen extends ConsumerStatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -54,35 +53,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     );
   }
 
-  Future<void> _email() async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    final erfolg = await UrlService.openEmail(
-      kKontaktEmail,
-      betreff: l10n.ueberKontaktBetreff,
-    );
-    if (!erfolg) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.ueberLinkFehler)));
-    }
-  }
-
-  Future<void> _spende() async {
-    final l10n = AppLocalizations.of(context)!;
-    final messenger = ScaffoldMessenger.of(context);
-    var erfolg = false;
-    try {
-      erfolg = await launchUrl(
-        Uri.parse(kSpendenUrl),
-        mode: LaunchMode.externalApplication,
-      );
-    } catch (_) {
-      erfolg = false;
-    }
-    if (!erfolg) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.ueberLinkFehler)));
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -94,6 +64,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         icon: Icons.location_on,
         titel: l10n.onboardingWillkommenTitel,
         text: l10n.onboardingWillkommenText,
+      ),
+      // Kerngeschichte: Die App entfaltet ihren Nutzen erst als Widget auf dem
+      // Startbildschirm — deshalb früh und mit Schritt-für-Schritt-Anleitung.
+      _Seite(
+        icon: Icons.widgets_outlined,
+        titel: l10n.onboardingWidgetTitel,
+        text: l10n.onboardingWidgetText,
+        child: const _WidgetSchritte(),
       ),
       _Seite(
         icon: Icons.category_outlined,
@@ -145,45 +123,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           ],
         ),
       ),
-      _Seite(
-        icon: Icons.mail_outline,
-        titel: l10n.onboardingEmailTitel,
-        text: l10n.onboardingEmailText,
-        child: SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _email,
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.primaryInk,
-              backgroundColor: AppColors.chip,
-              side: BorderSide.none,
-              padding: const EdgeInsets.symmetric(vertical: 13),
-            ),
-            icon: const Icon(Icons.mail_outline, size: 18),
-            label: Text(l10n.onboardingEmailButton),
-          ),
-        ),
-      ),
-      if (kSpendenUrl.isNotEmpty)
-        _Seite(
-          icon: Icons.favorite_rounded,
-          titel: l10n.onboardingSpendenTitel,
-          text: l10n.onboardingSpendenText,
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _spende,
-              style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.primaryInk,
-                backgroundColor: AppColors.chip,
-                side: BorderSide.none,
-                padding: const EdgeInsets.symmetric(vertical: 13),
-              ),
-              icon: const Icon(Icons.favorite_rounded, size: 18),
-              label: Text(l10n.ueberKaffeeButton),
-            ),
-          ),
-        ),
       _Seite(
         icon: Icons.rocket_launch_outlined,
         titel: l10n.onboardingFertigTitel,
@@ -308,6 +247,74 @@ class _Seite extends StatelessWidget {
           if (child != null) ...[
             const SizedBox(height: 24),
             child!,
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Schritt-für-Schritt-Anleitung „Widget hinzufügen" auf der Widget-Tutorial-
+/// Seite — nummerierte Zeilen, damit der wichtigste Handgriff klar ist.
+class _WidgetSchritte extends StatelessWidget {
+  const _WidgetSchritte();
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final col = context.col;
+    final schritte = [
+      l10n.onboardingWidgetSchritt1,
+      l10n.onboardingWidgetSchritt2,
+      l10n.onboardingWidgetSchritt3,
+    ];
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 14, 16, 16),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          for (var i = 0; i < schritte.length; i++) ...[
+            if (i > 0) const SizedBox(height: 14),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 26,
+                  height: 26,
+                  alignment: Alignment.center,
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Text(
+                    '${i + 1}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 3),
+                    child: Text(
+                      schritte[i],
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.35,
+                        color: col.ink,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ],
       ),

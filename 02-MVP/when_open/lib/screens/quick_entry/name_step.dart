@@ -3,24 +3,25 @@ import 'package:flutter/material.dart';
 import '../../l10n/app_localizations.dart';
 import '../../theme/app_theme.dart';
 
-/// Schritt 1/10: Name des Orts (Pflichtfeld, Autofokus).
-/// Optionaler Einstieg: "Ort aus dem Web uebernehmen" (P08b) —
-/// der manuelle Weg bleibt gleichwertig.
+/// Schritt 1/10: Name des Orts (Pflichtfeld).
+///
+/// Reines Namensfeld — die Einstiegswege (lokale Suche, Umkreis, manuell)
+/// liegen jetzt in der vorgelagerten Methodenauswahl ([StartAuswahlStep]).
+/// [autofocus] ist nur dann `true`, wenn der Nutzer bewusst „Manuell" gewählt
+/// hat; nach einem Web-Import bleibt die Tastatur zu (Punkt 1).
 class NameStep extends StatelessWidget {
   const NameStep({
     super.key,
     required this.controller,
     required this.zeigeFehler,
+    this.autofocus = false,
     this.onWeiter,
-    this.onOsmImport,
-    this.onUmkreisImport,
   });
 
   final TextEditingController controller;
   final bool zeigeFehler;
+  final bool autofocus;
   final VoidCallback? onWeiter;
-  final VoidCallback? onOsmImport;
-  final VoidCallback? onUmkreisImport;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +39,7 @@ class NameStep extends StatelessWidget {
           const SizedBox(height: 16),
           TextField(
             controller: controller,
-            autofocus: true,
+            autofocus: autofocus,
             textCapitalization: TextCapitalization.sentences,
             textInputAction: TextInputAction.next,
             onSubmitted: (_) => onWeiter?.call(),
@@ -47,40 +48,6 @@ class NameStep extends StatelessWidget {
               errorText: zeigeFehler ? l10n.qeNamePflicht : null,
             ),
           ),
-          if (onOsmImport != null) ...[
-            const SizedBox(height: 20),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onOsmImport,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryInk,
-                  backgroundColor: AppColors.chip,
-                  side: BorderSide.none,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                icon: const Icon(Icons.travel_explore, size: 18),
-                label: Text(l10n.osmSuchen),
-              ),
-            ),
-          ],
-          if (onUmkreisImport != null) ...[
-            const SizedBox(height: 10),
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: onUmkreisImport,
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryInk,
-                  backgroundColor: AppColors.chip,
-                  side: BorderSide.none,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                ),
-                icon: const Icon(Icons.near_me, size: 18),
-                label: Text(l10n.umkreisSuchen),
-              ),
-            ),
-          ],
         ],
       ),
     );

@@ -219,6 +219,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String get qeAbbrechen => 'Abbrechen';
 
   @override
+  String get qeStartFrage => 'Wie möchtest du den Ort anlegen?';
+
+  @override
+  String get qeStartHinweis =>
+      'Am einfachsten übernimmst du einen echten Ort — Adresse und Öffnungszeiten kommen dann automatisch mit.';
+
+  @override
+  String get qeStartSuchenInfo =>
+      'Nach Name suchen, Daten aus OpenStreetMap übernehmen.';
+
+  @override
+  String get qeStartUmkreisInfo =>
+      'Orte rund um deine Heimatadresse durchsuchen.';
+
+  @override
+  String get qeStartOder => 'oder';
+
+  @override
+  String get qeManuell => 'Manuell eingeben';
+
+  @override
+  String get qeManuellInfo => 'Name und Öffnungszeiten selbst eintippen.';
+
+  @override
   String get valNameFehlt => 'Bitte gib einen Namen ein.';
 
   @override
@@ -669,30 +693,45 @@ class AppLocalizationsDe extends AppLocalizations {
       'Super — „Orte in der Nähe“ ist jetzt freigeschaltet.';
 
   @override
-  String get onboardingEmailTitel => 'Fragen oder Feedback?';
+  String get onboardingWidgetTitel => 'Das Herzstück: das Widget';
 
   @override
-  String get onboardingEmailText =>
-      'Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.';
+  String get onboardingWidgetText =>
+      'WhenOpen spielt seine Stärke erst auf dem Startbildschirm aus: Das Widget zeigt dir auf einen Blick, welche Orte gerade geöffnet sind — ganz ohne die App zu öffnen. Richtig nützlich wird die App also erst, wenn du das Widget anlegst.';
 
   @override
-  String get onboardingEmailButton => 'E-Mail schreiben';
+  String get onboardingWidgetSchritt1 =>
+      'Tippe lange auf eine freie Stelle des Startbildschirms.';
 
   @override
-  String get onboardingSpendenTitel => 'WhenOpen unterstützen';
+  String get onboardingWidgetSchritt2 => 'Wähle „Widgets“ und suche WhenOpen.';
 
   @override
-  String get onboardingSpendenText =>
-      'Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.';
+  String get onboardingWidgetSchritt3 =>
+      'Zieh das Widget auf den Startbildschirm — fertig.';
 
   @override
   String get onboardingFertigTitel => 'Los geht’s!';
 
   @override
   String get onboardingFertigText =>
-      'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.';
+      'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an — und denk ans Widget auf dem Startbildschirm.';
 
   @override
   String get tutorialQeHinweis =>
       'Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen.';
+
+  @override
+  String get spendeDialogTitel => 'Gefällt dir WhenOpen?';
+
+  @override
+  String spendeDialogText(int anzahl) {
+    return 'Du hast schon $anzahl Orte gespeichert — schön, dass dir die App hilft! Sie ist und bleibt kostenlos. Wenn du magst, spendier mir einen Kaffee oder schick mir kurz Feedback.';
+  }
+
+  @override
+  String get spendeDialogFeedback => 'Feedback';
+
+  @override
+  String get spendeDialogSpaeter => 'Später';
 }

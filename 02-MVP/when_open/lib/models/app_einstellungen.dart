@@ -28,6 +28,7 @@ class AppEinstellungen {
     this.heimatLon,
     this.umkreisMeter = AppEinstellungen.standardUmkreis,
     this.tutorialStatus = TutorialStatus.offen,
+    this.spendenhinweisGezeigt = false,
   });
 
   /// Standard-Suchradius in Metern (1 km — bewusst eng fuer die Erstnutzung).
@@ -53,6 +54,11 @@ class AppEinstellungen {
   @JsonKey(unknownEnumValue: TutorialStatus.offen)
   final TutorialStatus tutorialStatus;
 
+  /// True, sobald der einmalige Unterstützen-/Feedback-Hinweis nach den ersten
+  /// Einträgen gezeigt wurde — verhindert, dass er erneut aufpoppt. Fehlt das
+  /// Feld in Altdaten, gilt `false` (Hinweis darf einmal erscheinen).
+  final bool spendenhinweisGezeigt;
+
   /// True, wenn eine nutzbare Heimatposition hinterlegt ist.
   @JsonKey(includeFromJson: false, includeToJson: false)
   bool get hatHeimat => heimatLat != null && heimatLon != null;
@@ -69,6 +75,7 @@ class AppEinstellungen {
     bool heimatLoeschen = false,
     int? umkreisMeter,
     TutorialStatus? tutorialStatus,
+    bool? spendenhinweisGezeigt,
   }) =>
       AppEinstellungen(
         heimatAdresse:
@@ -77,5 +84,7 @@ class AppEinstellungen {
         heimatLon: heimatLoeschen ? null : (heimatLon ?? this.heimatLon),
         umkreisMeter: umkreisMeter ?? this.umkreisMeter,
         tutorialStatus: tutorialStatus ?? this.tutorialStatus,
+        spendenhinweisGezeigt:
+            spendenhinweisGezeigt ?? this.spendenhinweisGezeigt,
       );
 }

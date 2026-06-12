@@ -21,6 +21,7 @@ AppEinstellungen _$AppEinstellungenFromJson(Map<String, dynamic> json) =>
             unknownValue: TutorialStatus.offen,
           ) ??
           TutorialStatus.offen,
+      spendenhinweisGezeigt: json['spendenhinweis_gezeigt'] as bool? ?? false,
     );
 
 Map<String, dynamic> _$AppEinstellungenToJson(AppEinstellungen instance) =>
@@ -30,6 +31,7 @@ Map<String, dynamic> _$AppEinstellungenToJson(AppEinstellungen instance) =>
       'heimat_lon': instance.heimatLon,
       'umkreis_meter': instance.umkreisMeter,
       'tutorial_status': _$TutorialStatusEnumMap[instance.tutorialStatus]!,
+      'spendenhinweis_gezeigt': instance.spendenhinweisGezeigt,
     };
 
 const _$TutorialStatusEnumMap = {

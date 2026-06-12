@@ -14,6 +14,7 @@ import 'name_step.dart';
 import 'optional_fields_step.dart';
 import 'osm_search_step.dart';
 import 'quick_entry_state.dart';
+import 'start_auswahl_step.dart';
 import 'umkreis_search_step.dart';
 
 /// Schnelleintrag-Flow (Workflow 1): 10 Schritte —
@@ -48,6 +49,13 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
   bool _zeigeNameFehler = false;
   bool _zeigeUrlFehler = false;
 
+  /// Punkt 1: Beim Anlegen erscheint zuerst die Methodenauswahl (lokal =
+  /// Standard); erst danach das Namensfeld. Beim Bearbeiten entfällt sie.
+  bool _zeigeStartAuswahl = false;
+
+  /// Tastatur nur dann sofort öffnen, wenn der Nutzer „Manuell" gewählt hat.
+  bool _nameAutofokus = false;
+
   @override
   void initState() {
     super.initState();
@@ -63,6 +71,7 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
     } else {
       _state = QuickEntryState();
       _state.kategorieId = widget.kategorieId;
+      _zeigeStartAuswahl = true;
     }
     _nameController = TextEditingController(text: _state.name);
     _adresseController = TextEditingController(text: _state.adresse);
@@ -104,11 +113,25 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
 
   void _zurueck() {
     if (_state.aktuellerSchritt == 0) {
+      // Aus dem Namensfeld zurück zur Methodenauswahl (nur Neuanlage);
+      // aus der Auswahl bzw. beim Bearbeiten den Screen verlassen.
+      if (!_zeigeStartAuswahl && !_state.istBearbeiten) {
+        setState(() => _zeigeStartAuswahl = true);
+        return;
+      }
       context.pop();
       return;
     }
     _uebernehmeFelder();
     setState(() => _state.aktuellerSchritt--);
+  }
+
+  /// „Manuell eingeben" gewählt: Namensfeld zeigen und Tastatur öffnen.
+  void _waehleManuell() {
+    setState(() {
+      _zeigeStartAuswahl = false;
+      _nameAutofokus = true;
+    });
   }
 
   Future<void> _speichern() async {
@@ -186,9 +209,13 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
   }
 
   /// Uebernimmt die bestaetigten Web-/Umkreis-Daten in den Flow-Zustand.
+  /// Verlässt die Methodenauswahl und zeigt das (vorbefüllte) Namensfeld OHNE
+  /// Tastatur — der Nutzer prüft nur noch.
   void _wendeUebernahmeAn(OsmUebernahme? uebernahme) {
     if (uebernahme == null || !mounted) return;
     setState(() {
+      _zeigeStartAuswahl = false;
+      _nameAutofokus = false;
       _nameController.text = uebernahme.name;
       if (uebernahme.adresse != null) {
         _adresseController.text = uebernahme.adresse!;
@@ -234,10 +261,8 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
       return NameStep(
         controller: _nameController,
         zeigeFehler: _zeigeNameFehler,
+        autofocus: _nameAutofokus,
         onWeiter: _weiter,
-        // Import nur bei Neuanlage — beim Bearbeiten irrefuehrend.
-        onOsmImport: _state.istBearbeiten ? null : _osmImport,
-        onUmkreisImport: _state.istBearbeiten ? null : _umkreisImport,
       );
     }
     if (schritt >= 1 && schritt <= 7) {
@@ -272,6 +297,9 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
     final l10n = AppLocalizations.of(context)!;
     final fortschritt =
         (_state.aktuellerSchritt + 1) / QuickEntryState.schritteGesamt;
+    final zeigeAuswahl = _zeigeStartAuswahl &&
+        _state.aktuellerSchritt == 0 &&
+        !_state.istBearbeiten;
 
     return Scaffold(
       appBar: AppBar(
@@ -279,7 +307,21 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
         leading: BackButton(onPressed: _zurueck),
       ),
       body: SafeArea(
-        child: Column(
+        child: zeigeAuswahl
+            ? Column(
+                children: [
+                  if (widget.tutorial)
+                    _TutorialHinweis(text: l10n.tutorialQeHinweis),
+                  Expanded(
+                    child: StartAuswahlStep(
+                      onSuchen: _osmImport,
+                      onUmkreis: _umkreisImport,
+                      onManuell: _waehleManuell,
+                    ),
+                  ),
+                ],
+              )
+            : Column(
           children: [
             // Fortschrittsbalken + Schrittanzeige (Mockup: stepbar)
             Padding(
@@ -323,9 +365,10 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
                         side: BorderSide.none,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                       ),
-                      child: Text(_state.aktuellerSchritt == 0
-                          ? l10n.qeAbbrechen
-                          : l10n.qeZurueck),
+                      child: Text(
+                          _state.aktuellerSchritt == 0 && _state.istBearbeiten
+                              ? l10n.qeAbbrechen
+                              : l10n.qeZurueck),
                     ),
                   ),
                   const SizedBox(width: 10),

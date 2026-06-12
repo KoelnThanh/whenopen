@@ -75,6 +75,14 @@
   "qeSpeichern": "Speichern",
   "qeAbbrechen": "Abbrechen",
 
+  "qeStartFrage": "Wie möchtest du den Ort anlegen?",
+  "qeStartHinweis": "Am einfachsten übernimmst du einen echten Ort — Adresse und Öffnungszeiten kommen dann automatisch mit.",
+  "qeStartSuchenInfo": "Nach Name suchen, Daten aus OpenStreetMap übernehmen.",
+  "qeStartUmkreisInfo": "Orte rund um deine Heimatadresse durchsuchen.",
+  "qeStartOder": "oder",
+  "qeManuell": "Manuell eingeben",
+  "qeManuellInfo": "Name und Öffnungszeiten selbst eintippen.",
+
   "valNameFehlt": "Bitte gib einen Namen ein.",
   "valKeinTagOffen": "Trage für mindestens einen Tag eine Öffnungszeit ein.",
   "valVonVorBis": "Die Öffnungszeit muss vor der Schließzeit liegen.",
@@ -242,13 +250,19 @@
   "onboardingAdresseTitel": "Deine Adresse (einmalig)",
   "onboardingAdresseText": "Damit du kein GPS nutzen musst, fragen wir einmal nach deiner Adresse. Ohne Adresse wird die Funktion „Orte in der Nähe“ nicht freigeschaltet.",
   "onboardingAdresseGesetzt": "Super — „Orte in der Nähe“ ist jetzt freigeschaltet.",
-  "onboardingEmailTitel": "Fragen oder Feedback?",
-  "onboardingEmailText": "Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.",
-  "onboardingEmailButton": "E-Mail schreiben",
-  "onboardingSpendenTitel": "WhenOpen unterstützen",
-  "onboardingSpendenText": "Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.",
+  "onboardingWidgetTitel": "Das Herzstück: das Widget",
+  "onboardingWidgetText": "WhenOpen spielt seine Stärke erst auf dem Startbildschirm aus: Das Widget zeigt dir auf einen Blick, welche Orte gerade geöffnet sind — ganz ohne die App zu öffnen. Richtig nützlich wird die App also erst, wenn du das Widget anlegst.",
+  "onboardingWidgetSchritt1": "Tippe lange auf eine freie Stelle des Startbildschirms.",
+  "onboardingWidgetSchritt2": "Wähle „Widgets“ und suche WhenOpen.",
+  "onboardingWidgetSchritt3": "Zieh das Widget auf den Startbildschirm — fertig.",
   "onboardingFertigTitel": "Los geht’s!",
-  "onboardingFertigText": "Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.",
+  "onboardingFertigText": "Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an — und denk ans Widget auf dem Startbildschirm.",
 
-  "tutorialQeHinweis": "Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen."
+  "tutorialQeHinweis": "Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen.",
+
+  "spendeDialogTitel": "Gefällt dir WhenOpen?",
+  "spendeDialogText": "Du hast schon {anzahl} Orte gespeichert — schön, dass dir die App hilft! Sie ist und bleibt kostenlos. Wenn du magst, spendier mir einen Kaffee oder schick mir kurz Feedback.",
+  "@spendeDialogText": { "placeholders": { "anzahl": { "type": "int" } } },
+  "spendeDialogFeedback": "Feedback",
+  "spendeDialogSpaeter": "Später"
 }

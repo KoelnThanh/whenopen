@@ -545,3 +545,70 @@ Adress-Karte mit **wortgenauem GPS-Hinweis** + Suchfeld → „Los geht's!" → 
 - Emulator-Quirk: `PageController.nextPage` wird **während** der 250-ms-Animation ignoriert →
   schnelle `input tap`-Folgen werden verschluckt. `uiautomator dump` zwischen den Taps als
   zuverlässige Verzögerung (statt im Bash-Tool gesperrtem `sleep`).
+
+## P15 — UX-Feinschliff: Eingabe-Einstieg, Widget-Hinweis, Spenden-Timing, Logo (2026-06-12)
+
+**Warum (4 Nutzerpunkte):** (1) „+" öffnete sofort die Tastatur, obwohl der Standardweg lokal
+(OSM/Umkreis) sein soll. (2) Tutorial erklärte alles außer der Kerngeschichte — dem **Widget**.
+(3) E-Mail-/Kaffee-Bitte kam **zu früh** (im Tutorial, bevor die App lief). (4) Das In-App-Logo
+war ein nackter `Icons.location_on` (Pin **ohne** Uhr → wirkte wie ein Ordner-Icon), obwohl das
+App-Icon ein Pin **mit** Uhr ist.
+
+**Was gebaut:**
+- **Punkt 1 — Methodenauswahl statt Auto-Keyboard** (`screens/quick_entry/start_auswahl_step.dart`,
+  neu): Beim Anlegen erscheint zuerst eine Auswahl — **„Ort suchen" (OSM)** und **„Orte in der
+  Nähe" (Umkreis)** prominent (Indigo-Kacheln), **„Manuell eingeben"** als dezente dritte Option
+  unter einem „oder"-Trenner. `QuickEntryScreen`: neue Flags `_zeigeStartAuswahl` (Neuanlage
+  startet darin; Bearbeiten überspringt sie) und `_nameAutofokus` (Tastatur **nur** bei „Manuell").
+  Nach Import verlässt `_wendeUebernahmeAn` die Auswahl und zeigt das vorbefüllte Namensfeld
+  **ohne** Tastatur; abgebrochener Import bleibt in der Auswahl. `_zurueck` aus dem Namensfeld
+  führt (Neuanlage) zurück zur Auswahl. `NameStep` ist jetzt reines Namensfeld (`autofocus`-Param),
+  die OSM-/Umkreis-Buttons sind in die Auswahl gewandert.
+- **Punkt 2 — Widget-Seite im Tutorial** (`onboarding_screen.dart`): neue Karte „Das Herzstück:
+  das Widget" als **2. Seite** (direkt nach Willkommen) mit nummerierter Schritt-für-Schritt-
+  Anleitung (`_WidgetSchritte`): lange auf Startbildschirm → „Widgets" → WhenOpen ziehen.
+  Fertig-Seite erinnert zusätzlich ans Widget.
+- **Punkt 3 — Spenden/Feedback erst nach Bewährung** (`home_screen.dart` +
+  `app_einstellungen.dart`): E-Mail- und Spenden-Seite aus dem Tutorial **entfernt**. Stattdessen
+  einmaliger Dialog „Gefällt dir WhenOpen?" (Kaffee primär, Feedback sekundär, „Später"), der
+  **erst ab dem 5. gespeicherten Ort** über `_pruefeStartDialoge → _zeigeSpendenhinweisFallsNoetig`
+  erscheint. Doppelt-Schutz: Session-Guard `_spendenGeprueft` **und** persistentes Feld
+  `AppEinstellungen.spendenhinweisGezeigt` (Default `false`, snake `spendenhinweis_gezeigt`,
+  `build_runner` regeneriert). Flag wird **synchron vor dem ersten `await`** gesetzt → kein
+  Doppel-Popup durch mehrfache Post-Frame-Callbacks.
+- **Punkt 4 — In-App-Logo = App-Icon** (`widgets/app_logo.dart`, neu): `WhenOpenLogo`
+  (`CustomPainter`) 1:1 aus `tool/gen_icon.py` (`draw_pin`) portiert — weißer Pin + Indigo-
+  Zifferblatt + grüner Mittelpunkt auf Indigo-Verlaufskachel. Ersetzt die beiden lokalen
+  `_Markenzeichen` (nur `Icons.location_on`) in Home-Header (36 px) und „Über WhenOpen" (64 px).
+- **l10n:** neue Keys (`qeStart*`, `qeManuell*`, `onboardingWidget*`, `spendeDialog*`), entfernte
+  Onboarding-Keys (`onboardingEmail*`, `onboardingSpenden*`); `gen-l10n` neu generiert.
+
+**Entscheidung Punkt 3:** Schwelle = **5 Orte** (`anzahl >= 5`) als „App hat sich bewährt"-Marke,
+Kaffee als Primär-CTA, Feedback als Sekundär-Option — beide tauchen genau **einmal** auf und nie
+wieder, da sofort persistiert.
+
+**Verifiziert:** `flutter analyze` sauber, **90 Unit-Tests grün** (`build_runner` bestätigt das
+hand-edierte `.g.dart` identisch). Adversariale Mehraugen-Review (4 Dimensionen, 13 Agenten):
+Flow/l10n/Logo **ohne Findings**; beim Spenden-Trigger 6 bestätigte Punkte → behoben: Magic
+Number 5 → Konstante `_spendenhinweisSchwelle`, `try/catch` um das Persistieren, Post-Frame-
+Callback wird nur noch registriert, solange ein Start-Dialog aussteht, Kommentare präzisiert.
+Ein vorgeschlagener „Callback nur einmal registrieren"-Fix wurde **verworfen**, weil er den
+eintragszahl-abhängigen Trigger ausgehebelt hätte.
+
+**End-to-End am Emulator (Pixel_API35) verifiziert** (Debug + Release, Screenshots):
+(1) „+" öffnet die Methodenauswahl **ohne Tastatur**; „Manuell eingeben" ist die einzige Option,
+die das Keyboard öffnet (Schritt 1/10, Feld fokussiert, „Zurück" → Auswahl). (2) Tutorial zeigt
+**6** Seiten (statt 7) mit der Widget-Seite inkl. nummerierter Anleitung — keine E-Mail-/Spenden-
+Seite mehr. (3) Mit 7 Testorten poppt nach dem Start der Dialog „Gefällt dir WhenOpen?" („…7 Orte
+gespeichert…", Feedback/Später/Kaffee) auf; nach „Später" + Neustart **erscheint er nicht erneut**
+(persistentes Flag greift). (4) Neues Pin-mit-Uhr-Logo im Home-Header **und** in „Über WhenOpen".
+**Release-APK** signiert (`CN=WhenOpen`, v2-Scheme), 59 MB, startet ohne Crash (R8 weiterhin aus):
+`build/app/outputs/flutter-apk/app-release.apk`, Kopie als `WhenOpen-v1.0.0-p15.apk` auf dem Desktop.
+
+**Was gelernt:**
+- `CustomPainter` macht das Marken-Icon **vektoriell** in-App nutzbar — ein Port der
+  `gen_icon.py`-Geometrie hält In-App-Logo und Launcher-Icon ohne PNG-Asset deckungsgleich.
+- Einmal-Dialoge brauchen **zwei** Sperren: Session-bool gegen Post-Frame-Doppelfeuer **und**
+  persistentes Flag gegen Neustart; das persistente Flag früh setzen, nicht erst nach dem Dialog.
+- „Standardweg lokal" ließ sich ohne Flow-Umbau lösen: ein vorgelagerter Auswahl-Schritt + ein
+  `autofocus`-Schalter genügen, statt die 10-Schritt-Logik anzufassen.

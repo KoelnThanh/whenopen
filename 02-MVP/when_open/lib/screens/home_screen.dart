@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/app_einstellungen.dart';
@@ -13,11 +14,14 @@ import '../models/kategorie.dart';
 import '../models/location.dart';
 import '../providers/locations_provider.dart';
 import '../services/open_status_service.dart';
+import '../services/url_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/app_logo.dart';
 import '../widgets/kategorie_dialog.dart';
 import '../widgets/kategorie_sheets.dart';
 import '../widgets/location_list_tile.dart';
 import '../widgets/undo_delete.dart';
+import 'ueber_screen.dart' show kKontaktEmail, kSpendenUrl;
 
 /// Hauptliste (Workflow 3, E10): nach Kategorie gruppiert, Umschalten ueber
 /// Bottom-Umschalter + Auswahl-Sheet (Google-Tasks-Stil), Wischen blaettert.
@@ -69,6 +73,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Timer? _timer;
   bool _ladefehlerGezeigt = false;
   bool _onboardingGeprueft = false;
+  bool _spendenGeprueft = false;
+
+  /// Ab wie vielen gespeicherten Orten der einmalige Unterstützen-/Feedback-
+  /// Hinweis frühestens erscheint — „die App hat sich bewährt"-Schwelle (Punkt 3).
+  static const _spendenhinweisSchwelle = 5;
 
   @override
   void initState() {
@@ -113,6 +122,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Future<void> _pruefeStartDialoge() async {
     await _zeigeLadefehlerFallsNoetig();
     await _zeigeOnboardingFallsNoetig();
+    await _zeigeSpendenhinweisFallsNoetig();
   }
 
   Future<void> _zeigeLadefehlerFallsNoetig() async {
@@ -173,6 +183,95 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
       await ref
           .read(appDataProvider.notifier)
           .setTutorialStatus(TutorialStatus.abgelehnt);
+    }
+  }
+
+  /// Einmaliger Unterstützen-/Feedback-Hinweis — bewusst ERST, wenn die App
+  /// sich bewährt hat (ab dem [_spendenhinweisSchwelle]. Ort), nicht schon im
+  /// Tutorial (Punkt 3).
+  ///
+  /// Reihenfolge mit Absicht: Session-Guard und persistentes Flag werden
+  /// gesetzt, BEVOR der Dialog kommt. So poppt er auch dann nie erneut auf,
+  /// wenn der Nutzer die App während des Dialogs schließt. Schlägt das
+  /// Persistieren fehl, greift in dieser Session der Session-Guard; ein
+  /// Neustart prüft erneut (das Flag wurde dann ja nicht geschrieben).
+  Future<void> _zeigeSpendenhinweisFallsNoetig() async {
+    if (_spendenGeprueft) return;
+    if (kSpendenUrl.isEmpty && kKontaktEmail.isEmpty) return;
+    final einst = ref.read(einstellungenProvider);
+    if (einst.spendenhinweisGezeigt) return;
+    final anzahl = ref.read(locationsProvider).length;
+    if (anzahl < _spendenhinweisSchwelle) return;
+    _spendenGeprueft = true;
+    try {
+      await ref
+          .read(appDataProvider.notifier)
+          .setEinstellungen(einst.copyWith(spendenhinweisGezeigt: true));
+    } catch (_) {
+      // Persistieren fehlgeschlagen — Hinweis trotzdem zeigen; der
+      // Session-Guard verhindert Doppelung, ein Neustart prüft neu.
+    }
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final wahl = await showDialog<int>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.spendeDialogTitel),
+        content: Text(l10n.spendeDialogText(anzahl)),
+        actions: [
+          if (kKontaktEmail.isNotEmpty)
+            TextButton(
+              onPressed: () => Navigator.pop(context, 1),
+              child: Text(l10n.spendeDialogFeedback),
+            ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, 0),
+            child: Text(l10n.spendeDialogSpaeter),
+          ),
+          if (kSpendenUrl.isNotEmpty)
+            FilledButton(
+              onPressed: () => Navigator.pop(context, 2),
+              child: Text(l10n.ueberKaffeeButton),
+            ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (wahl == 2) {
+      await _spendeOeffnen();
+    } else if (wahl == 1) {
+      await _feedbackOeffnen();
+    }
+  }
+
+  /// Spendenlink extern öffnen (PayPal/Ko-fi).
+  Future<void> _spendeOeffnen() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    var erfolg = false;
+    try {
+      erfolg = await launchUrl(
+        Uri.parse(kSpendenUrl),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {
+      erfolg = false;
+    }
+    if (!erfolg && mounted) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.ueberLinkFehler)));
+    }
+  }
+
+  /// Feedback-E-Mail öffnen (vorbelegter Betreff).
+  Future<void> _feedbackOeffnen() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    final erfolg = await UrlService.openEmail(
+      kKontaktEmail,
+      betreff: l10n.ueberKontaktBetreff,
+    );
+    if (!erfolg && mounted) {
+      messenger.showSnackBar(SnackBar(content: Text(l10n.ueberLinkFehler)));
     }
   }
 
@@ -428,9 +527,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
     if (asyncDaten.hasValue) {
       _planeNaechsteAktualisierung(locations);
-      WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _pruefeStartDialoge(),
-      );
+      // Den Post-Frame-Callback nur planen, solange überhaupt noch ein
+      // Start-Dialog aussteht. Wichtig: NICHT auf „einmal registrieren"
+      // umstellen — der Spenden-Hinweis hängt an der Eintragszahl, die erst
+      // später 5 erreicht, also muss bis dahin bei jedem Rebuild neu geprüft
+      // werden. Sind alle drei Checks durch, entfällt die Registrierung.
+      if (!(_ladefehlerGezeigt && _onboardingGeprueft && _spendenGeprueft)) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _pruefeStartDialoge(),
+        );
+      }
     }
 
     final ansichten = _ansichten(kategorien, locations);
@@ -563,7 +669,7 @@ class _HomeHeader extends StatelessWidget {
           children: [
             Row(
               children: [
-                const _Markenzeichen(),
+                const WhenOpenLogo(size: 36),
                 const SizedBox(width: 11),
                 Text.rich(
                   TextSpan(
@@ -694,35 +800,6 @@ class _HomeHeader extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-/// Indigo-Markenzeichen (Pin) als kleine Kachel im Header.
-class _Markenzeichen extends StatelessWidget {
-  const _Markenzeichen();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [AppColors.primary, AppColors.primaryDeep],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.primaryDeep.withValues(alpha: 0.4),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: const Icon(Icons.location_on, color: Colors.white, size: 21),
     );
   }
 }
