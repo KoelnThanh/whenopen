@@ -14,15 +14,25 @@ import 'name_step.dart';
 import 'optional_fields_step.dart';
 import 'osm_search_step.dart';
 import 'quick_entry_state.dart';
+import 'umkreis_search_step.dart';
 
 /// Schnelleintrag-Flow (Workflow 1): 10 Schritte —
 /// Name · Mo–So (Mehrblock-Editor, E9) · Kategorie (E15) · Zusatzinfos.
 /// Mit `editId` laeuft derselbe Flow als Bearbeiten (P05).
 class QuickEntryScreen extends ConsumerStatefulWidget {
-  const QuickEntryScreen({super.key, this.editId, this.kategorieId});
+  const QuickEntryScreen({
+    super.key,
+    this.editId,
+    this.kategorieId,
+    this.tutorial = false,
+  });
 
   final String? editId;
   final String? kategorieId;
+
+  /// Aus dem Erstnutzer-Tutorial geoeffnet: blendet im ersten Schritt einen
+  /// Hinweis zu „Orte in der Nähe" ein.
+  final bool tutorial;
 
   @override
   ConsumerState<QuickEntryScreen> createState() => _QuickEntryScreenState();
@@ -146,12 +156,37 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
     context.pop();
   }
 
-  /// P08b: Suche → Bestaetigung → Felder vorbefuellen. Der Nutzer laeuft
+  /// P08b: Textsuche → Bestaetigung → Felder vorbefuellen. Der Nutzer laeuft
   /// danach normal durch den Flow und kann alles anpassen.
   Future<void> _osmImport() async {
     final uebernahme = await Navigator.of(context).push<OsmUebernahme>(
       MaterialPageRoute(builder: (_) => const OsmSearchStep()),
     );
+    _wendeUebernahmeAn(uebernahme);
+  }
+
+  /// „Orte in der Nähe": Umkreissuche um die hinterlegte Heimatadresse.
+  /// Ohne Heimatadresse → Hinweis mit Sprung in die Einstellungen.
+  Future<void> _umkreisImport() async {
+    final l10n = AppLocalizations.of(context)!;
+    if (!ref.read(einstellungenProvider).hatHeimat) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(l10n.umkreisKeineHeimat),
+        action: SnackBarAction(
+          label: l10n.umkreisZuEinstellungen,
+          onPressed: () => context.push('/einstellungen'),
+        ),
+      ));
+      return;
+    }
+    final uebernahme = await Navigator.of(context).push<OsmUebernahme>(
+      MaterialPageRoute(builder: (_) => const UmkreisSearchStep()),
+    );
+    _wendeUebernahmeAn(uebernahme);
+  }
+
+  /// Uebernimmt die bestaetigten Web-/Umkreis-Daten in den Flow-Zustand.
+  void _wendeUebernahmeAn(OsmUebernahme? uebernahme) {
     if (uebernahme == null || !mounted) return;
     setState(() {
       _nameController.text = uebernahme.name;
@@ -202,6 +237,7 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
         onWeiter: _weiter,
         // Import nur bei Neuanlage — beim Bearbeiten irrefuehrend.
         onOsmImport: _state.istBearbeiten ? null : _osmImport,
+        onUmkreisImport: _state.istBearbeiten ? null : _umkreisImport,
       );
     }
     if (schritt >= 1 && schritt <= 7) {
@@ -268,6 +304,10 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
               ),
             ),
             const Divider(height: 16),
+            if (widget.tutorial &&
+                !_state.istBearbeiten &&
+                _state.aktuellerSchritt == 0)
+              _TutorialHinweis(text: l10n.tutorialQeHinweis),
             Expanded(child: _aktuellerStep()),
             const Divider(height: 1),
             Padding(
@@ -305,6 +345,39 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Dezenter Hinweis-Banner im gefuehrten Erst-Eintrag (Tutorial).
+class _TutorialHinweis extends StatelessWidget {
+  const _TutorialHinweis({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.lightbulb_outline,
+              size: 18, color: context.col.primaryInk),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              text,
+              style: TextStyle(fontSize: 13, height: 1.35, color: context.col.ink),
+            ),
+          ),
+        ],
       ),
     );
   }

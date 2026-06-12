@@ -44,6 +44,11 @@ WhenOpenData _$WhenOpenDataFromJson(Map<String, dynamic> json) => WhenOpenData(
           ?.map((e) => Location.fromJson(e as Map<String, dynamic>))
           .toList() ??
       const [],
+  einstellungen: json['einstellungen'] == null
+      ? const AppEinstellungen()
+      : AppEinstellungen.fromJson(
+          json['einstellungen'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$WhenOpenDataToJson(WhenOpenData instance) =>
@@ -51,4 +56,5 @@ Map<String, dynamic> _$WhenOpenDataToJson(WhenOpenData instance) =>
       'version': instance.version,
       'kategorien': instance.kategorien,
       'eintraege': instance.eintraege,
+      'einstellungen': instance.einstellungen,
     };

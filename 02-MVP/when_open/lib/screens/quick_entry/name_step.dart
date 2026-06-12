@@ -13,12 +13,14 @@ class NameStep extends StatelessWidget {
     required this.zeigeFehler,
     this.onWeiter,
     this.onOsmImport,
+    this.onUmkreisImport,
   });
 
   final TextEditingController controller;
   final bool zeigeFehler;
   final VoidCallback? onWeiter;
   final VoidCallback? onOsmImport;
+  final VoidCallback? onUmkreisImport;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,23 @@ class NameStep extends StatelessWidget {
                 ),
                 icon: const Icon(Icons.travel_explore, size: 18),
                 label: Text(l10n.osmSuchen),
+              ),
+            ),
+          ],
+          if (onUmkreisImport != null) ...[
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: onUmkreisImport,
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: AppColors.primaryInk,
+                  backgroundColor: AppColors.chip,
+                  side: BorderSide.none,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                ),
+                icon: const Icon(Icons.near_me, size: 18),
+                label: Text(l10n.umkreisSuchen),
               ),
             ),
           ],

@@ -403,26 +403,82 @@ class AppLocalizationsDe extends AppLocalizations {
   String get exportTeilen => 'Daten exportieren';
 
   @override
-  String get menueSichern => 'Daten sichern';
+  String get menueSichern => 'Sichern';
 
   @override
-  String get menueWiederherstellen => 'Daten wiederherstellen';
+  String get menueTeilen => 'Teilen';
+
+  @override
+  String get menueWiederherstellen => 'Wiederherstellen';
 
   @override
   String get sichernBetreff => 'WhenOpen-Sicherung';
 
   @override
+  String sichernErfolg(String ordner) {
+    return 'Gesichert in $ordner.';
+  }
+
+  @override
+  String get sichernKeineBerechtigung =>
+      'Bitte Speicher-Berechtigung erteilen und erneut sichern.';
+
+  @override
   String get sichernFehler => 'Sichern fehlgeschlagen';
 
   @override
-  String get wiederherstellenTitel => 'Daten wiederherstellen?';
+  String get teilenFehler => 'Teilen fehlgeschlagen';
 
   @override
-  String get wiederherstellenText =>
-      'Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.';
+  String get wiederherstellenTitel => 'Wiederherstellen?';
 
   @override
-  String get wiederherstellenHint => 'JSON-Inhalt der Sicherung einfügen';
+  String get wiederherstellenLetzte => 'Letzte Sicherung laden';
+
+  @override
+  String get wiederherstellenLetzteInfo => 'Aus dem Ordner Download/WhenOpen';
+
+  @override
+  String get wiederherstellenDatei => 'Datei wählen…';
+
+  @override
+  String get wiederherstellenDateiInfo =>
+      'Aus Dateien, Downloads oder einer empfangenen Nachricht';
+
+  @override
+  String get wiederherstellenKeine =>
+      'Keine Sicherung im Ordner Download/WhenOpen gefunden.';
+
+  @override
+  String wiederherstellenVorschau(int orte, int kategorien) {
+    String _temp0 = intl.Intl.pluralLogic(
+      orte,
+      locale: localeName,
+      other: '$orte Orte',
+      one: '1 Ort',
+      zero: 'keine Orte',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      kategorien,
+      locale: localeName,
+      other: '$kategorien Kategorien',
+      one: '1 Kategorie',
+      zero: 'keine Kategorien',
+    );
+    return 'Diese Sicherung enthält $_temp0 und $_temp1.';
+  }
+
+  @override
+  String wiederherstellenWarnung(int anzahl) {
+    String _temp0 = intl.Intl.pluralLogic(
+      anzahl,
+      locale: localeName,
+      other: '$anzahl Orte',
+      one: '1 Ort',
+      zero: 'Daten',
+    );
+    return 'Deine jetzigen $_temp0 werden vorher automatisch gesichert.';
+  }
 
   @override
   String get wiederherstellenAktion => 'Wiederherstellen';
@@ -436,4 +492,207 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get abbrechen => 'Abbrechen';
+
+  @override
+  String get menueEinstellungen => 'Einstellungen';
+
+  @override
+  String get einstTitel => 'Einstellungen';
+
+  @override
+  String get einstHeimatTitel => 'Heimatadresse';
+
+  @override
+  String get einstHeimatInfo =>
+      'Für die Umkreissuche „Orte in der Nähe“. Wird einmalig zu Koordinaten aufgelöst und bleibt lokal — keine Standortfreigabe nötig.';
+
+  @override
+  String get einstHeimatKeine => 'Noch keine Heimatadresse hinterlegt.';
+
+  @override
+  String get einstHeimatSuchen => 'Adresse suchen';
+
+  @override
+  String get einstHeimatSuchHint =>
+      'Straße und Ort, z. B. „Hauptstraße 1, Köln“';
+
+  @override
+  String get einstHeimatEntfernen => 'Entfernen';
+
+  @override
+  String get einstUmkreisTitel => 'Suchradius';
+
+  @override
+  String einstUmkreisMeter(int meter) {
+    return '$meter m';
+  }
+
+  @override
+  String einstUmkreisKm(String km) {
+    return '$km km';
+  }
+
+  @override
+  String get einstSpeichern => 'Speichern';
+
+  @override
+  String get einstGespeichert => 'Einstellungen gespeichert.';
+
+  @override
+  String get einstAttribution =>
+      'Ortsdaten: © OpenStreetMap-Mitwirkende (ODbL)';
+
+  @override
+  String get umkreisSuchen => 'Orte in der Nähe';
+
+  @override
+  String get umkreisTitel => 'Orte in der Nähe';
+
+  @override
+  String umkreisRadiusInfo(String radius, String adresse) {
+    return '$radius um $adresse';
+  }
+
+  @override
+  String get umkreisLaedt => 'Suche Orte in deiner Nähe…';
+
+  @override
+  String get umkreisKeineTreffer =>
+      'Keine Orte mit Öffnungszeiten im Umkreis gefunden. Erhöhe ggf. den Radius in den Einstellungen.';
+
+  @override
+  String get umkreisFehler =>
+      'Suche nicht möglich — bitte später erneut versuchen.';
+
+  @override
+  String get umkreisKeineHeimat =>
+      'Hinterlege zuerst deine Heimatadresse in den Einstellungen.';
+
+  @override
+  String get umkreisZuEinstellungen => 'Zu den Einstellungen';
+
+  @override
+  String get menueUeber => 'Über WhenOpen';
+
+  @override
+  String get ueberTitel => 'Über WhenOpen';
+
+  @override
+  String get ueberTagline => 'Persönliche Öffnungszeiten auf einen Blick.';
+
+  @override
+  String get ueberUnterstuetzenTitel => 'Unterstützen';
+
+  @override
+  String get ueberUnterstuetzenHinweis =>
+      'WhenOpen ist und bleibt kostenlos — es schaltet nichts frei.';
+
+  @override
+  String get ueberKaffeeButton => 'Spendier mir einen Kaffee ☕';
+
+  @override
+  String get ueberLinkFehler => 'Link konnte nicht geöffnet werden.';
+
+  @override
+  String ueberVersion(String version) {
+    return 'Version $version';
+  }
+
+  @override
+  String get ueberKontaktTitel => 'Kontakt & Feedback';
+
+  @override
+  String get ueberKontaktHinweis =>
+      'Fragen, Wünsche oder ein Fehler aufgetaucht? Ich freue mich über deine Nachricht.';
+
+  @override
+  String get ueberKontaktButton => 'E-Mail schreiben';
+
+  @override
+  String get ueberKontaktBetreff => 'WhenOpen-Feedback';
+
+  @override
+  String get tutorialDialogTitel => 'Kurze Einführung?';
+
+  @override
+  String get tutorialDialogText =>
+      'Es sieht aus, als wärst du neu hier. Möchtest du eine kurze Tour durch WhenOpen — Kategorien, Daten und „Orte in der Nähe“?';
+
+  @override
+  String get tutorialDialogJa => 'Tour starten';
+
+  @override
+  String get tutorialDialogNein => 'Nein, danke';
+
+  @override
+  String get onboardingUeberspringen => 'Überspringen';
+
+  @override
+  String get onboardingWeiter => 'Weiter';
+
+  @override
+  String get onboardingErsterOrt => 'Ersten Ort anlegen';
+
+  @override
+  String get onboardingFertig => 'Fertig';
+
+  @override
+  String get onboardingWillkommenTitel => 'Willkommen bei WhenOpen';
+
+  @override
+  String get onboardingWillkommenText =>
+      'Behalte die Öffnungszeiten deiner wichtigen Orte im Blick. Alles bleibt lokal auf deinem Gerät — kein Konto, keine Cloud, kein Tracking.';
+
+  @override
+  String get onboardingKategorienTitel => 'Kategorien';
+
+  @override
+  String get onboardingKategorienText =>
+      'Ordne deine Orte in frei wählbare Kategorien wie „Ärzte“ oder „Einkaufen“ — praktisch zum Gruppieren und Filtern. Ohne Auswahl landet ein Ort unter „Sonstige“.';
+
+  @override
+  String get onboardingDatenTitel => 'Woher kommen die Daten?';
+
+  @override
+  String get onboardingDatenText =>
+      'Du kannst Orte aus dem Web übernehmen (OpenStreetMap), „Orte in der Nähe“ suchen oder Zeiten von Hand eintragen. Deine Sammlung lässt sich jederzeit sichern und wiederherstellen.';
+
+  @override
+  String get onboardingAdresseTitel => 'Deine Adresse (einmalig)';
+
+  @override
+  String get onboardingAdresseText =>
+      'Damit du kein GPS nutzen musst, fragen wir einmal nach deiner Adresse. Ohne Adresse wird die Funktion „Orte in der Nähe“ nicht freigeschaltet.';
+
+  @override
+  String get onboardingAdresseGesetzt =>
+      'Super — „Orte in der Nähe“ ist jetzt freigeschaltet.';
+
+  @override
+  String get onboardingEmailTitel => 'Fragen oder Feedback?';
+
+  @override
+  String get onboardingEmailText =>
+      'Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.';
+
+  @override
+  String get onboardingEmailButton => 'E-Mail schreiben';
+
+  @override
+  String get onboardingSpendenTitel => 'WhenOpen unterstützen';
+
+  @override
+  String get onboardingSpendenText =>
+      'Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.';
+
+  @override
+  String get onboardingFertigTitel => 'Los geht’s!';
+
+  @override
+  String get onboardingFertigText =>
+      'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.';
+
+  @override
+  String get tutorialQeHinweis =>
+      'Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen.';
 }

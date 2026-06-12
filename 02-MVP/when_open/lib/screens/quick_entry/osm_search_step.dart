@@ -7,12 +7,17 @@ import '../../l10n/app_localizations.dart';
 import '../../models/nominatim_result.dart';
 import '../../models/opening_day.dart';
 import '../../services/nominatim_service.dart';
+import '../../services/overpass_service.dart';
 import '../../theme/app_theme.dart';
 import 'osm_confirm_step.dart';
 
 /// Austauschbarer Import-Dienst (E2) — in Tests ueberschreibbar.
 final importServiceProvider =
     Provider<ImportService>((ref) => NominatimService());
+
+/// Overpass-Dienst fuer Umkreissuche + Oeffnungszeiten-Nachlookup (Option B).
+final overpassServiceProvider =
+    Provider<OverpassService>((ref) => OverpassService());
 
 /// Vom Nutzer bestaetigte Uebernahme-Daten fuer den Schnelleintrag.
 class OsmUebernahme {
@@ -59,8 +64,8 @@ class _OsmSearchStepState extends ConsumerState<OsmSearchStep> {
       setState(() => _zustand = _SuchZustand.leer);
       return;
     }
-    // Nominatim Usage Policy: max. 1 Request/s → 500 ms Debounce.
-    _debounce = Timer(const Duration(milliseconds: 500), () => _suche(text));
+    // Nominatim Usage Policy: max. 1 Request/s, kein Autocomplete → 800 ms.
+    _debounce = Timer(const Duration(milliseconds: 800), () => _suche(text));
   }
 
   Future<void> _suche(String query) async {
@@ -82,8 +87,31 @@ class _OsmSearchStepState extends ConsumerState<OsmSearchStep> {
   }
 
   Future<void> _trefferGewaehlt(NominatimResult ergebnis) async {
+    var treffer = ergebnis;
+    // Option B: fehlen die Oeffnungszeiten, aber es gibt eine OSM-Referenz?
+    // Dann die Tags des Objekts gezielt per Overpass nachladen (1 Request).
+    if (treffer.oeffnungszeiten == null && treffer.hatOsmRef) {
+      setState(() => _zustand = _SuchZustand.laedt);
+      try {
+        final tags = await ref
+            .read(overpassServiceProvider)
+            .ladeTags(treffer.osmType!, treffer.osmId!);
+        if (tags != null) {
+          treffer = treffer.copyWith(
+            oeffnungszeiten: tags['opening_hours'] as String?,
+            telefon: treffer.telefon ??
+                (tags['phone'] ?? tags['contact:phone']) as String?,
+          );
+        }
+      } on Exception {
+        // Nachladen ist optional — im Zweifel ohne Oeffnungszeiten weiter.
+      }
+      if (!mounted) return;
+      setState(() => _zustand = _SuchZustand.treffer);
+    }
+    if (!mounted) return;
     final uebernahme = await Navigator.of(context).push<OsmUebernahme>(
-      MaterialPageRoute(builder: (_) => OsmConfirmStep(ergebnis: ergebnis)),
+      MaterialPageRoute(builder: (_) => OsmConfirmStep(ergebnis: treffer)),
     );
     if (uebernahme != null && mounted) {
       Navigator.of(context).pop(uebernahme);

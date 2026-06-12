@@ -341,3 +341,207 @@ kompatible Plugin-Kombination steht.
 **Was fehlt (Schritt 3):** Light-Mode flächendeckend (restliche ~70 `AppColors.*`-Stellen der
 Nebenscreens auf `context.col`) · Hell/Dunkel-Umschalter im ⋮-Menü · Widget-Feinschliff (Punkt/Kasten
 raus) · dann Hell-Modus am Emulator abnehmen.
+
+## P11 — Such-Verbesserung (Option A/B) + Umkreissuche per Heimatadresse (2026-06-11)
+
+Auf Nutzerwunsch nach den Doku-/Bewertungs-Dateien (`01-Konzept/1.4-architektur.md`,
+`1.5-suche-gps-evaluation.md`): Internetsuche verbessern **und** „alle umliegenden Orte finden".
+Bewusst **ohne GPS** — die Heimatadresse wird **einmalig per Nominatim geocodet und lokal
+gespeichert**, daher **keine Standort-Berechtigung** und kein Bruch des „alles bleibt lokal"-
+Versprechens. Grundlage: Stufenplan A/B/C aus `1.5`.
+
+**Was gebaut:**
+- **Schema 2.1** (`models/app_einstellungen.dart`): neues `AppEinstellungen` (heimatAdresse,
+  heimatLat/Lon, umkreisMeter=1500) als Feld in `WhenOpenData`. Alte 2.0-Dateien laden mit Default
+  (rückwärtskompatibel, per Test belegt). `LocationRepository.get/setEinstellungen`,
+  `AppDataNotifier.setEinstellungen` + `einstellungenProvider`.
+- **Option A — Nominatim-Tuning** (`nominatim_service.dart`): `countrycodes=de`,
+  `accept-language=de`, `layer=poi,address`, `limit` 5→8; Debounce 500→800 ms (Policy-näher).
+- **Option B — Overpass-Nachlookup** (`services/overpass_service.dart`, neu): beim Auswählen eines
+  Nominatim-Treffers ohne Öffnungszeiten werden dessen OSM-Tags per **1 Overpass-Request**
+  (`<typ>(<id>);out tags;`) nachgeladen → deutlich höhere Trefferquote für `opening_hours`.
+  `NominatimResult` um `osmType/osmId/lat/lon` + `copyWith` + `fromOverpassElement` erweitert.
+- **Umkreissuche „Orte in der Nähe"** (`overpass_service.findeUmkreis` +
+  `screens/quick_entry/umkreis_search_step.dart`): `nwr[opening_hours](around:R,lat,lon);out center
+  tags;` um die Heimatkoordinaten → Liste der POIs mit Öffnungszeiten → derselbe „Daten
+  prüfen"-Flow (`OsmConfirmStep`) wie der Web-Import. Zweiter Einstieg in `NameStep`
+  („Orte in der Nähe"); ohne Heimatadresse → Hinweis-SnackBar mit Sprung in die Einstellungen.
+- **Einstellungen-Screen** (`screens/einstellungen_screen.dart` + Route `/einstellungen` +
+  ⋮-Menüeintrag): Heimatadresse **suchen** (Nominatim) → wählen → Koordinaten lokal speichern;
+  **Umkreis-Regler** 250–5000 m; OSM/ODbL-Attribution.
+- **i18n**: ~25 neue ARB-Strings; geteilter `widgets/umkreis_format.dart` („750 m"/„1,5 km").
+
+**Verifiziert:** `flutter analyze` **sauber**, **71 Unit-Tests grün** (+13: 3 Einstellungs-/Schema-
+2.1-Roundtrip & 2.0-Rückwärtskompatibilität, 10 Overpass — Query-Bau, Element-Parsing,
+Mock-HTTP). **End-to-End am Emulator (Pixel_API35, Debug-APK)** mit Heimatadresse Viersen
+(Seed Schema 2.1): App lädt 2.1 ohne Crash → ⋮-Menü zeigt „Einstellungen" → Einstellungen-Screen
+mit Heimat-Karte + Suchradius „2 km" + ODbL-Attribution → Schnelleintrag zeigt zweiten Einstieg
+„Orte in der Nähe" → **Live-Overpass** liefert echte Treffer im 2-km-Umkreis (Adler-/Aesculap-
+Apotheke, ALDI, Stadtbibliothek …, alphabetisch, Uhr-Icon) → „Daten prüfen" mit Name, Adresse,
+Telefon und **korrekt geparsten Mehrblock-Zeiten** (Mo–Fr 08:30–18:30 · Sa 09:00–13:00 · So zu).
+Alles per Screenshot belegt.
+
+**Bewusst kein GPS:** Die Adress-Lösung erfüllt den Nutzerwunsch ohne `geolocator`/
+`ACCESS_*_LOCATION` — keine Manifest-Änderung, keine Play-Data-Safety-Folgen. GPS-„aktueller
+Standort" bleibt als optionale v2-Erweiterung am selben `findeUmkreis`-Pfad andockbar.
+
+**Was gelernt:**
+- json_serializable kopiert Default-Ausdrücke wörtlich ins `.g.dart` → `AppEinstellungen.standardUmkreis`
+  **qualifiziert** schreiben (sonst `undefined_identifier` in `app_einstellungen.g.dart`) —
+  bestätigt das P02-Learning.
+- Nominatim ist Geocoder (Text→Ort), Overpass ist die POI-Datenbankabfrage (`around:`). Beide teilen
+  sich das `NominatimResult`-Modell; `fromOverpassElement` nutzt `out center` für Flächen (way/relation).
+
+## P12 — Sichern/Teilen/Wiederherstellen überarbeitet (2026-06-12)
+
+Nutzerwunsch: Die JSON-Sicherung war unhandlich — „Sichern" öffnete sofort den Teilen-Dialog
+(Datei ohne festen Ort), und „Wiederherstellen" verlangte, den **kompletten JSON-Inhalt als Text
+einzufügen** (Datei öffnen → alles kopieren → einfügen). Ziel: **kein Text-Kopieren mehr**, fester
+**sichtbarer** Speicherort, Sichern und Teilen getrennt.
+
+**Was gebaut — drei getrennte ⋮-Menü-Aktionen statt einer:**
+- **Sichern** schreibt in den **im Dateimanager sichtbaren** Ordner `Download/WhenOpen` und
+  **überschreibt** `whenopen-sicherung.json` (immer genau eine aktuelle Datei) — kein Teilen-Dialog,
+  nur Snackbar „Gesichert in Download/WhenOpen".
+- **Teilen** (neu, separat) öffnet den Android-Teilen-Dialog mit einer **datierten** Kopie
+  (WhatsApp/Drive/Gmail) zum Weitergeben.
+- **Wiederherstellen** öffnet ein Auswahl-Sheet: **„Letzte Sicherung laden"** (neueste Datei aus
+  `Download/WhenOpen`) **oder „Datei wählen…"** (System-Dateibrowser — auch für **empfangene**
+  Sicherungen). Danach **Vorschau-Dialog** („Diese Sicherung enthält X Orte und Y Kategorien",
+  „Deine jetzigen N Orte werden vorher gesichert") → bestätigen → Import.
+
+**Technik:**
+- **Nativer Speicher-Kanal** `com.whenopen/backup` (`BackupStorage.kt` + `MainActivity.kt`):
+  MediaStore-Downloads ab Android 10 (ohne Berechtigung; Overwrite = Eintrag per
+  `RELATIVE_PATH`+`DISPLAY_NAME` suchen → `openOutputStream(uri,"wt")`); Legacy-Pfad <API 29 mit
+  `WRITE/READ_EXTERNAL_STORAGE` (`maxSdkVersion=28`). „Datei wählen" via `ACTION_OPEN_DOCUMENT` +
+  `onActivityResult` (liest content://-URI → `{name, inhalt}`). Dart-Brücke:
+  `services/downloads_backup_service.dart` + `downloadsBackupServiceProvider`.
+- **Repository**: Validierung als `pruefeSicherung()` herausgezogen (prüft **ohne zu speichern**, für
+  die Vorschau); `exportInhalt()` (pretty JSON, von Sichern + Teilen genutzt); `importJson` baut darauf.
+- **Provider**: `sichern()`, `letzteSicherungInhalt()`, `pruefeSicherung()`.
+- **i18n**: Menü „Sichern/Teilen/Wiederherstellen"; neue Strings inkl. ICU-Plurale (Orte/Kategorien);
+  Copy-Paste-Texte (`wiederherstellenText/Hint`) entfernt.
+
+**Verifiziert:** `analyze` sauber, **78 Unit-Tests grün** (+7: 3 Export/Vorschau im Repo, 4 Service-
+Kanal). **End-to-End am Emulator (Pixel_API35, Debug-APK, 7 Test-Orte)**, je per Screenshot:
+Sichern → `Download/WhenOpen/whenopen-sicherung.json` (11,67 kB) angelegt, **2× Sichern = weiterhin
+genau 1 Datei** (Overwrite), Snackbar; Wiederherstellen-Sheet mit beiden Optionen; „Letzte Sicherung
+laden" → Vorschau „7 Orte / 3 Kategorien" → Import → **Pre-Import-Backup** im App-Ordner +
+„Daten wiederhergestellt"; „Datei wählen" → DocumentsUI → `Downloads › WhenOpen` → Datei → zurück in
+die App mit Quelle „whenopen-sicherung.json" → Import; Teilen → Android-Chooser „Sharing 1 file:
+whenopen-sicherung-2026-06-12.json".
+
+**Verworfen:** `file_picker` (Paket). Version 11.0.2 ist mit Flutter 3.44s **„Built-in Kotlin"**
+inkompatibel — das Kotlin-Modul landet nicht im Classpath, der `GeneratedPluginRegistrant` findet
+`FilePickerPlugin` nicht, der Build bricht bei `compileDebugJavaWithJavac`. Schon die P10-Session war an
+file_picker gescheitert (damals compileSdk-Konflikt). Lösung: **„Datei wählen" nativ** über
+`ACTION_OPEN_DOCUMENT` — keine Dependency, gleicher Kanal wie MediaStore.
+
+**Scoped-Storage-Grenze (bewusst):** „Letzte Sicherung laden" via MediaStore sieht **nur von WhenOpen
+selbst angelegte** Dateien. Eine über WhatsApp empfangene, im Ordner abgelegte Sicherung wird daher über
+**„Datei wählen…"** geladen (ein Tipp, kein Kopieren). Der „Öffnen mit WhenOpen"-Weg direkt aus dem Chat
+(Intent-Filter + receive-intent) bleibt als optionale Erweiterung offen.
+
+**Was gelernt:**
+- Flutter 3.44 „Built-in Kotlin": Plugins, die KGP selbst anwenden, können brechen — Symptom ist ein
+  **fehlendes Plugin-Symbol im `GeneratedPluginRegistrant`**, nicht ein Kotlin-Compilerfehler. Ein eigener
+  MethodChannel ist robuster als ein fragiles Paket. (Die KGP-**Warnung** für die übrigen Plugins bleibt
+  — nur ein Hinweis, kein Fehler.)
+- MediaStore-Overwrite braucht die Suche nach dem bestehenden Eintrag; sonst legt MediaStore
+  „… (1).json" an statt zu überschreiben.
+
+## P13 — „Über WhenOpen": Persönliche Vorstellung + Unterstützen (2026-06-12)
+
+**Warum:** Bei einer lokalen, trackingfreien App ist ein ehrlicher „Über mich"-Teil ein
+**Vertrauenssignal** (beantwortet „warum kostenlos? wo ist der Haken?"). Spenden sind das
+einzige Monetarisierungsmodell, das die Privacy-Haltung nicht verrät — bewusst dezent, ohne
+Bettel-Charakter, ohne Gegenleistung (sonst Google-Play-Billing-Pflicht).
+
+**Was gebaut:**
+- Neuer Screen `screens/ueber_screen.dart` (Route `/ueber`, erreichbar über neuen
+  ⋮-Menüeintrag „Über WhenOpen" im Home-Header): Markenkopf (Pin + Wortmarke + Tagline),
+  „Über mich"-Karte (Gruß + 4 Absätze in Thanhs eigener Fassung; Privacy-Aussage „kein Konto,
+  keine Cloud, kein Tracking" steht in der Prosa, daher keine separate Schloss-Zeile),
+  Unterstützen-Bereich, Footer mit Version + OSM-Attribution.
+- **Spendenlink als eine Konstante** `kSpendenUrl` ganz oben im File. **Leer ('') = der
+  Unterstützen-Button blendet sich automatisch aus** → es wird nie ein toter Link
+  veröffentlicht. **Gesetzt auf `https://paypal.me/koelnthanh`** (2026-06-12) → Button live.
+- Spenden-Button: `FilledButton.icon` (Herz + „Spendier mir einen Kaffee ☕"), öffnet den
+  Link via `url_launcher` (`LaunchMode.externalApplication`) — gleicher Pfad wie die
+  Google-Maps-Links (P07), Manifest-`<queries>` für https greift bereits.
+- Persönliche Prosa (`kUeberGruss`, `kUeberAbsaetze`) **inline statt in l10n** — bewusst,
+  damit der Text ohne ARB-Escaping frei editierbar bleibt. UI-Chrome (Menü, Titel, Button,
+  Hinweis, Version) läuft über l10n (`menueUeber`, `ueberTitel`, `ueberTagline`,
+  `ueberUnterstuetzenTitel/Hinweis`, `ueberKaffeeButton`, `ueberLinkFehler`, `ueberVersion`).
+  App-Version als `kAppVersion`-Konstante (synchron zu `pubspec.yaml`).
+
+**Verifiziert:** `analyze` sauber, **78 Unit-Tests grün** (unverändert). **End-to-End am
+Emulator (Pixel_API35, Debug-APK)** per Screenshot: Über-Screen via Deep-Link
+`whenopen://app/ueber` rendert korrekt (Markenkopf, Text, Schloss-Vertrauenszeile, Version
+1.0.0, OSM-Attribution). Mit temporär gesetztem Demo-Link: Unterstützen-Bereich + Voll-Button
+sichtbar; **Tap öffnet den externen Browser** mit `https://paypal.me/koelnthanh` (im Logcat als
+`START act=VIEW dat=https://paypal.me/... cmp=com.android.chrome` von der App-uid bestätigt).
+
+**Was gelernt:**
+- Google Play: externer Spendenlink **ohne** versprochene Gegenleistung ist zulässig; Play
+  Billing (15–30 % Cut, für Privatperson gesperrt) wäre nur bei „Feature gegen Spende" Pflicht.
+  → Spenden nie an Funktionen koppeln. Vor Store-Submit aktuelle Donation-Policy gegenchecken.
+
+## P14 — Erstnutzer-Tutorial / Onboarding (2026-06-12)
+
+**Warum:** Bei leerer App (kein Datenfile) war der Einstieg ein kalter Start — der Nutzer
+sah nur „Tippe auf +". Das Tutorial erklärt die Grundpfeiler (Kategorien, Daten, einmalige
+Adresse statt GPS, E-Mail, optional Spenden) und führt am Ende direkt in den ersten Eintrag.
+
+**Was gebaut:**
+- **Persistenz-Flag:** `AppEinstellungen.tutorialStatus` (Enum `offen`/`abgelehnt`/
+  `abgeschlossen`, Default `offen`). `@JsonKey(unknownEnumValue: offen)` → alte Dateien ohne
+  Feld **und** unbekannte Werte laden migrationssicher als `offen`. `build_runner` regeneriert
+  `app_einstellungen.g.dart`. Im selben Zug **Default-Suchradius 1500 → 1000 m** (1 km) — wirkt
+  nur für Neuinstallationen/Default, Bestandswerte bleiben (keine Migration, bewusst).
+- **Erstnutzungs-Prädikat:** `zeigeOnboardingProvider` (leere Eintragsliste **und**
+  `tutorialStatus == offen`) + `AppDataNotifier.setTutorialStatus(...)` (kapselt `copyWith`).
+- **Home-Gate:** `_zeigeOnboardingFallsNoetig()` läuft im selben Post-Frame-Callback **nach**
+  `_zeigeLadefehlerFallsNoetig()` (Ladefehler hat Vorrang → bei beschädigten Daten kein
+  Tutorial), abgesichert per bool-Guard `_onboardingGeprueft`. Dialog `barrierDismissible:false`
+  mit „Nein, danke" (→ `abgelehnt`, dauerhaft) / „Tour starten" (→ `/onboarding`).
+- **OnboardingScreen** (`screens/onboarding_screen.dart`, Route `/onboarding`): `PageView` mit
+  7 Karten (Willkommen · Kategorien · Daten · Adresse · E-Mail · Spenden[nur wenn `kSpendenUrl`
+  gesetzt] · Fertig), Seiten-Punkte, „Überspringen", Abschluss-CTA „Ersten Ort anlegen".
+  Beenden setzt `abgeschlossen` und springt per `pushReplacement` in den geführten Quick-Entry
+  bzw. (Überspringen) zurück zum Home.
+- **`HeimatAdresseEingabe`-Widget** aus `einstellungen_screen` extrahiert (`widgets/`) — Nominatim-
+  Geocoding, **kein GPS** — und in Einstellungen **und** der Adress-Karte wiederverwendet (keine
+  Doppel-Logik). Adress-Auswahl im Onboarding speichert sofort → schaltet „Orte in der Nähe" frei.
+- **E-Mail (neu):** `UrlService.openEmail(mailto:)` + Kontakt-Block im `ueber_screen`
+  (`kKontaktEmail`) + E-Mail-Karte im Onboarding. Spenden-Karte nutzt `kSpendenUrl` wieder.
+- **Geführter Quick-Entry:** `QuickEntryScreen(tutorial:)` (Route reicht `?tutorial=1`) blendet in
+  Schritt 0 einen Hinweis-Banner zu „Orte in der Nähe" ein.
+- **l10n:** ~30 neue Strings (`tutorialDialog*`, `onboarding*`, `ueberKontakt*`,
+  `tutorialQeHinweis`), `gen-l10n` neu generiert.
+
+**Bewusst NICHT gebaut:** keine Apotheken-Filterung — auf Wunsch sucht die geführte Aufgabe
+**einen beliebigen** lokalen Ort (OverpassService unangetastet). „2 km → 1 km" war faktisch
+1,5 km → 1 km (es gab nie einen 2000er-Default).
+
+**Verifiziert:** `analyze` sauber, **90 Unit-Tests grün** (12 neu: 7× Modell-Serialisierung/
+Migration/Radius, 5× `zeigeOnboardingProvider` über echte Repo-/Provider-Verdrahtung inkl.
+Persistenz nach Neuladen). **End-to-End am Emulator (Pixel_API35, Debug-APK)** per Screenshot:
+`pm clear` → Erstnutzer-Dialog „Kurze Einführung?" → „Tour starten" → Karten (Willkommen…) →
+Adress-Karte mit **wortgenauem GPS-Hinweis** + Suchfeld → „Los geht's!" → „Ersten Ort anlegen"
+öffnet Quick-Entry **mit Tipp-Banner**; **Kaltstart nach Abschluss zeigt KEINEN Dialog mehr**
+(Home leer).
+
+**Was gelernt:**
+- **Reset-Falle:** `EinstellungenScreen._speichern()` baute früher ein **frisches**
+  `AppEinstellungen(...)`. Mit dem neuen Default-Feld hätte jedes Settings-Speichern
+  `tutorialStatus` auf `offen` zurückgesetzt → Tutorial-Wiedergänger. Lösung: `copyWith` auf den
+  **aktuellen** Einstellungen. Lehre: neue Default-Felder + „Objekt frisch bauen"-Saves = Bug.
+- Erstnutzung an einem **persistenten Flag** festmachen, nicht nur an leeren Daten — sonst poppt
+  das Tutorial nach „alle Orte gelöscht" oder leerer Wiederherstellung erneut auf.
+- json_serializable-Enums brauchen `unknownEnumValue` für Vor-/Rückwärtskompatibilität; ohne
+  `build_runner`-Lauf driften Modell und `.g.dart`.
+- Emulator-Quirk: `PageController.nextPage` wird **während** der 250-ms-Animation ignoriert →
+  schnelle `input tap`-Folgen werden verschluckt. `uiautomator dump` zwischen den Taps als
+  zuverlässige Verzögerung (statt im Bash-Tool gesperrtem `sleep`).

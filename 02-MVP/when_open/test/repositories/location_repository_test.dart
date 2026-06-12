@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:when_open/models/app_einstellungen.dart';
 import 'package:when_open/models/location.dart';
 import 'package:when_open/models/opening_day.dart';
 import 'package:when_open/models/wochentag.dart';
@@ -222,12 +223,49 @@ void main() {
       expect(tmpDateien, isEmpty);
     });
 
-    test('Schema-Version 2.0 wird geschrieben', () async {
+    test('Schema-Version 2.1 wird geschrieben', () async {
       await repo.saveLocation(_testLocation());
       final json = jsonDecode(await File(
               '${tempDir.path}/${LocationRepository.dateiname}')
           .readAsString()) as Map<String, dynamic>;
-      expect(json['version'], '2.0');
+      expect(json['version'], '2.1');
+    });
+  });
+
+  group('Einstellungen (Schema 2.1)', () {
+    test('Heimatadresse + Umkreis Roundtrip', () async {
+      await repo.setEinstellungen(const AppEinstellungen(
+        heimatAdresse: 'Hauptstraße 1, Köln',
+        heimatLat: 50.94,
+        heimatLon: 6.96,
+        umkreisMeter: 2000,
+      ));
+
+      final einst = await repo.getEinstellungen();
+      expect(einst.heimatAdresse, 'Hauptstraße 1, Köln');
+      expect(einst.heimatLat, 50.94);
+      expect(einst.heimatLon, 6.96);
+      expect(einst.umkreisMeter, 2000);
+      expect(einst.hatHeimat, isTrue);
+    });
+
+    test('Einstellungen lassen die Eintraege unberuehrt', () async {
+      await repo.saveLocation(_testLocation(id: 'bleibt'));
+      await repo.setEinstellungen(
+          const AppEinstellungen(heimatLat: 1, heimatLon: 2));
+
+      final daten = await repo.laden();
+      expect(daten.eintraege.single.id, 'bleibt');
+      expect(daten.einstellungen.heimatLat, 1);
+    });
+
+    test('alte 2.0-Datei ohne einstellungen laedt mit Default', () async {
+      final datei = File('${tempDir.path}/${LocationRepository.dateiname}');
+      await datei.writeAsString(_spezifikationsBeispiel); // version 2.0
+
+      final daten = await repo.laden();
+      expect(daten.einstellungen.hatHeimat, isFalse);
+      expect(daten.einstellungen.umkreisMeter, AppEinstellungen.standardUmkreis);
     });
   });
 
@@ -342,6 +380,35 @@ void main() {
 
       final daten = await repo.laden();
       expect(daten.eintraege.single.id, 'bleibt');
+    });
+  });
+
+  group('Export-Inhalt + Vorschau (P10.1)', () {
+    test('exportInhalt liefert gueltiges JSON der aktuellen Daten', () async {
+      await repo.saveLocation(_testLocation(id: 'x', name: 'Export'));
+
+      final inhalt = await repo.exportInhalt();
+      final json = jsonDecode(inhalt) as Map<String, dynamic>;
+
+      expect(json['version'], '2.1');
+      expect((json['eintraege'] as List).single['name'], 'Export');
+    });
+
+    test('pruefeSicherung validiert ohne zu speichern', () async {
+      await repo.saveLocation(_testLocation(id: 'bleibt'));
+
+      final daten = repo.pruefeSicherung(_spezifikationsBeispiel);
+      expect(daten.eintraege.single.id, 'uuid-1234');
+      expect(daten.kategorien.single.name, 'Familie');
+
+      // Bestand bleibt unangetastet — Vorschau speichert nicht.
+      final aktuell = await repo.laden();
+      expect(aktuell.eintraege.single.id, 'bleibt');
+    });
+
+    test('pruefeSicherung wirft bei fremdem oder kaputtem JSON', () {
+      expect(() => repo.pruefeSicherung('{"foo": 1}'), throwsFormatException);
+      expect(() => repo.pruefeSicherung('{ kein json'), throwsFormatException);
     });
   });
 }

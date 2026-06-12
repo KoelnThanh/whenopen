@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
+import '../models/app_einstellungen.dart';
 import '../models/kategorie.dart';
 import '../models/location.dart';
 
@@ -108,24 +109,40 @@ class LocationRepository {
   /// Pfad der Datendatei (fuer Export via Share-Intent).
   Future<String> exportPath() async => _datei.path;
 
+  // ── Einstellungen (Schema 2.1) ──────────────────────────────────────
+
+  Future<AppEinstellungen> getEinstellungen() async =>
+      (await laden()).einstellungen;
+
+  /// Heimatadresse/Umkreis o. Ae. speichern (Eintraege bleiben unberuehrt).
+  Future<void> setEinstellungen(AppEinstellungen einstellungen) async {
+    final daten = await laden();
+    await speichern(daten.copyWith(einstellungen: einstellungen));
+  }
+
   // ── Backup / Wiederherstellen (P10) ─────────────────────────────────
+
+  /// Pretty-gedruckter JSON-String der aktuellen Daten (fuer „Sichern" in den
+  /// Download-Ordner und fuer die teilbare Kopie).
+  Future<String> exportInhalt() async {
+    final daten = await laden();
+    return const JsonEncoder.withIndent('  ').convert(daten.toJson());
+  }
 
   /// Schreibt eine datierte, teilbare Kopie der aktuellen Daten ins
   /// Temp-Verzeichnis und gibt die Datei zurueck (fuer den Teilen-Dialog).
   Future<File> exportKopie() async {
-    final daten = await laden();
     final tmp = await getTemporaryDirectory();
     final datum = DateTime.now().toIso8601String().split('T').first;
     final ziel = File('${tmp.path}/whenopen-sicherung-$datum.json');
-    const encoder = JsonEncoder.withIndent('  ');
-    await ziel.writeAsString(encoder.convert(daten.toJson()), flush: true);
+    await ziel.writeAsString(await exportInhalt(), flush: true);
     return ziel;
   }
 
-  /// Stellt Daten aus einem JSON-String wieder her. Validiert zuerst — bei
-  /// ungueltigem Inhalt wirft die Methode und die aktuellen Daten bleiben
-  /// unangetastet. Vor dem Ueberschreiben wird die aktuelle Datei gesichert.
-  Future<void> importJson(String inhalt) async {
+  /// Validiert einen Sicherungs-String und gibt die enthaltenen Daten zurueck,
+  /// **ohne zu speichern** — fuer die Import-Vorschau, bevor Bestandsdaten
+  /// ersetzt werden. Wirft [FormatException] bei ungueltigem Inhalt.
+  WhenOpenData pruefeSicherung(String inhalt) {
     final dynamic roh = jsonDecode(inhalt);
     if (roh is! Map<String, dynamic> ||
         roh['version'] == null ||
@@ -135,7 +152,14 @@ class LocationRepository {
     // Wirft bei falschem Schema (z. B. kaputte Eintraege) — bewusst vor dem
     // Speichern, damit die Bestandsdaten erst nach erfolgreicher Pruefung
     // ersetzt werden.
-    final daten = WhenOpenData.fromJson(roh);
+    return WhenOpenData.fromJson(roh);
+  }
+
+  /// Stellt Daten aus einem JSON-String wieder her. Validiert zuerst — bei
+  /// ungueltigem Inhalt wirft die Methode und die aktuellen Daten bleiben
+  /// unangetastet. Vor dem Ueberschreiben wird die aktuelle Datei gesichert.
+  Future<void> importJson(String inhalt) async {
+    final daten = pruefeSicherung(inhalt);
     if (await _datei.exists()) {
       final ts = DateTime.now()
           .toIso8601String()

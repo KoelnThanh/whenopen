@@ -25,13 +25,18 @@ class NominatimService implements ImportService {
   Future<List<NominatimResult>> searchPlaces(String query) async {
     if (query.trim().isEmpty) return const [];
 
+    // Option A (Tuning): auf Deutschland eingrenzen, deutsche Namen, POIs
+    // priorisieren (hoehere opening_hours-Chance), etwas mehr Treffer.
     final uri = Uri.https('nominatim.openstreetmap.org', '/search', {
       'q': query.trim(),
       'format': 'jsonv2',
       'extratags': '1',
       'addressdetails': '1',
       'namedetails': '1',
-      'limit': '5',
+      'countrycodes': 'de',
+      'accept-language': 'de',
+      'layer': 'poi,address',
+      'limit': '8',
     });
 
     final antwort = await _client

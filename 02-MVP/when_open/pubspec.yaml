@@ -40,7 +40,6 @@ dependencies:
   android_alarm_manager_plus: ^4.0.7
   # Periodisches Sicherheitsnetz fuer Widget-Updates (E16)
   workmanager: ^0.9.0+3
-
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -144,15 +144,111 @@
 
   "exportTeilen": "Daten exportieren",
 
-  "menueSichern": "Daten sichern",
-  "menueWiederherstellen": "Daten wiederherstellen",
+  "menueSichern": "Sichern",
+  "menueTeilen": "Teilen",
+  "menueWiederherstellen": "Wiederherstellen",
   "sichernBetreff": "WhenOpen-Sicherung",
+  "sichernErfolg": "Gesichert in {ordner}.",
+  "@sichernErfolg": {
+    "placeholders": {
+      "ordner": { "type": "String" }
+    }
+  },
+  "sichernKeineBerechtigung": "Bitte Speicher-Berechtigung erteilen und erneut sichern.",
   "sichernFehler": "Sichern fehlgeschlagen",
-  "wiederherstellenTitel": "Daten wiederherstellen?",
-  "wiederherstellenText": "Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.",
-  "wiederherstellenHint": "JSON-Inhalt der Sicherung einfügen",
+  "teilenFehler": "Teilen fehlgeschlagen",
+  "wiederherstellenTitel": "Wiederherstellen?",
+  "wiederherstellenLetzte": "Letzte Sicherung laden",
+  "wiederherstellenLetzteInfo": "Aus dem Ordner Download/WhenOpen",
+  "wiederherstellenDatei": "Datei wählen…",
+  "wiederherstellenDateiInfo": "Aus Dateien, Downloads oder einer empfangenen Nachricht",
+  "wiederherstellenKeine": "Keine Sicherung im Ordner Download/WhenOpen gefunden.",
+  "wiederherstellenVorschau": "Diese Sicherung enthält {orte, plural, =0{keine Orte} =1{1 Ort} other{{orte} Orte}} und {kategorien, plural, =0{keine Kategorien} =1{1 Kategorie} other{{kategorien} Kategorien}}.",
+  "@wiederherstellenVorschau": {
+    "placeholders": {
+      "orte": { "type": "int" },
+      "kategorien": { "type": "int" }
+    }
+  },
+  "wiederherstellenWarnung": "Deine jetzigen {anzahl, plural, =0{Daten} =1{1 Ort} other{{anzahl} Orte}} werden vorher automatisch gesichert.",
+  "@wiederherstellenWarnung": {
+    "placeholders": {
+      "anzahl": { "type": "int" }
+    }
+  },
   "wiederherstellenAktion": "Wiederherstellen",
   "wiederherstellenErfolg": "Daten wiederhergestellt.",
   "wiederherstellenFehler": "Keine gültige WhenOpen-Sicherung — nichts geändert.",
-  "abbrechen": "Abbrechen"
+  "abbrechen": "Abbrechen",
+
+  "menueEinstellungen": "Einstellungen",
+  "einstTitel": "Einstellungen",
+  "einstHeimatTitel": "Heimatadresse",
+  "einstHeimatInfo": "Für die Umkreissuche „Orte in der Nähe“. Wird einmalig zu Koordinaten aufgelöst und bleibt lokal — keine Standortfreigabe nötig.",
+  "einstHeimatKeine": "Noch keine Heimatadresse hinterlegt.",
+  "einstHeimatSuchen": "Adresse suchen",
+  "einstHeimatSuchHint": "Straße und Ort, z. B. „Hauptstraße 1, Köln“",
+  "einstHeimatEntfernen": "Entfernen",
+  "einstUmkreisTitel": "Suchradius",
+  "einstUmkreisMeter": "{meter} m",
+  "@einstUmkreisMeter": { "placeholders": { "meter": { "type": "int" } } },
+  "einstUmkreisKm": "{km} km",
+  "@einstUmkreisKm": { "placeholders": { "km": { "type": "String" } } },
+  "einstSpeichern": "Speichern",
+  "einstGespeichert": "Einstellungen gespeichert.",
+  "einstAttribution": "Ortsdaten: © OpenStreetMap-Mitwirkende (ODbL)",
+
+  "umkreisSuchen": "Orte in der Nähe",
+  "umkreisTitel": "Orte in der Nähe",
+  "umkreisRadiusInfo": "{radius} um {adresse}",
+  "@umkreisRadiusInfo": { "placeholders": { "radius": { "type": "String" }, "adresse": { "type": "String" } } },
+  "umkreisLaedt": "Suche Orte in deiner Nähe…",
+  "umkreisKeineTreffer": "Keine Orte mit Öffnungszeiten im Umkreis gefunden. Erhöhe ggf. den Radius in den Einstellungen.",
+  "umkreisFehler": "Suche nicht möglich — bitte später erneut versuchen.",
+  "umkreisKeineHeimat": "Hinterlege zuerst deine Heimatadresse in den Einstellungen.",
+  "umkreisZuEinstellungen": "Zu den Einstellungen",
+
+  "menueUeber": "Über WhenOpen",
+  "ueberTitel": "Über WhenOpen",
+  "ueberTagline": "Persönliche Öffnungszeiten auf einen Blick.",
+  "ueberUnterstuetzenTitel": "Unterstützen",
+  "ueberUnterstuetzenHinweis": "WhenOpen ist und bleibt kostenlos — es schaltet nichts frei.",
+  "ueberKaffeeButton": "Spendier mir einen Kaffee ☕",
+  "ueberLinkFehler": "Link konnte nicht geöffnet werden.",
+  "ueberVersion": "Version {version}",
+  "@ueberVersion": { "placeholders": { "version": { "type": "String" } } },
+
+  "ueberKontaktTitel": "Kontakt & Feedback",
+  "ueberKontaktHinweis": "Fragen, Wünsche oder ein Fehler aufgetaucht? Ich freue mich über deine Nachricht.",
+  "ueberKontaktButton": "E-Mail schreiben",
+  "ueberKontaktBetreff": "WhenOpen-Feedback",
+
+  "tutorialDialogTitel": "Kurze Einführung?",
+  "tutorialDialogText": "Es sieht aus, als wärst du neu hier. Möchtest du eine kurze Tour durch WhenOpen — Kategorien, Daten und „Orte in der Nähe“?",
+  "tutorialDialogJa": "Tour starten",
+  "tutorialDialogNein": "Nein, danke",
+
+  "onboardingUeberspringen": "Überspringen",
+  "onboardingWeiter": "Weiter",
+  "onboardingErsterOrt": "Ersten Ort anlegen",
+  "onboardingFertig": "Fertig",
+
+  "onboardingWillkommenTitel": "Willkommen bei WhenOpen",
+  "onboardingWillkommenText": "Behalte die Öffnungszeiten deiner wichtigen Orte im Blick. Alles bleibt lokal auf deinem Gerät — kein Konto, keine Cloud, kein Tracking.",
+  "onboardingKategorienTitel": "Kategorien",
+  "onboardingKategorienText": "Ordne deine Orte in frei wählbare Kategorien wie „Ärzte“ oder „Einkaufen“ — praktisch zum Gruppieren und Filtern. Ohne Auswahl landet ein Ort unter „Sonstige“.",
+  "onboardingDatenTitel": "Woher kommen die Daten?",
+  "onboardingDatenText": "Du kannst Orte aus dem Web übernehmen (OpenStreetMap), „Orte in der Nähe“ suchen oder Zeiten von Hand eintragen. Deine Sammlung lässt sich jederzeit sichern und wiederherstellen.",
+  "onboardingAdresseTitel": "Deine Adresse (einmalig)",
+  "onboardingAdresseText": "Damit du kein GPS nutzen musst, fragen wir einmal nach deiner Adresse. Ohne Adresse wird die Funktion „Orte in der Nähe“ nicht freigeschaltet.",
+  "onboardingAdresseGesetzt": "Super — „Orte in der Nähe“ ist jetzt freigeschaltet.",
+  "onboardingEmailTitel": "Fragen oder Feedback?",
+  "onboardingEmailText": "Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.",
+  "onboardingEmailButton": "E-Mail schreiben",
+  "onboardingSpendenTitel": "WhenOpen unterstützen",
+  "onboardingSpendenText": "Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.",
+  "onboardingFertigTitel": "Los geht’s!",
+  "onboardingFertigText": "Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.",
+
+  "tutorialQeHinweis": "Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen."
 }

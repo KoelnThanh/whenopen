@@ -823,13 +823,19 @@ abstract class AppLocalizations {
   /// No description provided for @menueSichern.
   ///
   /// In de, this message translates to:
-  /// **'Daten sichern'**
+  /// **'Sichern'**
   String get menueSichern;
+
+  /// No description provided for @menueTeilen.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen'**
+  String get menueTeilen;
 
   /// No description provided for @menueWiederherstellen.
   ///
   /// In de, this message translates to:
-  /// **'Daten wiederherstellen'**
+  /// **'Wiederherstellen'**
   String get menueWiederherstellen;
 
   /// No description provided for @sichernBetreff.
@@ -838,29 +844,77 @@ abstract class AppLocalizations {
   /// **'WhenOpen-Sicherung'**
   String get sichernBetreff;
 
+  /// No description provided for @sichernErfolg.
+  ///
+  /// In de, this message translates to:
+  /// **'Gesichert in {ordner}.'**
+  String sichernErfolg(String ordner);
+
+  /// No description provided for @sichernKeineBerechtigung.
+  ///
+  /// In de, this message translates to:
+  /// **'Bitte Speicher-Berechtigung erteilen und erneut sichern.'**
+  String get sichernKeineBerechtigung;
+
   /// No description provided for @sichernFehler.
   ///
   /// In de, this message translates to:
   /// **'Sichern fehlgeschlagen'**
   String get sichernFehler;
 
+  /// No description provided for @teilenFehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Teilen fehlgeschlagen'**
+  String get teilenFehler;
+
   /// No description provided for @wiederherstellenTitel.
   ///
   /// In de, this message translates to:
-  /// **'Daten wiederherstellen?'**
+  /// **'Wiederherstellen?'**
   String get wiederherstellenTitel;
 
-  /// No description provided for @wiederherstellenText.
+  /// No description provided for @wiederherstellenLetzte.
   ///
   /// In de, this message translates to:
-  /// **'Öffne deine Sicherungsdatei (z. B. in Dateien oder Drive), kopiere den gesamten Inhalt und füge ihn hier ein. Deine jetzigen Daten werden vorher automatisch gesichert.'**
-  String get wiederherstellenText;
+  /// **'Letzte Sicherung laden'**
+  String get wiederherstellenLetzte;
 
-  /// No description provided for @wiederherstellenHint.
+  /// No description provided for @wiederherstellenLetzteInfo.
   ///
   /// In de, this message translates to:
-  /// **'JSON-Inhalt der Sicherung einfügen'**
-  String get wiederherstellenHint;
+  /// **'Aus dem Ordner Download/WhenOpen'**
+  String get wiederherstellenLetzteInfo;
+
+  /// No description provided for @wiederherstellenDatei.
+  ///
+  /// In de, this message translates to:
+  /// **'Datei wählen…'**
+  String get wiederherstellenDatei;
+
+  /// No description provided for @wiederherstellenDateiInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Aus Dateien, Downloads oder einer empfangenen Nachricht'**
+  String get wiederherstellenDateiInfo;
+
+  /// No description provided for @wiederherstellenKeine.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Sicherung im Ordner Download/WhenOpen gefunden.'**
+  String get wiederherstellenKeine;
+
+  /// No description provided for @wiederherstellenVorschau.
+  ///
+  /// In de, this message translates to:
+  /// **'Diese Sicherung enthält {orte, plural, =0{keine Orte} =1{1 Ort} other{{orte} Orte}} und {kategorien, plural, =0{keine Kategorien} =1{1 Kategorie} other{{kategorien} Kategorien}}.'**
+  String wiederherstellenVorschau(int orte, int kategorien);
+
+  /// No description provided for @wiederherstellenWarnung.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine jetzigen {anzahl, plural, =0{Daten} =1{1 Ort} other{{anzahl} Orte}} werden vorher automatisch gesichert.'**
+  String wiederherstellenWarnung(int anzahl);
 
   /// No description provided for @wiederherstellenAktion.
   ///
@@ -885,6 +939,360 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Abbrechen'**
   String get abbrechen;
+
+  /// No description provided for @menueEinstellungen.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get menueEinstellungen;
+
+  /// No description provided for @einstTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen'**
+  String get einstTitel;
+
+  /// No description provided for @einstHeimatTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Heimatadresse'**
+  String get einstHeimatTitel;
+
+  /// No description provided for @einstHeimatInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Für die Umkreissuche „Orte in der Nähe“. Wird einmalig zu Koordinaten aufgelöst und bleibt lokal — keine Standortfreigabe nötig.'**
+  String get einstHeimatInfo;
+
+  /// No description provided for @einstHeimatKeine.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch keine Heimatadresse hinterlegt.'**
+  String get einstHeimatKeine;
+
+  /// No description provided for @einstHeimatSuchen.
+  ///
+  /// In de, this message translates to:
+  /// **'Adresse suchen'**
+  String get einstHeimatSuchen;
+
+  /// No description provided for @einstHeimatSuchHint.
+  ///
+  /// In de, this message translates to:
+  /// **'Straße und Ort, z. B. „Hauptstraße 1, Köln“'**
+  String get einstHeimatSuchHint;
+
+  /// No description provided for @einstHeimatEntfernen.
+  ///
+  /// In de, this message translates to:
+  /// **'Entfernen'**
+  String get einstHeimatEntfernen;
+
+  /// No description provided for @einstUmkreisTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Suchradius'**
+  String get einstUmkreisTitel;
+
+  /// No description provided for @einstUmkreisMeter.
+  ///
+  /// In de, this message translates to:
+  /// **'{meter} m'**
+  String einstUmkreisMeter(int meter);
+
+  /// No description provided for @einstUmkreisKm.
+  ///
+  /// In de, this message translates to:
+  /// **'{km} km'**
+  String einstUmkreisKm(String km);
+
+  /// No description provided for @einstSpeichern.
+  ///
+  /// In de, this message translates to:
+  /// **'Speichern'**
+  String get einstSpeichern;
+
+  /// No description provided for @einstGespeichert.
+  ///
+  /// In de, this message translates to:
+  /// **'Einstellungen gespeichert.'**
+  String get einstGespeichert;
+
+  /// No description provided for @einstAttribution.
+  ///
+  /// In de, this message translates to:
+  /// **'Ortsdaten: © OpenStreetMap-Mitwirkende (ODbL)'**
+  String get einstAttribution;
+
+  /// No description provided for @umkreisSuchen.
+  ///
+  /// In de, this message translates to:
+  /// **'Orte in der Nähe'**
+  String get umkreisSuchen;
+
+  /// No description provided for @umkreisTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Orte in der Nähe'**
+  String get umkreisTitel;
+
+  /// No description provided for @umkreisRadiusInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'{radius} um {adresse}'**
+  String umkreisRadiusInfo(String radius, String adresse);
+
+  /// No description provided for @umkreisLaedt.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche Orte in deiner Nähe…'**
+  String get umkreisLaedt;
+
+  /// No description provided for @umkreisKeineTreffer.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Orte mit Öffnungszeiten im Umkreis gefunden. Erhöhe ggf. den Radius in den Einstellungen.'**
+  String get umkreisKeineTreffer;
+
+  /// No description provided for @umkreisFehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nicht möglich — bitte später erneut versuchen.'**
+  String get umkreisFehler;
+
+  /// No description provided for @umkreisKeineHeimat.
+  ///
+  /// In de, this message translates to:
+  /// **'Hinterlege zuerst deine Heimatadresse in den Einstellungen.'**
+  String get umkreisKeineHeimat;
+
+  /// No description provided for @umkreisZuEinstellungen.
+  ///
+  /// In de, this message translates to:
+  /// **'Zu den Einstellungen'**
+  String get umkreisZuEinstellungen;
+
+  /// No description provided for @menueUeber.
+  ///
+  /// In de, this message translates to:
+  /// **'Über WhenOpen'**
+  String get menueUeber;
+
+  /// No description provided for @ueberTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Über WhenOpen'**
+  String get ueberTitel;
+
+  /// No description provided for @ueberTagline.
+  ///
+  /// In de, this message translates to:
+  /// **'Persönliche Öffnungszeiten auf einen Blick.'**
+  String get ueberTagline;
+
+  /// No description provided for @ueberUnterstuetzenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Unterstützen'**
+  String get ueberUnterstuetzenTitel;
+
+  /// No description provided for @ueberUnterstuetzenHinweis.
+  ///
+  /// In de, this message translates to:
+  /// **'WhenOpen ist und bleibt kostenlos — es schaltet nichts frei.'**
+  String get ueberUnterstuetzenHinweis;
+
+  /// No description provided for @ueberKaffeeButton.
+  ///
+  /// In de, this message translates to:
+  /// **'Spendier mir einen Kaffee ☕'**
+  String get ueberKaffeeButton;
+
+  /// No description provided for @ueberLinkFehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Link konnte nicht geöffnet werden.'**
+  String get ueberLinkFehler;
+
+  /// No description provided for @ueberVersion.
+  ///
+  /// In de, this message translates to:
+  /// **'Version {version}'**
+  String ueberVersion(String version);
+
+  /// No description provided for @ueberKontaktTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kontakt & Feedback'**
+  String get ueberKontaktTitel;
+
+  /// No description provided for @ueberKontaktHinweis.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen, Wünsche oder ein Fehler aufgetaucht? Ich freue mich über deine Nachricht.'**
+  String get ueberKontaktHinweis;
+
+  /// No description provided for @ueberKontaktButton.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail schreiben'**
+  String get ueberKontaktButton;
+
+  /// No description provided for @ueberKontaktBetreff.
+  ///
+  /// In de, this message translates to:
+  /// **'WhenOpen-Feedback'**
+  String get ueberKontaktBetreff;
+
+  /// No description provided for @tutorialDialogTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurze Einführung?'**
+  String get tutorialDialogTitel;
+
+  /// No description provided for @tutorialDialogText.
+  ///
+  /// In de, this message translates to:
+  /// **'Es sieht aus, als wärst du neu hier. Möchtest du eine kurze Tour durch WhenOpen — Kategorien, Daten und „Orte in der Nähe“?'**
+  String get tutorialDialogText;
+
+  /// No description provided for @tutorialDialogJa.
+  ///
+  /// In de, this message translates to:
+  /// **'Tour starten'**
+  String get tutorialDialogJa;
+
+  /// No description provided for @tutorialDialogNein.
+  ///
+  /// In de, this message translates to:
+  /// **'Nein, danke'**
+  String get tutorialDialogNein;
+
+  /// No description provided for @onboardingUeberspringen.
+  ///
+  /// In de, this message translates to:
+  /// **'Überspringen'**
+  String get onboardingUeberspringen;
+
+  /// No description provided for @onboardingWeiter.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter'**
+  String get onboardingWeiter;
+
+  /// No description provided for @onboardingErsterOrt.
+  ///
+  /// In de, this message translates to:
+  /// **'Ersten Ort anlegen'**
+  String get onboardingErsterOrt;
+
+  /// No description provided for @onboardingFertig.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get onboardingFertig;
+
+  /// No description provided for @onboardingWillkommenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Willkommen bei WhenOpen'**
+  String get onboardingWillkommenTitel;
+
+  /// No description provided for @onboardingWillkommenText.
+  ///
+  /// In de, this message translates to:
+  /// **'Behalte die Öffnungszeiten deiner wichtigen Orte im Blick. Alles bleibt lokal auf deinem Gerät — kein Konto, keine Cloud, kein Tracking.'**
+  String get onboardingWillkommenText;
+
+  /// No description provided for @onboardingKategorienTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kategorien'**
+  String get onboardingKategorienTitel;
+
+  /// No description provided for @onboardingKategorienText.
+  ///
+  /// In de, this message translates to:
+  /// **'Ordne deine Orte in frei wählbare Kategorien wie „Ärzte“ oder „Einkaufen“ — praktisch zum Gruppieren und Filtern. Ohne Auswahl landet ein Ort unter „Sonstige“.'**
+  String get onboardingKategorienText;
+
+  /// No description provided for @onboardingDatenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Woher kommen die Daten?'**
+  String get onboardingDatenTitel;
+
+  /// No description provided for @onboardingDatenText.
+  ///
+  /// In de, this message translates to:
+  /// **'Du kannst Orte aus dem Web übernehmen (OpenStreetMap), „Orte in der Nähe“ suchen oder Zeiten von Hand eintragen. Deine Sammlung lässt sich jederzeit sichern und wiederherstellen.'**
+  String get onboardingDatenText;
+
+  /// No description provided for @onboardingAdresseTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Deine Adresse (einmalig)'**
+  String get onboardingAdresseTitel;
+
+  /// No description provided for @onboardingAdresseText.
+  ///
+  /// In de, this message translates to:
+  /// **'Damit du kein GPS nutzen musst, fragen wir einmal nach deiner Adresse. Ohne Adresse wird die Funktion „Orte in der Nähe“ nicht freigeschaltet.'**
+  String get onboardingAdresseText;
+
+  /// No description provided for @onboardingAdresseGesetzt.
+  ///
+  /// In de, this message translates to:
+  /// **'Super — „Orte in der Nähe“ ist jetzt freigeschaltet.'**
+  String get onboardingAdresseGesetzt;
+
+  /// No description provided for @onboardingEmailTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen oder Feedback?'**
+  String get onboardingEmailTitel;
+
+  /// No description provided for @onboardingEmailText.
+  ///
+  /// In de, this message translates to:
+  /// **'Schreib mir einfach — ich freue mich über jede Rückmeldung und jede Idee.'**
+  String get onboardingEmailText;
+
+  /// No description provided for @onboardingEmailButton.
+  ///
+  /// In de, this message translates to:
+  /// **'E-Mail schreiben'**
+  String get onboardingEmailButton;
+
+  /// No description provided for @onboardingSpendenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'WhenOpen unterstützen'**
+  String get onboardingSpendenTitel;
+
+  /// No description provided for @onboardingSpendenText.
+  ///
+  /// In de, this message translates to:
+  /// **'Die App ist und bleibt kostenlos. Wenn sie dir den Alltag leichter macht, freue ich mich über einen Kaffee — komplett optional.'**
+  String get onboardingSpendenText;
+
+  /// No description provided for @onboardingFertigTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Los geht’s!'**
+  String get onboardingFertigTitel;
+
+  /// No description provided for @onboardingFertigText.
+  ///
+  /// In de, this message translates to:
+  /// **'Du bist startklar. Am einfachsten legst du deinen ersten Ort über „Orte in der Nähe“ an.'**
+  String get onboardingFertigText;
+
+  /// No description provided for @tutorialQeHinweis.
+  ///
+  /// In de, this message translates to:
+  /// **'Tipp: Über „Orte in der Nähe“ findest du einen Ort automatisch — Name, Adresse und Öffnungszeiten werden direkt übernommen.'**
+  String get tutorialQeHinweis;
 }
 
 class _AppLocalizationsDelegate

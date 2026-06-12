@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart' show immutable;
 import 'package:json_annotation/json_annotation.dart';
 
+import 'app_einstellungen.dart';
 import 'kategorie.dart';
 import 'opening_day.dart';
 import 'wochentag.dart';
@@ -88,7 +89,8 @@ class Location {
       );
 }
 
-/// Wurzelobjekt der JSON-Datei (Schema 2.0): version, kategorien, eintraege.
+/// Wurzelobjekt der JSON-Datei (Schema 2.1): version, kategorien, eintraege,
+/// einstellungen. Alte 2.0-Dateien ohne `einstellungen` laden mit Default.
 @immutable
 @JsonSerializable()
 class WhenOpenData {
@@ -96,13 +98,17 @@ class WhenOpenData {
     this.version = WhenOpenData.schemaVersion,
     this.kategorien = const [],
     this.eintraege = const [],
+    this.einstellungen = const AppEinstellungen(),
   });
 
-  static const schemaVersion = '2.0';
+  static const schemaVersion = '2.1';
 
   final String version;
   final List<Kategorie> kategorien;
   final List<Location> eintraege;
+
+  /// App-Einstellungen (Schema 2.1) — z. B. Heimatadresse + Umkreis.
+  final AppEinstellungen einstellungen;
 
   factory WhenOpenData.fromJson(Map<String, dynamic> json) =>
       _$WhenOpenDataFromJson(json);
@@ -113,10 +119,12 @@ class WhenOpenData {
     String? version,
     List<Kategorie>? kategorien,
     List<Location>? eintraege,
+    AppEinstellungen? einstellungen,
   }) =>
       WhenOpenData(
         version: version ?? this.version,
         kategorien: kategorien ?? this.kategorien,
         eintraege: eintraege ?? this.eintraege,
+        einstellungen: einstellungen ?? this.einstellungen,
       );
 }

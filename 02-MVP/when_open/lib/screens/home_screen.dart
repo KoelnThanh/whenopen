@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../l10n/app_localizations.dart';
+import '../models/app_einstellungen.dart';
 import '../models/kategorie.dart';
 import '../models/location.dart';
 import '../providers/locations_provider.dart';
@@ -66,6 +68,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   DateTime _jetzt = DateTime.now();
   Timer? _timer;
   bool _ladefehlerGezeigt = false;
+  bool _onboardingGeprueft = false;
 
   @override
   void initState() {
@@ -105,6 +108,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     });
   }
 
+  /// Beim ersten geladenen Frame: zuerst einen evtl. Ladefehler-Dialog,
+  /// danach das Erstnutzer-Tutorial anbieten (Ladefehler hat Vorrang).
+  Future<void> _pruefeStartDialoge() async {
+    await _zeigeLadefehlerFallsNoetig();
+    await _zeigeOnboardingFallsNoetig();
+  }
+
   Future<void> _zeigeLadefehlerFallsNoetig() async {
     if (_ladefehlerGezeigt) return;
     _ladefehlerGezeigt = true;
@@ -126,6 +136,44 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         ],
       ),
     );
+  }
+
+  /// Erstnutzung (leere App, Tutorial-Status offen): einmalig fragen, ob die
+  /// Tour gestartet werden soll. „Nein" wird dauerhaft gespeichert. Bei
+  /// beschaedigten Daten (Ladefehler) wird NICHT gefragt.
+  Future<void> _zeigeOnboardingFallsNoetig() async {
+    if (_onboardingGeprueft) return;
+    _onboardingGeprueft = true;
+    if (!ref.read(zeigeOnboardingProvider)) return;
+    if (await ref.read(appDataProvider.notifier).hatteLadefehler()) return;
+    if (!mounted) return;
+    final l10n = AppLocalizations.of(context)!;
+    final ja = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.tutorialDialogTitel),
+        content: Text(l10n.tutorialDialogText),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.tutorialDialogNein),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(l10n.tutorialDialogJa),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (ja == true) {
+      context.push('/onboarding');
+    } else {
+      await ref
+          .read(appDataProvider.notifier)
+          .setTutorialStatus(TutorialStatus.abgelehnt);
+    }
   }
 
   List<_Ansicht> _ansichten(
@@ -171,9 +219,33 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
   }
 
-  /// Daten sichern: datierte JSON-Kopie über den Teilen-Dialog ausgeben
-  /// (Drive, E-Mail, Dateien …) — die Absicherung gegen Datenverlust.
+  /// Sichern: aktuelle Daten in den festen, sichtbaren Ordner
+  /// `Download/WhenOpen` schreiben (überschreibt). Kein Teilen-Dialog —
+  /// das ist die schnelle lokale Absicherung.
   Future<void> _sichern() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final ordner = await ref.read(appDataProvider.notifier).sichern();
+      if (!mounted) return;
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.sichernErfolg(ordner))),
+      );
+    } on PlatformException catch (e) {
+      if (!mounted) return;
+      final text = e.code == 'KEINE_BERECHTIGUNG'
+          ? l10n.sichernKeineBerechtigung
+          : l10n.sichernFehler;
+      messenger.showSnackBar(SnackBar(content: Text(text)));
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sichernFehler)));
+    }
+  }
+
+  /// Teilen: datierte JSON-Kopie über den Teilen-Dialog ausgeben
+  /// (WhatsApp, Drive, E-Mail …) — zum Weitergeben an andere Geräte/Personen.
+  Future<void> _teilen() async {
     final l10n = AppLocalizations.of(context)!;
     final messenger = ScaffoldMessenger.of(context);
     try {
@@ -183,17 +255,111 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         subject: l10n.sichernBetreff,
       );
     } catch (_) {
-      messenger.showSnackBar(SnackBar(content: Text(l10n.sichernFehler)));
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.teilenFehler)));
     }
   }
 
-  /// Daten wiederherstellen: Inhalt einer Sicherungsdatei einfügen →
-  /// bestätigen → importieren. Der Import validiert und sichert die
-  /// Bestandsdaten vorher (siehe LocationRepository.importJson).
+  /// Wiederherstellen: Quelle wählen — schnelle Sicherung aus dem festen
+  /// Ordner oder beliebige Datei (z. B. eine empfangene Sicherung).
   Future<void> _wiederherstellen() async {
     final l10n = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
-    final inhalt = await showDialog<String>(
+    final wahl = await showModalBottomSheet<int>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.bolt_outlined, color: AppColors.primary),
+              title: Text(l10n.wiederherstellenLetzte),
+              subtitle: Text(l10n.wiederherstellenLetzteInfo),
+              onTap: () => Navigator.pop(context, 0),
+            ),
+            ListTile(
+              leading: const Icon(Icons.folder_open_outlined),
+              title: Text(l10n.wiederherstellenDatei),
+              subtitle: Text(l10n.wiederherstellenDateiInfo),
+              onTap: () => Navigator.pop(context, 1),
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+    if (wahl == null || !mounted) return;
+    if (wahl == 0) {
+      await _ausOrdnerLaden();
+    } else {
+      await _ausDateiLaden();
+    }
+  }
+
+  /// „Letzte Sicherung laden": neueste Datei aus `Download/WhenOpen` lesen.
+  Future<void> _ausOrdnerLaden() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    String? inhalt;
+    try {
+      inhalt = await ref.read(appDataProvider.notifier).letzteSicherungInhalt();
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.sichernFehler)));
+      return;
+    }
+    if (!mounted) return;
+    if (inhalt == null || inhalt.trim().isEmpty) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(l10n.wiederherstellenKeine)),
+      );
+      return;
+    }
+    await _importiereInhalt(inhalt, l10n.wiederherstellenLetzte);
+  }
+
+  /// „Datei wählen…": Sicherung über den System-Dateibrowser auswählen
+  /// (nativer `ACTION_OPEN_DOCUMENT`) — kein Kopieren von JSON-Text mehr nötig.
+  Future<void> _ausDateiLaden() async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    Map<String, String>? datei;
+    try {
+      datei = await ref.read(downloadsBackupServiceProvider).dateiWaehlen();
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.wiederherstellenFehler)));
+      return;
+    }
+    if (datei == null || !mounted) return; // Auswahl abgebrochen
+    await _importiereInhalt(
+      datei['inhalt'] ?? '',
+      datei['name'] ?? l10n.wiederherstellenDatei,
+    );
+  }
+
+  /// Gemeinsamer Import-Abschluss: validieren → Vorschau bestätigen →
+  /// importieren. Der Import sichert die Bestandsdaten vorher
+  /// (siehe LocationRepository.importJson).
+  Future<void> _importiereInhalt(String inhalt, String quelle) async {
+    final l10n = AppLocalizations.of(context)!;
+    final messenger = ScaffoldMessenger.of(context);
+    // Mögliches UTF-8-BOM aus extern bearbeiteten Dateien entfernen.
+    if (inhalt.startsWith(String.fromCharCode(0xFEFF))) {
+      inhalt = inhalt.substring(1);
+    }
+
+    WhenOpenData vorschau;
+    try {
+      vorschau = await ref.read(appDataProvider.notifier).pruefeSicherung(inhalt);
+    } catch (_) {
+      if (!mounted) return;
+      messenger.showSnackBar(SnackBar(content: Text(l10n.wiederherstellenFehler)));
+      return;
+    }
+    if (!mounted) return;
+
+    final aktuelle = ref.read(locationsProvider).length;
+    final bestaetigt = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(l10n.wiederherstellenTitel),
@@ -201,40 +367,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(l10n.wiederherstellenText),
-            const SizedBox(height: 12),
-            TextField(
-              controller: controller,
-              minLines: 4,
-              maxLines: 7,
-              autofocus: true,
-              style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
-              decoration: InputDecoration(hintText: l10n.wiederherstellenHint),
+            Text(
+              quelle,
+              style: const TextStyle(
+                fontSize: 12,
+                fontFamily: 'monospace',
+                color: AppColors.muted,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text(l10n.wiederherstellenVorschau(
+              vorschau.eintraege.length,
+              vorschau.kategorien.length,
+            )),
+            const SizedBox(height: 8),
+            Text(
+              l10n.wiederherstellenWarnung(aktuelle),
+              style: const TextStyle(fontSize: 12, color: AppColors.muted),
             ),
           ],
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(context, false),
             child: Text(l10n.abbrechen),
           ),
           FilledButton(
-            onPressed: () => Navigator.pop(context, controller.text),
+            onPressed: () => Navigator.pop(context, true),
             child: Text(l10n.wiederherstellenAktion),
           ),
         ],
       ),
     );
-    controller.dispose();
-    if (inhalt == null || inhalt.trim().isEmpty || !mounted) return;
+    if (bestaetigt != true || !mounted) return;
 
-    final messenger = ScaffoldMessenger.of(context);
     try {
       await ref.read(appDataProvider.notifier).importJson(inhalt);
+      if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.wiederherstellenErfolg)),
       );
     } catch (_) {
+      if (!mounted) return;
       messenger.showSnackBar(
         SnackBar(content: Text(l10n.wiederherstellenFehler)),
       );
@@ -255,7 +429,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     if (asyncDaten.hasValue) {
       _planeNaechsteAktualisierung(locations);
       WidgetsBinding.instance.addPostFrameCallback(
-        (_) => _zeigeLadefehlerFallsNoetig(),
+        (_) => _pruefeStartDialoge(),
       );
     }
 
@@ -286,7 +460,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             onSuche: () => _suche(locations, l10n),
             onVerwalten: () => context.push('/kategorien'),
             onSichern: _sichern,
+            onTeilen: _teilen,
             onWiederherstellen: _wiederherstellen,
+            onEinstellungen: () => context.push('/einstellungen'),
+            onUeber: () => context.push('/ueber'),
           ),
           Expanded(
             child: asyncDaten.when(
@@ -355,7 +532,10 @@ class _HomeHeader extends StatelessWidget {
     required this.onSuche,
     required this.onVerwalten,
     required this.onSichern,
+    required this.onTeilen,
     required this.onWiederherstellen,
+    required this.onEinstellungen,
+    required this.onUeber,
   });
 
   final AppLocalizations l10n;
@@ -365,7 +545,10 @@ class _HomeHeader extends StatelessWidget {
   final VoidCallback onSuche;
   final VoidCallback onVerwalten;
   final VoidCallback onSichern;
+  final VoidCallback onTeilen;
   final VoidCallback onWiederherstellen;
+  final VoidCallback onEinstellungen;
+  final VoidCallback onUeber;
 
   @override
   Widget build(BuildContext context) {
@@ -414,9 +597,15 @@ class _HomeHeader extends StatelessWidget {
                       case 0:
                         onVerwalten();
                       case 1:
-                        onSichern();
+                        onEinstellungen();
                       case 2:
+                        onSichern();
+                      case 3:
+                        onTeilen();
+                      case 4:
                         onWiederherstellen();
+                      case 5:
+                        onUeber();
                     }
                   },
                   itemBuilder: (context) => [
@@ -427,19 +616,41 @@ class _HomeHeader extends StatelessWidget {
                         text: l10n.kategorienVerwalten,
                       ),
                     ),
-                    const PopupMenuDivider(),
                     PopupMenuItem(
                       value: 1,
                       child: _MenueZeile(
-                        icon: Icons.backup_outlined,
+                        icon: Icons.tune,
+                        text: l10n.menueEinstellungen,
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 2,
+                      child: _MenueZeile(
+                        icon: Icons.save_alt,
                         text: l10n.menueSichern,
                       ),
                     ),
                     PopupMenuItem(
-                      value: 2,
+                      value: 3,
+                      child: _MenueZeile(
+                        icon: Icons.ios_share,
+                        text: l10n.menueTeilen,
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 4,
                       child: _MenueZeile(
                         icon: Icons.restore,
                         text: l10n.menueWiederherstellen,
+                      ),
+                    ),
+                    const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 5,
+                      child: _MenueZeile(
+                        icon: Icons.info_outline,
+                        text: l10n.menueUeber,
                       ),
                     ),
                   ],

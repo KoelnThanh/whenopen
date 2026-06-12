@@ -4,9 +4,12 @@ import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
 import 'screens/detail_screen.dart';
+import 'screens/einstellungen_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/kategorien_screen.dart';
+import 'screens/onboarding_screen.dart';
 import 'screens/quick_entry/quick_entry_screen.dart';
+import 'screens/ueber_screen.dart';
 import 'theme/app_theme.dart';
 
 /// Router als Top-Level, damit Deep Links (whenopen://open/:id) auch bei
@@ -27,11 +30,24 @@ final GoRouter appRouter = GoRouter(
           builder: (context, state) => QuickEntryScreen(
             editId: state.uri.queryParameters['editId'],
             kategorieId: state.uri.queryParameters['kategorie'],
+            tutorial: state.uri.queryParameters['tutorial'] == '1',
           ),
+        ),
+        GoRoute(
+          path: 'onboarding',
+          builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(
           path: 'kategorien',
           builder: (context, state) => const KategorienScreen(),
+        ),
+        GoRoute(
+          path: 'einstellungen',
+          builder: (context, state) => const EinstellungenScreen(),
+        ),
+        GoRoute(
+          path: 'ueber',
+          builder: (context, state) => const UeberScreen(),
         ),
         // Deep-Link-Ziel fuer Widget-Taps: whenopen://open/:id
         GoRoute(

@@ -33,6 +33,20 @@ abstract final class UrlService {
     return _starte(Uri.parse('tel:$nummer'));
   }
 
+  /// E-Mail-Programm mit vorbereiteter Nachricht oeffnen (`mailto:`).
+  /// `betreff` wird korrekt URL-kodiert. Liefert false, wenn kein Mail-Client
+  /// vorhanden ist — die UI zeigt dann eine SnackBar.
+  static Future<bool> openEmail(String adresse, {String? betreff}) async {
+    final uri = Uri(
+      scheme: 'mailto',
+      path: adresse,
+      query: betreff == null
+          ? null
+          : 'subject=${Uri.encodeComponent(betreff)}',
+    );
+    return _starte(uri);
+  }
+
   static Future<bool> _starte(Uri uri) async {
     try {
       return await launchUrl(uri, mode: LaunchMode.externalApplication);

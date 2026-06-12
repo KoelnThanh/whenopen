@@ -2,14 +2,20 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../models/app_einstellungen.dart';
 import '../models/kategorie.dart';
 import '../models/location.dart';
 import '../repositories/location_repository.dart';
+import '../services/downloads_backup_service.dart';
 
 /// Repository-Provider — in Tests ueberschreibbar (overrideWith).
 final locationRepositoryProvider = FutureProvider<LocationRepository>((ref) {
   return LocationRepository.imAppVerzeichnis();
 });
+
+/// Nativer Sicherungs-Speicher (Download/WhenOpen) — in Tests ueberschreibbar.
+final downloadsBackupServiceProvider =
+    Provider<DownloadsBackupService>((ref) => const DownloadsBackupService());
 
 /// Zentraler App-Zustand: Kategorien + Eintraege aus der JSON-Datei.
 /// Alle Mutationen laufen ueber diesen Notifier, damit UI und
@@ -93,8 +99,37 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
 
   Future<String> exportPath() async => (await _repo).exportPath();
 
-  /// Datierte, teilbare Sicherungskopie (P10).
+  /// Heimatadresse/Umkreis speichern (Schema 2.1).
+  Future<void> setEinstellungen(AppEinstellungen einstellungen) async {
+    await (await _repo).setEinstellungen(einstellungen);
+    await _nachAenderung();
+  }
+
+  /// Tutorial-Entscheidung der Erstnutzung dauerhaft speichern
+  /// (z. B. „Nein" → [TutorialStatus.abgelehnt], damit nie wieder gefragt wird).
+  Future<void> setTutorialStatus(TutorialStatus status) async {
+    final aktuell =
+        state.valueOrNull?.einstellungen ?? const AppEinstellungen();
+    await setEinstellungen(aktuell.copyWith(tutorialStatus: status));
+  }
+
+  /// Datierte, teilbare Sicherungskopie für den Teilen-Dialog (P10).
   Future<File> exportKopie() async => (await _repo).exportKopie();
+
+  /// „Sichern": schreibt die aktuellen Daten in den festen, sichtbaren Ordner
+  /// `Download/WhenOpen` (überschreibt) und gibt das Ordner-Label zurück.
+  Future<String> sichern() async {
+    final inhalt = await (await _repo).exportInhalt();
+    return ref.read(downloadsBackupServiceProvider).sichern(inhalt);
+  }
+
+  /// Inhalt der neuesten Sicherung aus `Download/WhenOpen` (schnelles Laden).
+  Future<String?> letzteSicherungInhalt() =>
+      ref.read(downloadsBackupServiceProvider).letzteSicherung();
+
+  /// Validiert eine Sicherung ohne zu speichern (für die Import-Vorschau).
+  Future<WhenOpenData> pruefeSicherung(String inhalt) async =>
+      (await _repo).pruefeSicherung(inhalt);
 
   /// Wiederherstellen aus JSON; lädt danach Zustand + Widget neu.
   Future<void> importJson(String inhalt) async {
@@ -122,4 +157,21 @@ final locationsProvider = Provider<List<Location>>((ref) {
   final sortiert = [...daten.eintraege]
     ..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
   return sortiert;
+});
+
+/// App-Einstellungen (Heimatadresse/Umkreis) — Default solange ungeladen.
+final einstellungenProvider = Provider<AppEinstellungen>((ref) {
+  return ref.watch(appDataProvider).valueOrNull?.einstellungen ??
+      const AppEinstellungen();
+});
+
+/// True, wenn der Erstnutzer-Tutorial-Dialog angeboten werden soll: Daten
+/// geladen, noch keine Eintraege und Tutorial-Status [TutorialStatus.offen].
+/// Der Ladefehler-Vorrang (kein Tutorial bei beschaedigter Datei) wird im
+/// HomeScreen separat geprueft, weil er nur dem Repository bekannt ist.
+final zeigeOnboardingProvider = Provider<bool>((ref) {
+  final daten = ref.watch(appDataProvider).valueOrNull;
+  if (daten == null) return false;
+  return daten.eintraege.isEmpty &&
+      daten.einstellungen.tutorialStatus == TutorialStatus.offen;
 });
