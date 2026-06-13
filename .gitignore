@@ -2,6 +2,10 @@
 # Redundantes Archiv (Inhalt liegt entpackt in 01-Konzept/personas/)
 01-Konzept/WhenOpen.zip
 
+# Release-APK wird ueber GitHub Releases verteilt (Asset 'WhenOpen.apk' am
+# jeweiligen Release) — nicht mehr im Repo getrackt, vermeidet Historien-Aufblaehung.
+04-Release/*.apk
+
 # E2E-/Verifikations-Screenshots (Wegwerf-Artefakte am Emulator)
 02-MVP/*.png
 # Handy-Screenshots (vom Nutzer zur Diagnose abgelegt)

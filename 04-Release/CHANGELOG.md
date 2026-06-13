@@ -1,7 +1,9 @@
 # WhenOpen — Changelog
 
-Release-Dokumentation. Neueste Version oben. Die jeweils aktuelle, installierbare Datei liegt
-als [`WhenOpen-latest.apk`](WhenOpen-latest.apk) in diesem Ordner (signiert, `CN=WhenOpen`).
+Release-Dokumentation. Neueste Version oben. Die installierbare APK hängt als Asset `WhenOpen.apk`
+am jeweiligen [GitHub Release](https://github.com/KoelnThanh/whenopen/releases/latest); stabiler
+Direktlink zur neuesten Version (signiert, `CN=WhenOpen`):
+`https://github.com/KoelnThanh/whenopen/releases/latest/download/WhenOpen.apk`.
 Installationshinweise: siehe [`README.md`](README.md).
 
 > Versionsschema: `vMAJOR.MINOR.PATCH` · interne Paket-Kürzel (`Pxx`) verweisen auf
@@ -11,8 +13,9 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ## v1.0.1 — 2026-06-13 (P16: Technische Härtung)
 
-**APK:** `WhenOpen-latest.apk` · signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB ·
-App-ID `com.whenopen.when_open` · `versionName` 1.0.1 (`versionCode` 2).
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.0.1/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.0.1 (`versionCode` 2). **Erstes Release über GitHub Releases** (nicht mehr im Repo).
 
 **Neu / geändert:**
 - **Über mich** — Vorstellungstext konkretisiert: „…ob ich in der Mittagspause noch schnell zur
