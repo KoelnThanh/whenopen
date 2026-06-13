@@ -30,10 +30,10 @@ const List<String> kUeberAbsaetze = [
       'und ich probiere gerne Dinge aus, die den Alltag leichter machen. Als '
       'Familienvater zählt für mich jede kleine Optimierung.',
   'WhenOpen ist aus genau so einem Bedürfnis entstanden: Ich wollte auf einen '
-      'Blick sehen, was bei meinen lokalen Orten gerade offen hat — ohne mich '
-      'immer wieder durch Google Maps zu klicken. Die App speichert alles nur '
-      'auf deinem Gerät: kein Konto, keine Cloud, kein Tracking. Das war mir '
-      'wichtig.',
+      'Blick sehen, ob ich in der Mittagspause noch schnell zur Apotheke komme '
+      'oder ob meine Pizzeria heute aufhat — ohne mich immer wieder durch '
+      'Google Maps zu klicken. Die App speichert alles nur auf deinem Gerät: '
+      'kein Konto, keine Cloud, kein Tracking. Das war mir wichtig.',
   'Wenn dir WhenOpen den Alltag ein bisschen leichter macht, freue ich mich '
       'riesig. Und falls du magst, spendier mir einen Kaffee ☕ — das hält die '
       'Motivation für die nächsten Ideen hoch.',

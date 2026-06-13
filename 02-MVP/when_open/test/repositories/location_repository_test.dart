@@ -411,4 +411,41 @@ void main() {
       expect(() => repo.pruefeSicherung('{ kein json'), throwsFormatException);
     });
   });
+
+  group('Nebenlaeufigkeit & Backup-Deckel', () {
+    test('parallele Mutationen gehen nicht verloren (serialisiert)', () async {
+      // Fuenf saveLocation OHNE await dazwischen — ohne Serialisierung wuerde
+      // ein read-modify-write den anderen ueberschreiben (Lost Update).
+      await Future.wait([
+        for (var i = 0; i < 5; i++)
+          repo.saveLocation(_testLocation(id: 'loc-$i', name: 'Ort $i')),
+      ]);
+
+      final daten = await repo.laden();
+      expect(daten.eintraege.map((e) => e.id).toSet(),
+          {'loc-0', 'loc-1', 'loc-2', 'loc-3', 'loc-4'});
+    });
+
+    test('alte whenopen_backup_*.json werden gedeckelt (hoechstens 5)',
+        () async {
+      await repo.saveLocation(_testLocation(id: 'basis'));
+
+      // Acht Wiederherstellungen erzeugen acht Backup-Versuche; der Cleanup
+      // soll auf die juengsten fuenf kappen. Der kleine Abstand sorgt fuer
+      // eindeutige Zeitstempel im Dateinamen.
+      for (var i = 0; i < 8; i++) {
+        await repo.importJson(_spezifikationsBeispiel);
+        await Future<void>.delayed(const Duration(milliseconds: 5));
+      }
+
+      final backups = tempDir
+          .listSync()
+          .whereType<File>()
+          .where(
+              (f) => f.uri.pathSegments.last.startsWith('whenopen_backup_'))
+          .length;
+      expect(backups, lessThanOrEqualTo(5));
+      expect(backups, greaterThan(0));
+    });
+  });
 }

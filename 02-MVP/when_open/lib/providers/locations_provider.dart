@@ -1,3 +1,4 @@
+import 'dart:developer' as developer;
 import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,8 +46,16 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
     // lassen — das WorkManager-Netz (E16) faengt verpasste Updates ab.
     try {
       await onDatenGeaendert?.call(daten);
-    } catch (_) {
-      // bewusst geschluckt
+    } catch (e, st) {
+      // Das Widget-Update darf das Speichern nie scheitern lassen — der Fehler
+      // wird daher nicht propagiert, aber protokolliert, damit ein dauerhaft
+      // kaputtes Widget-Update nicht voellig unsichtbar bleibt.
+      developer.log(
+        'Widget-Update nach Datenaenderung fehlgeschlagen',
+        name: 'AppDataNotifier',
+        error: e,
+        stackTrace: st,
+      );
     }
   }
 

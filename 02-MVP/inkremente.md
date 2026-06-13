@@ -612,3 +612,45 @@ gespeichert…", Feedback/Später/Kaffee) auf; nach „Später" + Neustart **ers
   persistentes Flag gegen Neustart; das persistente Flag früh setzen, nicht erst nach dem Dialog.
 - „Standardweg lokal" ließ sich ohne Flow-Umbau lösen: ein vorgelagerter Auswahl-Schritt + ein
   `autofocus`-Schalter genügen, statt die 10-Schritt-Logik anzufassen.
+
+---
+
+## P16 — Technische Härtung nach Code-Review (2026-06-13)
+
+Vorsichtige, **additiv-defensive** Fixes aus der 7-Dimensionen-Review — bewusst **kein** Architektur-
+Umbau (App-Verhalten unverändert, nur robuster). Fachliche Lücken (Maps-Link als Freitext,
+Über-Nacht-Zeiten, Feiertage) bleiben **bewusst offen** (Produktentscheidung: dafür ist die App nicht da).
+
+**Was gebaut:**
+- **Mutationen serialisiert** (`location_repository.dart`): neue `_seriell()`-Schreibsperre
+  (Future-Kette) umschließt alle 10 mutierenden Methoden. Verhindert Lost-Update, wenn zwei
+  read-modify-write-Operationen verschränkt laufen (z. B. zwei schnelle Taps). Reine Lesezugriffe
+  bleiben frei; `_updateKategorie` (intern) wird **nicht** gewrappt → kein Deadlock.
+- **Backup-Dateien gedeckelt** (`location_repository.dart`): `_begrenzeBackups()` hält nur die
+  jüngsten 5 `whenopen_backup_*.json` (ISO-Zeitstempel ⇒ lexikografisch = chronologisch), aufgerufen
+  nach Korrupt-Recovery und Import. Vorher wuchsen die Sicherungen unbegrenzt.
+- **Exact-Alarm mit Fallback** (`widget_service.dart`): `planeNaechstenAlarm` versucht erst
+  `exact: true`, fällt bei Fehler/`false` (ab Android 12+ entziehbares `SCHEDULE_EXACT_ALARM`) auf
+  einen ungenauen Alarm zurück statt die Reschedule-Kette abreißen zu lassen. Kein Crash mehr,
+  Widget bleibt versorgt (zusätzlich WorkManager-Netz).
+- **Widget-Update-Fehler geloggt** (`locations_provider.dart`): das stille `catch (_)` in
+  `_nachAenderung` schreibt jetzt `developer.log` (Fehler weiterhin **nicht** propagiert, damit
+  Speichern nie scheitert — aber dauerhaft kaputte Widget-Updates werden sichtbar).
+- **Über-mich-Text** (`ueber_screen.dart`): „…was bei meinen lokalen Orten gerade offen hat" →
+  „…ob ich in der Mittagspause noch schnell zur Apotheke komme oder ob meine Pizzeria heute aufhat".
+
+**Bewusst NICHT angefasst** (Risiko/Nutzen bei „App soll funktional bleiben"): state-first-Umbau
+der Persistenz, `onDatenGeaendert`-Hook in den Provider-Graphen, `home_screen`-Split,
+Theme-Migration (es gibt aktuell keinen Hell-Modus → kein akuter Fehler), DST-Härtung von
+`naechsteAenderung` (selten, self-correcting), `allowBackup`/Auto-Backup (Verhaltensänderung vs.
+„alles lokal"), APK aus der Git-Historie nehmen, CI.
+
+**Was gelernt:**
+- Eine Future-Ketten-Schreibsperre macht ein dateibasiertes Repository nebenläufigkeitssicher,
+  ohne die Methodenlogik zu ändern — nur Blattmethoden wrappen, interne Helfer auslassen (Deadlock).
+- „Technischer Fehler" ≠ „muss umgebaut werden": der Hell-Modus-Befund ist erst relevant, wenn
+  `themeMode` überhaupt aktiviert wird — solange nur ein Theme gesetzt ist, ist es kein Defekt.
+
+**Verifiziert:** `flutter analyze` sauber, **92 Unit-Tests grün** (90 + 2 neue: parallele
+Mutationen gehen nicht verloren, Backup-Deckel ≤ 5). Noch **nicht** am Emulator/Gerät gegengeprüft
+(empfohlen: Widget-Update auf einem Android-13+-Gerät mit entzogenem Exact-Alarm-Recht).

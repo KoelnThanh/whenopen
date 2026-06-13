@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
 import 'dart:ui';
 
@@ -66,17 +67,43 @@ abstract final class WidgetService {
     if (!Platform.isAndroid) return;
     final naechste =
         OpenStatusService.naechsteAenderung(locations, DateTime.now());
-    await AndroidAlarmManager.oneShotAt(
-      // 5 s Puffer hinter die Grenze, damit die Neuberechnung sicher
-      // auf der neuen Seite der Stufenfunktion liegt.
-      naechste.add(const Duration(seconds: 5)),
-      _alarmId,
-      widgetAlarmCallback,
-      exact: true,
-      wakeup: true,
-      allowWhileIdle: true,
-      rescheduleOnReboot: true,
-    );
+    // 5 s Puffer hinter die Grenze, damit die Neuberechnung sicher auf der
+    // neuen Seite der Stufenfunktion liegt.
+    final weckzeit = naechste.add(const Duration(seconds: 5));
+
+    // Ab Android 12+ ist SCHEDULE_EXACT_ALARM ein entziehbares Recht; ist es
+    // entzogen, scheitert der exakte Alarm (SecurityException / false). Dann
+    // NICHT die Reschedule-Kette abreissen lassen, sondern auf einen ungenauen
+    // Alarm zurueckfallen — Minutengenauigkeit ist fuer ein Oeffnungszeiten-
+    // Widget entbehrlich, und das WorkManager-Netz (E16) faengt den Rest ab.
+    if (await _planeAlarm(weckzeit, exact: true)) return;
+    await _planeAlarm(weckzeit, exact: false);
+  }
+
+  /// Plant den (self-rescheduling) Widget-Alarm auf [weckzeit]. Liefert false,
+  /// wenn das Planen fehlschlug (z. B. entzogenes Exact-Alarm-Recht) — der
+  /// Aufrufer faellt dann auf einen ungenauen Alarm zurueck.
+  static Future<bool> _planeAlarm(DateTime weckzeit,
+      {required bool exact}) async {
+    try {
+      return await AndroidAlarmManager.oneShotAt(
+        weckzeit,
+        _alarmId,
+        widgetAlarmCallback,
+        exact: exact,
+        wakeup: true,
+        allowWhileIdle: true,
+        rescheduleOnReboot: true,
+      );
+    } catch (e, st) {
+      developer.log(
+        'Widget-Alarm (exact: $exact) konnte nicht geplant werden',
+        name: 'WidgetService',
+        error: e,
+        stackTrace: st,
+      );
+      return false;
+    }
   }
 }
 
