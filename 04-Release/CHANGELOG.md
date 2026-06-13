@@ -9,6 +9,31 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.0.1 — 2026-06-13 (P16: Technische Härtung)
+
+**APK:** `WhenOpen-latest.apk` · signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB ·
+App-ID `com.whenopen.when_open` · `versionName` 1.0.1 (`versionCode` 2).
+
+**Neu / geändert:**
+- **Über mich** — Vorstellungstext konkretisiert: „…ob ich in der Mittagspause noch schnell zur
+  Apotheke komme oder ob meine Pizzeria heute aufhat…" statt der abstrakten Formulierung.
+- **Unter der Haube (Robustheit, Verhalten unverändert):** Daten-Mutationen werden serialisiert
+  (kein „Lost Update" bei schnellen, verschränkten Speichervorgängen); alte Sicherungs-Backups
+  (`whenopen_backup_*.json`) werden auf die jüngsten 5 begrenzt; der grenzgenaue Widget-Alarm
+  fällt bei entzogenem Exact-Alarm-Recht (Android 12+) auf einen ungenauen Alarm zurück statt
+  auszufallen; fehlgeschlagene Widget-Updates werden jetzt protokolliert.
+
+**Bewusst offen gelassen** (Produktentscheidung): Google-Maps-Link als Freitext, Über-Nacht-
+Öffnungszeiten, Feiertage/Ausnahmen.
+
+**Qualität:** `flutter analyze` sauber, **92 Unit-Tests grün** (2 neue: Mutations-Serialisierung,
+Backup-Deckel), am Emulator (Pixel_API35) regressiv verifiziert (Start ohne Crash, Mutation
+committet auf Platte, Über-Text sichtbar). R8/Minify weiterhin aus.
+
+**Basis:** baut auf v1.0.0 (P15) auf. Details: `02-MVP/inkremente.md` (Abschnitt P16).
+
+---
+
 ## v1.0.0 — 2026-06-12 (P15: UX-Feinschliff)
 
 **APK:** `WhenOpen-latest.apk` · signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB ·
