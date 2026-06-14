@@ -440,7 +440,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String sichernErfolg(String ordner) {
-    return 'Gesichert in $ordner.';
+    return 'Gesichert in $ordner. Die Datei ist unverschlüsselt und für andere Apps lesbar.';
   }
 
   @override

@@ -21,7 +21,10 @@ class OverpassService {
 
   static const standardEndpoint =
       'https://overpass-api.de/api/interpreter';
-  static const _userAgent = 'WhenOpen/1.0 (contact: koeln.thanh@gmail.com)';
+  // Identifizierender Kontakt per Projekt-Link statt privater Mail-Adresse
+  // (geht bei jeder Anfrage an den Overpass-Betreiber).
+  static const _userAgent =
+      'WhenOpen/1.0 (+https://github.com/KoelnThanh/whenopen)';
   static const _timeout = Duration(seconds: 30);
 
   /// Alle POIs mit gesetzten Oeffnungszeiten im Umkreis [radiusMeter] um
@@ -42,6 +45,10 @@ class OverpassService {
   /// Oeffnungszeiten nach einer Nominatim-Auswahl ergaenzen). `null`, wenn
   /// nichts gefunden wurde.
   Future<Map<String, dynamic>?> ladeTags(String osmType, int osmId) async {
+    // Allowlist: nur echte OSM-Objekttypen in die per String-Interpolation
+    // aufgebaute Overpass-QL lassen (verhindert Query-Injection ueber einen
+    // manipulierten osm_type). osmId ist als int bereits unkritisch.
+    if (!NominatimResult.osmTypen.contains(osmType)) return null;
     final elemente = await _frage(baueTagQuery(osmType, osmId));
     if (elemente.isEmpty) return null;
     final tags = (elemente.first as Map<String, dynamic>)['tags'];
@@ -62,7 +69,10 @@ class OverpassService {
   }
 
   /// Feste Nachkommastellen — kein Locale-Komma, keine Exponentialform.
-  static String _koord(double v) => v.toStringAsFixed(6);
+  /// Bewusst nur 4 Stellen (~11 m): genau genug fuer eine 250–5000-m-
+  /// Umkreissuche, gibt aber die Heimat-/Aufenthaltsposition nicht
+  /// gebaeudescharf an den Overpass-Betreiber weiter (Privacy).
+  static String _koord(double v) => v.toStringAsFixed(4);
 
   Future<List<dynamic>> _frage(String query) async {
     final antwort = await _client

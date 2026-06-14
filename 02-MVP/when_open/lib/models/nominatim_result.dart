@@ -37,8 +37,13 @@ class NominatimResult {
   final double? lat;
   final double? lon;
 
-  /// True, wenn ein Overpass-Tag-Nachlookup moeglich ist.
-  bool get hatOsmRef => osmType != null && osmId != null;
+  /// Erlaubte OSM-Objekttypen. Allowlist gegen Overpass-QL-Injection ueber
+  /// einen manipulierten `osm_type` aus der (untrusted) Serverantwort.
+  static const osmTypen = {'node', 'way', 'relation'};
+
+  /// True, wenn ein Overpass-Tag-Nachlookup moeglich ist (gueltiger Typ + ID).
+  bool get hatOsmRef =>
+      osmType != null && osmTypen.contains(osmType) && osmId != null;
 
   factory NominatimResult.fromJson(Map<String, dynamic> json) {
     final extratags = (json['extratags'] as Map<String, dynamic>?) ?? const {};

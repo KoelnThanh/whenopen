@@ -13,7 +13,7 @@ void main() {
       expect(
         q,
         '[out:json][timeout:25];'
-        'nwr[opening_hours](around:1500,50.941000,6.958000);'
+        'nwr[opening_hours](around:1500,50.9410,6.9580);'
         'out center tags;',
       );
     });
@@ -25,7 +25,7 @@ void main() {
 
     test('Koordinaten mit fester Nachkommastelle (kein Locale-Komma)', () {
       final q = OverpassService.baueUmkreisQuery(7, -1.5, 500);
-      expect(q, contains('around:500,7.000000,-1.500000'));
+      expect(q, contains('around:500,7.0000,-1.5000'));
     });
   });
 
@@ -158,6 +158,38 @@ void main() {
           MockClient((_) async => http.Response('{"elements":[]}', 200));
       final tags = await OverpassService(client: client).ladeTags('node', 9);
       expect(tags, isNull);
+    });
+
+    test('ungueltiger osmType wird abgewiesen (QL-Injection-Schutz)', () async {
+      // Manipulierter osm_type aus der Serverantwort darf die Query nicht
+      // veraendern: Lookup wird ohne HTTP-Aufruf abgebrochen.
+      final client = MockClient((_) async {
+        fail('Bei ungueltigem osmType darf keine Anfrage rausgehen');
+      });
+      final tags = await OverpassService(client: client)
+          .ladeTags('node);out:csv(::id);node', 1);
+      expect(tags, isNull);
+    });
+  });
+
+  group('osmType-Allowlist (hatOsmRef)', () {
+    NominatimResult ref(String? typ) => NominatimResult(
+          displayName: 'x',
+          name: 'x',
+          osmType: typ,
+          osmId: 1,
+        );
+
+    test('gueltige Typen erlauben den Nachlookup', () {
+      expect(ref('node').hatOsmRef, isTrue);
+      expect(ref('way').hatOsmRef, isTrue);
+      expect(ref('relation').hatOsmRef, isTrue);
+    });
+
+    test('manipulierter/unbekannter Typ sperrt den Nachlookup', () {
+      expect(ref('node);out tags;node').hatOsmRef, isFalse);
+      expect(ref('NODE').hatOsmRef, isFalse);
+      expect(ref(null).hatOsmRef, isFalse);
     });
   });
 }

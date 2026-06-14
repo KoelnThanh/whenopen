@@ -11,6 +11,12 @@ import '../models/wochentag.dart';
 /// "Su off", Zeiten ohne Tagesangabe (= alle Tage), Mehrfachbloecke
 /// "09:00-12:00,14:00-18:00" (E9).
 abstract final class OpeningHoursParser {
+  /// Obergrenze fuer den Rohwert. Schuetzt vor katastrophalem
+  /// Regex-Backtracking (ReDoS): Die `opening_hours`-Werte stammen aus OSM
+  /// bzw. importierten Sicherungen (untrusted). Reale Werte sind kurz; alles
+  /// jenseits dieser grosszuegigen Grenze gilt als nicht unterstuetzt.
+  static const _maxLaenge = 256;
+
   static const _tage = {
     'mo': Wochentag.montag,
     'tu': Wochentag.dienstag,
@@ -24,7 +30,7 @@ abstract final class OpeningHoursParser {
   static List<OpeningDay>? parse(String? rohwert) {
     if (rohwert == null) return null;
     final text = rohwert.trim().toLowerCase();
-    if (text.isEmpty) return null;
+    if (text.isEmpty || text.length > _maxLaenge) return null;
 
     final woche = {for (final w in Wochentag.values) w: <TimeBlock>[]};
 

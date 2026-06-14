@@ -889,7 +889,7 @@ abstract class AppLocalizations {
   /// No description provided for @sichernErfolg.
   ///
   /// In de, this message translates to:
-  /// **'Gesichert in {ordner}.'**
+  /// **'Gesichert in {ordner}. Die Datei ist unverschlüsselt und für andere Apps lesbar.'**
   String sichernErfolg(String ordner);
 
   /// No description provided for @sichernKeineBerechtigung.

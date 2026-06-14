@@ -12,8 +12,10 @@ import android.os.Environment
 import android.provider.MediaStore
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 
 /**
  * Schreibt/liest die WhenOpen-Sicherung in einen im Dateimanager sichtbaren
@@ -33,6 +35,31 @@ object BackupStorage {
     const val LABEL = "Download/$ORDNER"
 
     const val REQUEST_CODE = 0x6201
+
+    /** Harte Obergrenze beim Einlesen — verhindert OOM durch eine riesige
+     *  (auch fremd empfangene) Datei, bevor sie ueberhaupt an Dart geht. */
+    const val MAX_IMPORT_BYTES = 4 * 1024 * 1024
+
+    /**
+     * Liest hoechstens [maxBytes] Bytes aus [stream]; wirft [IOException],
+     * sobald die Quelle groesser ist. [readBytes] wuerde dagegen unbegrenzt
+     * in den Speicher lesen.
+     */
+    fun liesBegrenzt(stream: InputStream, maxBytes: Int = MAX_IMPORT_BYTES): ByteArray {
+        val puffer = ByteArray(8192)
+        val out = ByteArrayOutputStream()
+        var gesamt = 0
+        while (true) {
+            val gelesen = stream.read(puffer)
+            if (gelesen < 0) break
+            gesamt += gelesen
+            if (gesamt > maxBytes) {
+                throw IOException("Datei zu groß (max $maxBytes Bytes)")
+            }
+            out.write(puffer, 0, gelesen)
+        }
+        return out.toByteArray()
+    }
 
     /** Sichert [inhalt]; ueberschreibt eine vorhandene Datei gleichen Namens. */
     fun sichern(context: Context, activity: Activity?, inhalt: String): String {
@@ -130,7 +157,7 @@ object BackupStorage {
                 }
                 val uri = ContentUris.withAppendedId(downloadsUri(), c.getLong(idSpalte))
                 return resolver.openInputStream(uri)?.use { ein ->
-                    ein.readBytes().toString(Charsets.UTF_8)
+                    liesBegrenzt(ein).toString(Charsets.UTF_8)
                 }
             }
         }
@@ -181,6 +208,6 @@ object BackupStorage {
         val neueste = legacyOrdner().listFiles { f ->
             f.isFile && f.name.endsWith(".json", ignoreCase = true)
         }?.maxByOrNull { it.lastModified() } ?: return null
-        return neueste.readText(Charsets.UTF_8)
+        return neueste.inputStream().use { liesBegrenzt(it) }.toString(Charsets.UTF_8)
     }
 }

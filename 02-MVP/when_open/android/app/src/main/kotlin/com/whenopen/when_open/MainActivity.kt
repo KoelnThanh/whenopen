@@ -80,7 +80,9 @@ class MainActivity : FlutterActivity() {
         }
         try {
             val inhalt = contentResolver.openInputStream(uri)?.use {
-                it.readBytes().toString(Charsets.UTF_8)
+                // Gedeckeltes Lesen: eine beliebige (auch fremd empfangene)
+                // Datei darf nicht unbegrenzt in den Speicher gelesen werden.
+                BackupStorage.liesBegrenzt(it).toString(Charsets.UTF_8)
             } ?: throw IOException("Datei nicht lesbar")
             result.success(mapOf("name" to dateiName(uri), "inhalt" to inhalt))
         } catch (e: Exception) {

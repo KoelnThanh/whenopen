@@ -3,7 +3,7 @@ description: "WhenOpen - persoenliche Oeffnungszeiten auf einen Blick. Android-A
 publish_to: 'none'
 
 # versionName + versionCode fuer Android
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.12.1
@@ -28,8 +28,9 @@ dependencies:
   uuid: ^4.5.1
   # HTTP-Client fuer OSM/Nominatim (P08b)
   http: ^1.2.2
-  # Datums-/Zeitformatierung, i18n-Vorbereitung
-  intl: any
+  # Datums-/Zeitformatierung, i18n-Vorbereitung (gepinnt wie die übrigen Deps,
+  # konsistent zur Lockfile — kein ungewollter Major-Sprung bei pub upgrade)
+  intl: ^0.20.2
   # App-Dokumentenverzeichnis fuer die JSON-Datei
   path_provider: ^2.1.5
   # Google Maps / tel: / geo: oeffnen (P07)

@@ -78,4 +78,13 @@ void main() {
     expect(OpeningHoursParser.parse(''), isNull);
     expect(OpeningHoursParser.parse('   '), isNull);
   });
+
+  test('uebermaessig langer Rohwert → null (ReDoS-Schutz)', () {
+    // Untrusted Quelle (OSM-Tag/Import): eine pathologische Eingabe darf den
+    // Regex nicht in katastrophales Backtracking treiben. Jenseits der Grenze
+    // wird ohne Match abgebrochen.
+    final lang = '${'mo-fr 09:00-18:00,' * 60} ';
+    expect(lang.length, greaterThan(256));
+    expect(OpeningHoursParser.parse(lang), isNull);
+  });
 }

@@ -11,6 +11,45 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.0.2 — 2026-06-14 (P17: Security- & Datenschutz-Härtung)
+
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.0.2/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.0.2 (`versionCode` 3).
+
+**Hintergrund:** Security-/Datenschutz-Audit aus Sicht eines Security-Experten (lokales
+Bedrohungsmodell: kein Backend/Login/Cloud). Kein kritischer/hoher Befund — die Architektur
+ist risikoarm. Umgesetzt wurden ein Bug-Fix und mehrere Härtungen sowie
+Transparenz-Korrekturen. Verhalten für normale Nutzung unverändert.
+
+**Behoben / gehärtet (unter der Haube):**
+- **ReDoS-Schutz** im `opening_hours`-Parser: untrusted Werte (OSM-Tag/Import) werden vor dem
+  Regex auf eine Länge gedeckelt — kein katastrophales Backtracking mehr.
+- **JSON-DoS-Schutz** beim Wiederherstellen: Importdateien werden nativ gedeckelt gelesen
+  (kein unbegrenztes `readBytes`) und vor dem Parsen auf Größe/Anzahl geprüft.
+- **Overpass-QL-Injection** ausgeschlossen: der OSM-Objekttyp wird gegen eine Allowlist
+  (`node`/`way`/`relation`) geprüft, bevor er in die Abfrage geht.
+- **`tel:`-Härtung:** Telefonnummern werden vor dem Wählen auf echte Wähl-Zeichen reduziert
+  (entfernt u. a. `#`/`*` aus fremden/importierten Nummern).
+
+**Datenschutz / Transparenz:**
+- **Standort sparsamer:** die Umkreissuche überträgt die Position nur noch auf ~11 m gerundet
+  (statt gebäudescharf) an `overpass-api.de`.
+- **Keine private Mail mehr nach außen:** der HTTP-User-Agent an OSM/Overpass nennt jetzt eine
+  Projekt-URL statt der privaten Adresse.
+- **Sichern-Hinweis:** beim Sichern wird klar gesagt, dass die Datei unverschlüsselt im offenen
+  `Download/WhenOpen` liegt und für andere Apps lesbar ist.
+- **Datenschutzerklärung** korrigiert/ergänzt: Overpass-Umkreissuche (Standortübertragung),
+  User-Agent-Kontakt, unverschlüsselte Backup-/Teilen-Kopien.
+- **`intl`** auf `^0.20.2` gepinnt (Supply-Chain-Hygiene, konsistent zur Lockfile).
+
+**Qualität:** `flutter analyze` sauber, **98 Unit-Tests grün** (6 neue: ReDoS-Deckel,
+Import-Größen-/Anzahllimit, osmType-Allowlist).
+
+**Basis:** baut auf v1.0.1 (P16) auf. Details: `02-MVP/inkremente.md` (Abschnitt P17).
+
+---
+
 ## v1.0.1 — 2026-06-13 (P16: Technische Härtung)
 
 **APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.0.1/WhenOpen.apk)

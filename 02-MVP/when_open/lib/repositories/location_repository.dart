@@ -23,6 +23,13 @@ class LocationRepository {
   /// wachsen und Speicher/Adressdaten ansammeln.
   static const _maxBackups = 5;
 
+  /// Obergrenzen fuer eine importierte Sicherung — Schutz vor JSON-DoS durch
+  /// eine riesige/tief verschachtelte Datei (untrusted, kann via Messenger
+  /// empfangen worden sein). 2 MiB bzw. 1000 Einträge liegen weit über jedem
+  /// realistischen Bestand (App-Limit: 50 Orte).
+  static const _maxImportZeichen = 2 * 1024 * 1024;
+  static const _maxImportEintraege = 1000;
+
   final Directory _verzeichnis;
 
   /// True, wenn beim letzten [laden] eine korrupte Datei weggesichert wurde.
@@ -190,11 +197,19 @@ class LocationRepository {
   /// **ohne zu speichern** — fuer die Import-Vorschau, bevor Bestandsdaten
   /// ersetzt werden. Wirft [FormatException] bei ungueltigem Inhalt.
   WhenOpenData pruefeSicherung(String inhalt) {
+    if (inhalt.length > _maxImportZeichen) {
+      throw const FormatException('Sicherungsdatei zu groß');
+    }
     final dynamic roh = jsonDecode(inhalt);
     if (roh is! Map<String, dynamic> ||
         roh['version'] == null ||
         roh['eintraege'] is! List) {
       throw const FormatException('Keine gültige WhenOpen-Sicherung');
+    }
+    final kategorien = roh['kategorien'];
+    if ((roh['eintraege'] as List).length > _maxImportEintraege ||
+        (kategorien is List && kategorien.length > _maxImportEintraege)) {
+      throw const FormatException('Sicherung enthält zu viele Einträge');
     }
     // Wirft bei falschem Schema (z. B. kaputte Eintraege) — bewusst vor dem
     // Speichern, damit die Bestandsdaten erst nach erfolgreicher Pruefung

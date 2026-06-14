@@ -410,6 +410,22 @@ void main() {
       expect(() => repo.pruefeSicherung('{"foo": 1}'), throwsFormatException);
       expect(() => repo.pruefeSicherung('{ kein json'), throwsFormatException);
     });
+
+    test('pruefeSicherung wirft bei uebergrosser Datei (JSON-DoS-Schutz)', () {
+      // > 2 MiB: wird vor jsonDecode abgewiesen, ohne den Parser zu belasten.
+      final riesig = '{"version":"2.0","eintraege":[],"x":"'
+          '${'a' * (2 * 1024 * 1024 + 10)}"}';
+      expect(() => repo.pruefeSicherung(riesig), throwsFormatException);
+    });
+
+    test('pruefeSicherung wirft bei zu vielen Eintraegen', () {
+      final eintrag = '{"id":"x","name":"X","oeffnungszeiten":[],'
+          '"erstellt_am":"2026-06-01T10:00:00Z",'
+          '"geaendert_am":"2026-06-01T10:00:00Z"}';
+      final viele = '{"version":"2.0","eintraege":['
+          '${List.filled(1001, eintrag).join(',')}]}';
+      expect(() => repo.pruefeSicherung(viele), throwsFormatException);
+    });
   });
 
   group('Nebenlaeufigkeit & Backup-Deckel', () {

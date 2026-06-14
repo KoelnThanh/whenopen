@@ -654,3 +654,52 @@ Theme-Migration (es gibt aktuell keinen Hell-Modus → kein akuter Fehler), DST-
 **Verifiziert:** `flutter analyze` sauber, **92 Unit-Tests grün** (90 + 2 neue: parallele
 Mutationen gehen nicht verloren, Backup-Deckel ≤ 5). Noch **nicht** am Emulator/Gerät gegengeprüft
 (empfohlen: Widget-Update auf einem Android-13+-Gerät mit entzogenem Exact-Alarm-Recht).
+
+## P17 — Security- & Datenschutz-Härtung (2026-06-14)
+
+**Auslöser:** Security-Audit aus Sicht eines Security-Experten (Multi-Agent-Review, 5 Dimensionen,
+38 Befunde, jeder adversarial verifiziert und auf das lokale Bedrohungsmodell geeicht — kein
+Backend/Login/Cloud/Tracking). Ergebnis: **kein kritischer/hoher Befund**; die Architektur ist
+strukturell risikoarm. Umgesetzt wurden 1 Bug-Fix, mehrere Härtungen und Transparenz-Korrekturen.
+Für normale Nutzung verhaltensgleich.
+
+**Was gebaut:**
+- **ReDoS-Deckel** (`opening_hours_parser.dart`): `parse()` bricht bei Rohwerten > 256 Zeichen ab.
+  Quelle ist untrusted (OSM-`opening_hours`-Tag + importierte Sicherung) → kein katastrophales
+  Regex-Backtracking. *(einziger im Audit hochgestufter Befund, medium)*
+- **JSON-DoS-Schutz Import:** nativer Byte-Deckel beim Lesen (`BackupStorage.liesBegrenzt`, genutzt
+  von `MainActivity` (SAF) und den Backup-Lesepfaden — kein unbegrenztes `readBytes`); zusätzlich
+  in `LocationRepository.pruefeSicherung` Längen-Check vor `jsonDecode` (> 2 MiB) + Anzahl-Cap
+  (eintraege/kategorien ≤ 1000).
+- **Overpass-QL-Injection ausgeschlossen:** `osm_type` (untrusted Serverstring) wird gegen die
+  Allowlist `{node, way, relation}` geprüft — in `NominatimResult.hatOsmRef` (gated den Lookup) und
+  defensiv in `OverpassService.ladeTags`. `osm_id` war als `int` ohnehin unkritisch.
+- **`tel:`-Whitelist** (`url_service.openPhone`): Nummer auf `[+0-9]` reduziert statt nur `[\s/()-]`
+  zu entfernen — entfernt USSD/MMI-Zeichen (`#`/`*`) aus fremden/importierten Nummern; leer → kein
+  Launch.
+- **Koordinaten-Präzision** (`overpass_service._koord`): `toStringAsFixed(6)` → `(4)` (~11 m statt
+  gebäudescharf), genug für 250–5000-m-Umkreis, weniger Standort-Exposition gegenüber Overpass.
+- **User-Agent** (Nominatim + Overpass): private Gmail → Projekt-URL
+  (`+https://github.com/KoelnThanh/whenopen`), Nominatim-Policy-konform.
+- **`intl`** in `pubspec.yaml`: `any` → `^0.20.2` (konsistent zur Lockfile).
+- **Texte:** `sichernErfolg`-String warnt vor unverschlüsselter, fremd-lesbarer Sicherung;
+  `docs/privacy-policy.md` um Overpass-Standortübertragung, User-Agent-Kontakt und
+  Klartext-Backup/Teilen ergänzt, „nur Suchbegriff" richtiggestellt, Stand 14.06.2026.
+
+**Was fehlt / bewusst offen:** passwortverschlüsseltes Backup (Over-Engineering fürs Modell, kollidiert
+mit Schnell-Wiederherstellen), `allowBackup="false"` (vom Audit als is_real=false eingestuft — Auto-
+Backup geht ins eigene verschlüsselte Konto), Deep-Link-Filter auf `host=open` einschränken
+(nur Hardening, kein Schaden).
+
+**Was gelernt:**
+- Adversariale Verifikation lohnt: von 38 Rohbefunden waren 22 Falschalarme/Bestätigungen
+  (FLAG_MUTABLE-PendingIntent ist durch explizite Komponente sicher, exported Deep-Link nur
+  Navigation, Widget-Prefs `MODE_PRIVATE` ohne PII) — ohne Gegenprüfung hätte man Aufwand in
+  Scheinprobleme gesteckt.
+- Bei einem lokalen, backendlosen Modell liegt der ganze Angriffswert in *untrusted Daten*
+  (Import-Datei, OSM-Antwort) → die wirksamen Fixes sind Eingangs-Deckel + Allowlists, nicht Crypto.
+
+**Verifiziert:** `flutter analyze` sauber, **98 Unit-Tests grün** (92 + 6 neue: ReDoS-Deckel,
+Import-Größen-/Anzahllimit, osmType-Allowlist Modell+Service). Noch **nicht** am Emulator/Gerät
+gegengeprüft (Logik-Fixes, durch Unit-Tests abgedeckt; empfohlen: einmal Import einer großen Datei +
+Umkreissuche am Gerät gegenprüfen).

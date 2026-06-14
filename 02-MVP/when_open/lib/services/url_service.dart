@@ -29,7 +29,11 @@ abstract final class UrlService {
 
   /// Telefonwaehler mit der Nummer oeffnen.
   static Future<bool> openPhone(String telefonnummer) async {
-    final nummer = telefonnummer.replaceAll(RegExp(r'[\s/()-]'), '');
+    // Whitelist: nur echte Waehl-Zeichen behalten. Entfernt insbesondere
+    // USSD/MMI-Zeichen (#, *) aus moeglicherweise importierten/fremden Nummern,
+    // bevor sie in den tel:-URI fliessen.
+    final nummer = telefonnummer.replaceAll(RegExp(r'[^+0-9]'), '');
+    if (nummer.isEmpty) return false;
     return _starte(Uri.parse('tel:$nummer'));
   }
 

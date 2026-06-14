@@ -156,7 +156,7 @@
   "menueTeilen": "Teilen",
   "menueWiederherstellen": "Wiederherstellen",
   "sichernBetreff": "WhenOpen-Sicherung",
-  "sichernErfolg": "Gesichert in {ordner}.",
+  "sichernErfolg": "Gesichert in {ordner}. Die Datei ist unverschlüsselt und für andere Apps lesbar.",
   "@sichernErfolg": {
     "placeholders": {
       "ordner": { "type": "String" }

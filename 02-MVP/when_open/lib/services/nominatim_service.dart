@@ -18,7 +18,11 @@ class NominatimService implements ImportService {
 
   final http.Client _client;
 
-  static const _userAgent = 'WhenOpen/1.0 (contact: koeln.thanh@gmail.com)';
+  // Nominatim-Usage-Policy verlangt einen identifizierenden Kontakt; ein Link
+  // zur Tool-Dokumentation ist ausdruecklich erlaubt — bewusst keine private
+  // Mail-Adresse im an Dritte gesendeten User-Agent.
+  static const _userAgent =
+      'WhenOpen/1.0 (+https://github.com/KoelnThanh/whenopen)';
   static const _timeout = Duration(seconds: 5);
 
   @override
