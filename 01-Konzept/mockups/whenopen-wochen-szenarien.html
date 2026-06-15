@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhenOpen — Öffnungszeiten: Szenario-Stresstest</title>
+<style>
+  :root{
+    --bg:#0E1116; --surface:#161A22; --card:#1F242E; --chip:#242B39;
+    --line:#272D38; --ink:#ECEFF3; --muted:#98A0AD;
+    --primary:#6366F1; --primary-deep:#4F46E5; --primary-ink:#A5B4FC;
+    --open:#34D399; --danger:#E5534F; --warn:#E0A32E;
+    --primary-10:rgba(99,102,241,.12); --primary-16:rgba(99,102,241,.20);
+    --open-12:rgba(52,211,153,.14); --warn-12:rgba(224,163,46,.14); --danger-12:rgba(229,83,79,.13);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.45}
+  header.page{padding:30px 26px 6px;max-width:1180px}
+  header.page h1{margin:0 0 6px;font-size:23px;letter-spacing:-.3px}
+  header.page h1 b{color:var(--primary-ink)}
+  header.page p{margin:0;color:var(--muted);font-size:14px;max-width:940px}
+
+  .gallery{display:flex;gap:26px;flex-wrap:wrap;padding:16px 26px 8px;align-items:flex-start}
+  .scn{width:288px}
+  .scn .head{margin:0 0 10px}
+  .scn .head .t{font-size:15px;font-weight:700}
+  .scn .head .t .tag{font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:8px;vertical-align:middle}
+  .tag.ok{background:var(--open-12);color:#7ee0bf;border:1px solid rgba(52,211,153,.3)}
+  .tag.no{background:var(--danger-12);color:#f0908d;border:1px solid rgba(229,83,79,.3)}
+  .scn .head .d{font-size:12px;color:var(--muted);margin-top:4px}
+  .scn .head .d b{color:var(--ink)}
+
+  .phone{background:#000;border-radius:32px;padding:8px;box-shadow:0 12px 38px rgba(0,0,0,.5)}
+  .phone.accent{box-shadow:0 12px 38px rgba(79,70,229,.26)}
+  .screen{background:var(--bg);border-radius:25px;overflow:hidden;height:534px;position:relative;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:8px 16px 4px;font-size:10.5px;color:var(--muted)}
+  .appbar{padding:7px 11px;display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;border-bottom:1px solid var(--line)}
+  .appbar .back{font-size:19px;width:20px;text-align:center}
+  .appbar .grow{flex:1}
+  .prog{height:5px;border-radius:4px;background:var(--line);margin:11px 14px 6px;overflow:hidden}
+  .prog > i{display:block;height:100%;background:var(--primary);border-radius:4px}
+  .steplbl{font-size:11px;color:var(--muted);padding:0 14px 9px}
+  .steplbl b{color:var(--ink);font-weight:600}
+  .body{flex:1;overflow:auto;padding:0}
+  .pad{padding:5px 14px 12px}
+
+  .done{display:flex;align-items:center;gap:9px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:var(--surface);margin:0 0 7px}
+  .done .day{width:22px;font-size:13px;font-weight:600}
+  .done .tm{font-size:12px;font-variant-numeric:tabular-nums}
+  .done .tm.zu{color:var(--muted)}
+  .done .edit{margin-left:auto;color:var(--muted);font-size:14px}
+  .done.zu{opacity:.72}
+
+  .active{border:1px solid rgba(99,102,241,.4);border-radius:13px;background:var(--primary-10);padding:12px 12px 13px;margin:2px 0 4px}
+  .active .ad{font-size:15px;font-weight:700;margin:0 0 10px}
+  .seg{display:flex;gap:7px;margin:0 0 11px}
+  .seg .c{flex:1;text-align:center;font-size:12.5px;font-weight:600;padding:9px 4px;border-radius:9px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+  .seg .c.on{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .takerow{display:flex;gap:7px;margin:0 0 4px;flex-wrap:wrap}
+  .tc{font-size:11.5px;font-weight:600;padding:8px 11px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+  .tc.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .tc.ghost{color:var(--muted)}
+
+  .trow{display:flex;align-items:center;gap:7px;margin:8px 0 8px}
+  .cell{flex:1;display:flex;justify-content:space-between;align-items:center;padding:8px 11px;border-radius:9px;background:var(--surface);border:1px solid var(--line)}
+  .cell.warnedge{border-color:rgba(224,163,46,.55)}
+  .cell .lb{font-size:9px;color:var(--muted)}
+  .cell .vv{font-size:14px}
+  .dash{color:var(--muted)}
+  .xrm{color:var(--danger);font-size:13px;width:15px;text-align:center}
+  .addblk{color:var(--primary-ink);font-size:12px;font-weight:600;margin:1px 0 0}
+
+  .bigbtn{display:flex;align-items:center;justify-content:center;gap:8px;margin:9px 0 0;padding:11px;border-radius:11px;background:var(--primary-16);border:1px dashed rgba(99,102,241,.5);color:var(--primary-ink);font-size:13px;font-weight:700}
+
+  .foot{display:flex;gap:9px;padding:10px 14px;border-top:1px solid var(--line)}
+  .btn{flex:1;text-align:center;font-size:13.5px;font-weight:600;padding:10px;border-radius:10px}
+  .btn.sec{background:var(--chip);color:var(--ink)}
+  .btn.prigrad{background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff}
+  .btn.wide{flex:2}
+
+  .note{font-size:11px;color:var(--muted);margin:10px 2px 0;padding-left:12px;border-left:2px solid var(--line);line-height:1.45}
+  .note b{color:var(--primary-ink)}
+  .note code{font-family:Consolas,monospace;font-size:10.5px;color:var(--primary-ink)}
+
+  .edgebox{max-width:1120px;margin:18px 26px 0;border:1px solid rgba(224,163,46,.34);border-radius:14px;background:var(--warn-12);overflow:hidden}
+  .edgebox .h{padding:12px 16px;border-bottom:1px solid rgba(224,163,46,.25);font-weight:700;font-size:14px;display:flex;align-items:center;gap:9px}
+  .edgebox .b{padding:10px 16px 15px;font-size:13px;color:var(--ink)}
+  .edgebox .opt{display:flex;gap:10px;align-items:flex-start;margin:9px 0}
+  .edgebox .opt .k{font-size:11px;font-weight:700;color:#0E1116;background:var(--warn);padding:2px 9px;border-radius:8px;flex:none;margin-top:1px}
+  .edgebox .opt .v{color:var(--muted);font-size:12.5px}
+  .edgebox .opt .v b{color:var(--ink)}
+  .edgebox code{font-family:Consolas,monospace;font-size:11.5px;color:#0E1116;background:rgba(224,163,46,.5);padding:1px 5px;border-radius:5px}
+
+  .matrix{max-width:1120px;margin:18px 26px 60px;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+  .matrix .h{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  tr:last-child td{border-bottom:none}
+  td .y{color:var(--open);font-weight:700}
+  td .e{color:var(--warn);font-weight:700}
+  td .n{color:var(--danger);font-weight:700}
+  td.ex{color:var(--muted)}
+  td.how{color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Öffnungszeiten — <b>Szenario-Stresstest</b> für den progressiven Stapel</h1>
+  <p>Reale Öffnungsmuster durchgespielt — clean, ohne In-App-Hinweise. Chips nur „Wie &lt;Tag&gt;“; die Zeiten stehen in
+     den Zeilen darüber. Am Ende eine Abdeckungs-Matrix inkl. der einen echten Modell-Grenze.</p>
+</header>
+
+<div class="gallery">
+
+  <!-- A — Bäckerei -->
+  <div class="scn">
+    <div class="head">
+      <div class="t">A · Bäckerei <span class="tag ok">geht</span></div>
+      <div class="d"><b>Mittagspause</b> — zwei Blöcke pro Tag, „Wie Montag“ kopiert beide.</div>
+    </div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">06:00–12:30 · 14:00–18:00</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Dienstag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="takerow">
+              <div class="tc on">Wie Montag</div>
+              <div class="tc ghost">Eigene Zeit</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+    <div class="note">Voll unterstützt: <code>isOpenNow</code> rechnet jeden Block; die Lücke = Pause.</div>
+  </div>
+
+  <!-- B — Arztpraxis -->
+  <div class="scn">
+    <div class="head">
+      <div class="t">B · Arztpraxis <span class="tag ok">geht</span></div>
+      <div class="d"><b>Mehrere Muster</b> — die Übernahme-Chips wachsen mit.</div>
+    </div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">08:00–12:00 · 15:00–18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Di</span><span class="tm">08:00–12:00 · 15:00–18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Mi</span><span class="tm">08:00–12:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Do</span><span class="tm">08:00–12:00 · 15:00–18:00</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Freitag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="takerow">
+              <div class="tc ghost">Wie Donnerstag</div>
+              <div class="tc ghost">Wie Mittwoch</div>
+              <div class="tc on">Eigene Zeit</div>
+            </div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">08:00</span></div><span class="dash">–</span>
+              <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">13:00</span></div><span class="xrm">✕</span>
+            </div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+    <div class="note">Chips bieten nur die <b>verschiedenen</b> bisherigen Muster (Do- und Mi-Variante). Zeiten stehen oben.</div>
+  </div>
+
+  <!-- C — Restaurant -->
+  <div class="scn">
+    <div class="head">
+      <div class="t">C · Restaurant <span class="tag ok">geht</span></div>
+      <div class="d"><b>Ruhetag mittendrin</b> — Übernahme überspringt den geschlossenen Tag.</div>
+    </div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done zu"><span class="day">Mo</span><span class="tm zu">Ruhetag</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Di</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+          <div class="done zu"><span class="day">Mi</span><span class="tm zu">Ruhetag</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Donnerstag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="takerow">
+              <div class="tc on">Wie Dienstag</div>
+              <div class="tc ghost">Eigene Zeit</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+    <div class="note">„Wie Dienstag“, nicht „Wie Mittwoch“: der Vorschlag nimmt den letzten <b>geöffneten</b> Tag (<code>vorschlagFuer()</code>).</div>
+  </div>
+
+  <!-- D — Bar -->
+  <div class="scn">
+    <div class="head">
+      <div class="t">D · Bar / Club <span class="tag no">Modell-Grenze</span></div>
+      <div class="d"><b>Über Mitternacht</b> (Fr 18:00–02:00) — heute nicht abbildbar.</div>
+    </div>
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Do</span><span class="tm">18:00 – 23:30</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Freitag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">18:00</span></div><span class="dash">–</span>
+              <div class="cell warnedge"><span class="lb">SCHLIESST</span><span class="vv">23:30</span></div><span class="xrm">✕</span>
+            </div>
+            <div class="addblk">＋ Weiterer Zeitblock</div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+    <div class="note"><b>Echte Grenze</b>: „Schließt“ endet bei 23:30 (<code>von &lt; bis</code> je Tag). Lösung → Box unten.</div>
+  </div>
+
+  <!-- E — Kiosk -->
+  <div class="scn">
+    <div class="head">
+      <div class="t">E · Späti / Kiosk <span class="tag ok">geht</span></div>
+      <div class="d"><b>Alle Tage gleich</b> — hier zahlt sich die Abkürzung aus.</div>
+    </div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="active">
+            <div class="ad">Montag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">08:00</span></div><span class="dash">–</span>
+              <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">23:30</span></div><span class="xrm">✕</span>
+            </div>
+            <div class="bigbtn">⟳ Alle 7 Tage wie Montag</div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+    <div class="note">Beantwortet zugleich die offene Frage: die „alle wie Montag“-Abkürzung gehört genau hierfür rein.</div>
+  </div>
+
+</div>
+
+<div class="edgebox">
+  <div class="h">🌙 Die eine echte Grenze: Öffnung über Mitternacht (Szenario D)</div>
+  <div class="b">
+    Das Datenmodell (E9) speichert pro Tag Blöcke mit <code>von &lt; bis</code> und max. 23:30 — eine Bar „Fr 18:00–02:00“
+    lässt sich heute nicht sauber eintragen. Betrifft Bars, Clubs, manche Tankstellen. Drei Wege:
+    <div class="opt"><span class="k">JETZT</span><span class="v"><b>Pragmatisch:</b> bis 23:30 erfassen — für „offen jetzt?“ am Abend meist ausreichend. Null Aufwand, ehrliche Grenze.</span></div>
+    <div class="opt"><span class="k">V2-A</span><span class="v"><b>Über-Mitternacht-Schalter:</b> ein Toggle, der den Block intern auf den Folgetag verlängert (Fr 18:00 → Sa 02:00). Braucht Anpassung an <code>isOpenNow</code> + Validierung.</span></div>
+    <div class="opt"><span class="k">V2-B</span><span class="v"><b>Auto-Split:</b> Eingabe „18:00–02:00“ erlauben und intern in Fr 18:00–23:59 + Sa 00:00–02:00 zerlegen.</span></div>
+    Empfehlung: <b>JETZT</b> mitnehmen, <b>V2-A</b> später als saubere Lösung. Echte 24/7 (Automat, Waschsalon) hängt am selben Thema.
+  </div>
+</div>
+
+<div class="matrix">
+  <div class="h">📋 Abdeckungs-Matrix — deckt der Stapel alles ab?</div>
+  <table>
+    <tr><th>Muster</th><th>Beispiel</th><th>Heute</th><th>Im Stapel gelöst durch</th></tr>
+    <tr><td class="ex">Standard Mo–Fr, Wochenende zu</td><td class="ex">Büro, Behörde</td><td><span class="y">✓</span></td><td class="how">Montag setzen → „alle wie Montag“, Sa/So auf „Geschlossen“</td></tr>
+    <tr><td class="ex">Mittagspause (Mehrblock)</td><td class="ex">Bäckerei, Metzger</td><td><span class="y">✓</span></td><td class="how">„＋ Weiterer Block“; „Wie X“ kopiert alle Blöcke (A)</td></tr>
+    <tr><td class="ex">Mehrere verschiedene Muster</td><td class="ex">Arztpraxis</td><td><span class="y">✓</span></td><td class="how">Chips zeigen jedes distinkte Muster (B)</td></tr>
+    <tr><td class="ex">Ruhetag mitten in der Woche</td><td class="ex">Restaurant (Mi zu)</td><td><span class="y">✓</span></td><td class="how">„Geschlossen“; Übernahme überspringt ihn (C)</td></tr>
+    <tr><td class="ex">Wochenende kürzer/anders</td><td class="ex">Laden Sa bis 14</td><td><span class="y">✓</span></td><td class="how">pro Tag „Eigene Zeit“ statt Übernahme</td></tr>
+    <tr><td class="ex">Alle Tage gleich, sehr lang</td><td class="ex">Späti, Kiosk</td><td><span class="y">✓</span></td><td class="how">„Alle wie Montag“ in 1 Tap (E)</td></tr>
+    <tr><td class="ex">Erster Tag geschlossen</td><td class="ex">Restaurant (Mo Ruhetag)</td><td><span class="y">✓</span></td><td class="how">„Geschlossen“ direkt, nächster Tag klappt auf</td></tr>
+    <tr><td class="ex">Über Mitternacht (bis 02:00)</td><td class="ex">Bar, Club</td><td><span class="n">✗</span></td><td class="how">Modell-Grenze → Produktentscheidung (Box, D)</td></tr>
+    <tr><td class="ex">Echte 24/7</td><td class="ex">Automat, Waschsalon</td><td><span class="e">~</span></td><td class="how">nur als 00:00–23:30 darstellbar → gleiches Thema</td></tr>
+  </table>
+</div>
+
+</body>
+</html>

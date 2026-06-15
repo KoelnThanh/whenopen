@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhenOpen — UX-Vergleich (Vorher / Nachher)</title>
+<style>
+  :root{
+    /* Reale App-Tokens v0.3 (Indigo, Dunkelmodus = aktueller App-Stand) */
+    --bg:#0E1116; --surface:#161A22; --card:#1F242E; --chip:#242B39;
+    --line:#272D38; --ink:#ECEFF3; --muted:#98A0AD;
+    --primary:#6366F1; --primary-deep:#4F46E5; --primary-ink:#A5B4FC;
+    --open:#34D399; --danger:#E5534F; --warn:#E0A32E;
+    --primary-10:rgba(99,102,241,.12); --primary-16:rgba(99,102,241,.18);
+    --open-12:rgba(52,211,153,.14); --danger-12:rgba(229,83,79,.14);
+    --warn-12:rgba(224,163,46,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.45}
+  header.page{padding:30px 26px 6px;max-width:1180px}
+  header.page h1{margin:0 0 6px;font-size:24px;letter-spacing:-.3px}
+  header.page h1 b{color:var(--primary-ink)}
+  header.page p{margin:0;color:var(--muted);font-size:14px;max-width:900px}
+  .legend{display:flex;gap:20px;flex-wrap:wrap;padding:14px 26px 8px;color:var(--muted);font-size:13px}
+  .legend span{display:inline-flex;align-items:center;gap:8px}
+  .pill{font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.3px}
+  .pill.old{background:var(--chip);color:var(--muted);border:1px solid var(--line)}
+  .pill.new{background:var(--primary-16);color:var(--primary-ink);border:1px solid rgba(99,102,241,.35)}
+
+  section.block{padding:18px 26px 8px;max-width:1180px}
+  section.block > h2{font-size:18px;margin:18px 0 4px;display:flex;align-items:center;gap:10px}
+  section.block > .lead{color:var(--muted);font-size:13.5px;margin:0 0 16px;max-width:880px}
+
+  .pair{display:flex;gap:34px;flex-wrap:wrap;align-items:flex-start}
+  .col{width:300px}
+  .col > .cap{font-size:13px;margin:0 0 9px 2px;display:flex;align-items:center;gap:8px}
+  .col > .cap b{color:var(--ink);font-weight:600}
+
+  /* Phone */
+  .phone{background:#000;border-radius:36px;padding:9px;box-shadow:0 14px 44px rgba(0,0,0,.55)}
+  .phone.accent{box-shadow:0 14px 44px rgba(79,70,229,.32)}
+  .screen{background:var(--bg);border-radius:28px;overflow:hidden;height:642px;position:relative;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:9px 18px 5px;font-size:11px;color:var(--muted)}
+  .statusbar .r{display:flex;gap:5px}
+  .appbar{padding:8px 12px 8px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:600;border-bottom:1px solid var(--line)}
+  .appbar .back{font-size:20px;color:var(--ink);width:24px;text-align:center}
+  .appbar .grow{flex:1}
+  .appbar .act{font-size:13px;color:var(--primary-ink);font-weight:600}
+  .body{flex:1;overflow:auto;padding:0}
+  .pad{padding:14px 16px}
+
+  /* progress */
+  .prog{height:6px;border-radius:4px;background:var(--line);margin:14px 16px 7px;overflow:hidden}
+  .prog > i{display:block;height:100%;background:var(--primary);border-radius:4px}
+  .steplbl{font-size:12px;color:var(--muted);padding:0 16px 10px}
+  .steplbl b{color:var(--ink);font-weight:600}
+
+  h3.q{font-size:20px;font-weight:700;margin:4px 0 3px;letter-spacing:-.2px}
+  .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+
+  /* chips row (Tag-Status) */
+  .seg{display:flex;gap:8px;margin:2px 0 14px}
+  .seg .c{flex:1;text-align:center;font-size:12.5px;font-weight:600;padding:10px 4px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+  .seg .c.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .seg.bin .c{flex:1}
+
+  /* time cells */
+  .trow{display:flex;align-items:center;gap:8px;margin:0 0 10px}
+  .cell{flex:1;display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line)}
+  .cell .lb{font-size:10px;color:var(--muted)}
+  .cell .vv{font-size:16px}
+  .dash{color:var(--muted)}
+  .xrm{color:var(--danger);font-size:15px;width:18px;text-align:center}
+  .addblk{color:var(--primary-ink);font-size:13px;font-weight:600;margin:2px 0 2px}
+  .blkhint{font-size:11px;color:var(--muted)}
+
+  /* week overview (NEU) */
+  .qa{display:flex;gap:8px;flex-wrap:wrap;margin:2px 0 12px}
+  .qa .b{font-size:11.5px;font-weight:600;padding:7px 11px;border-radius:18px;background:var(--primary-10);color:var(--primary-ink);border:1px solid rgba(99,102,241,.3)}
+  .wk{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+  .wd{display:flex;align-items:center;gap:11px;padding:12px 13px;border-bottom:1px solid var(--line)}
+  .wd:last-child{border-bottom:none}
+  .wd .day{width:30px;font-size:13.5px;font-weight:600}
+  .wd .day.today{color:var(--primary-ink)}
+  .wd .tm{font-size:13.5px;font-variant-numeric:tabular-nums}
+  .wd .tm.zu{color:var(--muted)}
+  .wd .tg{margin-left:auto;width:38px;height:22px;border-radius:12px;position:relative;flex:none}
+  .wd .tg.an{background:var(--primary)}
+  .wd .tg.aus{background:var(--chip);border:1px solid var(--line)}
+  .wd .tg i{position:absolute;top:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.2s}
+  .wd .tg.an i{right:2px} .wd .tg.aus i{left:2px;background:var(--muted)}
+  .wd.exp{display:block;background:var(--primary-10)}
+  .wd.exp .top{display:flex;align-items:center;gap:11px}
+  .wd.exp .edit{padding:11px 0 2px}
+
+  /* method tiles */
+  .mt{display:flex;align-items:center;gap:13px;padding:14px;border-radius:16px;border:1px solid var(--line);background:var(--card);margin:0 0 12px}
+  .mt.hot{background:var(--primary-10);border-color:rgba(99,102,241,.32)}
+  .mt .ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:21px;flex:none;background:rgba(152,160,173,.16);color:var(--muted)}
+  .mt.hot .ic{background:var(--primary-16);color:var(--primary-ink)}
+  .mt .ti{font-size:15px;font-weight:700}
+  .mt .su{font-size:12px;color:var(--muted);margin-top:2px}
+  .mt .chev{margin-left:auto;color:var(--muted);font-size:18px}
+  .orsep{display:flex;align-items:center;gap:12px;margin:18px 0 14px;color:var(--muted);font-size:12px;font-weight:600}
+  .orsep .hr{flex:1;height:1px;background:var(--line)}
+  .badge-rank{font-size:10px;font-weight:700;color:var(--primary-ink);background:var(--primary-16);padding:2px 7px;border-radius:10px;margin-left:6px}
+
+  /* search field + results */
+  .tf{display:flex;align-items:center;gap:9px;padding:11px 12px;border-radius:10px;background:var(--card);border:1px solid var(--line);margin:0 0 4px}
+  .tf.foc{border-color:var(--primary);border-width:2px;padding:10px 11px}
+  .tf .si{color:var(--muted);font-size:17px}
+  .tf .txt{flex:1;font-size:14px}
+  .tf .txt.ph{color:var(--muted)}
+  .tf .arrow{width:30px;height:30px;border-radius:8px;background:var(--chip);display:flex;align-items:center;justify-content:center;color:var(--primary-ink);font-size:16px}
+  .res{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:8px 0 0;background:var(--surface)}
+  .res .it{display:flex;gap:10px;padding:11px 12px;border-bottom:1px solid var(--line);align-items:flex-start}
+  .res .it:last-child{border-bottom:none}
+  .res .it.sel{background:var(--primary-10)}
+  .res .it .pin{color:var(--muted);font-size:16px;margin-top:1px}
+  .res .it .nm{font-size:13.5px;font-weight:600}
+  .res .it .ds{font-size:11.5px;color:var(--muted);margin-top:1px}
+  .res .it .ck{margin-left:auto;color:var(--open);font-size:16px}
+
+  .note{display:flex;gap:8px;align-items:flex-start;padding:10px 11px;border-radius:10px;font-size:12px;margin:12px 0 0;line-height:1.4}
+  .note.warn{background:var(--warn-12);color:#eac56e;border:1px solid rgba(224,163,46,.3)}
+  .note.bad{background:var(--danger-12);color:#f0908d;border:1px solid rgba(229,83,79,.3)}
+  .note.good{background:var(--open-12);color:#7ee0bf;border:1px solid rgba(52,211,153,.3)}
+  .note .i{font-size:14px;line-height:1.2}
+  .inlinewarn{display:flex;gap:9px;align-items:flex-start;padding:11px 12px;border-radius:10px;background:var(--warn-12);border:1px solid rgba(224,163,46,.32);margin:8px 0 0}
+  .inlinewarn .i{color:var(--warn);font-size:15px}
+  .inlinewarn .tx{font-size:12.5px;color:#eac56e}
+  .inlinewarn .tx b{color:#f3d999}
+  .miniact{display:inline-block;margin-top:7px;font-size:12px;font-weight:700;color:#0E1116;background:var(--warn);padding:5px 11px;border-radius:8px}
+
+  /* footer buttons */
+  .foot{display:flex;gap:10px;padding:13px 16px;border-top:1px solid var(--line)}
+  .btn{flex:1;text-align:center;font-size:14px;font-weight:600;padding:12px;border-radius:11px}
+  .btn.sec{background:var(--chip);color:var(--ink)}
+  .btn.pri{background:var(--primary);color:#fff}
+  .btn.prigrad{background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff}
+
+  /* stacked-ghost (Marathon-Visualisierung) */
+  .stack{position:relative}
+  .ghost{position:absolute;top:0;left:0;right:0;border-radius:28px;height:642px;border:1px solid var(--line);background:var(--bg)}
+  .ghost.g1{transform:translate(14px,14px);opacity:.45}
+  .ghost.g2{transform:translate(7px,7px);opacity:.7}
+  .marathon-tag{position:absolute;right:-6px;top:46px;z-index:6;background:var(--danger);color:#fff;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;box-shadow:0 4px 14px rgba(229,83,79,.5)}
+
+  /* Why-better card */
+  .why{margin:20px 0 6px;max-width:880px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surface)}
+  .why .wh{display:flex;align-items:center;gap:9px;padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+  .why .wb{padding:6px 16px 14px}
+  .why table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+  .why td,.why th{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+  .why th{color:var(--muted);font-weight:600;font-size:12px}
+  .why td.old{color:var(--muted)} .why td.new{color:var(--primary-ink);font-weight:600}
+  .why .delta{color:var(--open);font-weight:700}
+  .why ul{margin:10px 0 2px;padding-left:18px;color:var(--muted);font-size:12.5px}
+  .why ul li{margin:4px 0}
+  .why ul li b{color:var(--ink)}
+  .keep{display:inline-block;margin-top:8px;font-size:11.5px;color:var(--open);background:var(--open-12);border:1px solid rgba(52,211,153,.3);padding:3px 9px;border-radius:8px}
+
+  .closing{max-width:880px;margin:28px 26px 60px;padding:16px 18px;border:1px solid rgba(99,102,241,.3);background:var(--primary-10);border-radius:14px;font-size:13.5px;color:var(--ink)}
+  .closing b{color:var(--primary-ink)}
+  .closing ul{margin:8px 0 0;padding-left:18px;color:var(--muted)}
+  .closing ul li{margin:4px 0}
+  hr.sep{border:none;border-top:1px solid var(--line);margin:26px 26px}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>WhenOpen — UX-Vergleich: <b>Vorher / Nachher</b></h1>
+  <p>Drei Reibungspunkte im direkten Gegenüberstellen — echte App-Farben (Indigo, Dunkelmodus = aktueller Stand).
+     Jeder Block zeigt links den Ist-Zustand, rechts den Vorschlag, darunter eine nüchterne „Ist es wirklich besser?“-Bilanz mit Tap-Zahlen.</p>
+</header>
+<div class="legend">
+  <span><span class="pill old">VORHER</span> heutiger Stand im Code</span>
+  <span><span class="pill new">NACHHER</span> Vorschlag</span>
+  <span>🟢 Toggle an = geöffnet · grau = geschlossen</span>
+</div>
+
+<!-- ============================================================ -->
+<!-- BLOCK 1 — Öffnungszeiten -->
+<!-- ============================================================ -->
+<section class="block">
+  <h2>1 · Öffnungszeiten eingeben <span class="pill new">größter Hebel</span></h2>
+  <p class="lead">Heute ist jeder Wochentag ein eigener Vollbild-Schritt (Mo–So = 7 Seiten). Der Vorschlag fasst sie zu
+     <b>einer Wochenübersicht</b> zusammen, mit sinnvoller Vorbelegung — der Mehrblock-Editor (E9) bleibt voll erhalten,
+     er klappt pro Tag inline auf.</p>
+
+  <div class="pair">
+    <!-- VORHER -->
+    <div class="col">
+      <div class="cap"><span class="pill old">VORHER</span> <b>1 von 7</b> Wochentag-Seiten</div>
+      <div class="stack">
+        <div class="ghost g1"></div>
+        <div class="ghost g2"></div>
+        <span class="marathon-tag">× 7 — jeder Tag einzeln</span>
+        <div class="phone" style="position:relative;z-index:5">
+          <div class="screen">
+            <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+            <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+            <div class="prog"><i style="width:40%"></i></div>
+            <div class="steplbl"><b>Schritt 4 von 10</b> · Donnerstag</div>
+            <div class="body"><div class="pad">
+              <h3 class="q">Donnerstag</h3>
+              <p class="hint">Wähle den Status für diesen Tag.</p>
+              <div class="seg">
+                <div class="c on">Geöffnet</div>
+                <div class="c">Gleiche Zeiten</div>
+                <div class="c">Geschlossen</div>
+              </div>
+              <div class="trow">
+                <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">09:00</span></div>
+                <span class="dash">–</span>
+                <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">18:00</span></div>
+                <span class="xrm">✕</span>
+              </div>
+              <div class="addblk">＋ Weiterer Zeitblock</div>
+              <div class="blkhint">Für geteilte Zeiten (z. B. Mittagspause).</div>
+            </div></div>
+            <div class="foot">
+              <div class="btn sec">Zurück</div>
+              <div class="btn pri">Weiter</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="note bad"><span class="i">⚠</span><span>„Gleiche Zeiten“ und „Geöffnet“ führen bei vorhandenem Vortag zum selben Ergebnis — eine Wahl ohne Unterschied, und das 7×.</span></div>
+    </div>
+
+    <!-- NACHHER -->
+    <div class="col">
+      <div class="cap"><span class="pill new">NACHHER</span> <b>1 Schritt</b> für die ganze Woche</div>
+      <div class="phone accent">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+          <div class="prog"><i style="width:66%"></i></div>
+          <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+          <div class="body"><div class="pad">
+            <h3 class="q">Öffnungszeiten</h3>
+            <p class="hint">Vorbelegt mit Mo–Fr 9–18 Uhr. Tippe eine Zeit zum Ändern.</p>
+            <div class="qa">
+              <span class="b">Mo–Fr → alle übernehmen</span>
+              <span class="b">Alle schließen</span>
+            </div>
+            <div class="wk">
+              <div class="wd"><span class="day">Mo</span><span class="tm">09:00 – 18:00</span><span class="tg an"><i></i></span></div>
+              <div class="wd"><span class="day">Di</span><span class="tm">09:00 – 18:00</span><span class="tg an"><i></i></span></div>
+              <div class="wd"><span class="day">Mi</span><span class="tm">09:00 – 18:00</span><span class="tg an"><i></i></span></div>
+              <!-- aufgeklappter Tag: zeigt, dass E9-Mehrblock erhalten bleibt -->
+              <div class="wd exp">
+                <div class="top"><span class="day today">Do</span><span class="tm">08:00–12:00 · 14:00–18:00</span><span class="tg an"><i></i></span></div>
+                <div class="edit">
+                  <div class="trow">
+                    <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">08:00</span></div>
+                    <span class="dash">–</span>
+                    <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">12:00</span></div>
+                    <span class="xrm">✕</span>
+                  </div>
+                  <div class="trow">
+                    <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">14:00</span></div>
+                    <span class="dash">–</span>
+                    <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">18:00</span></div>
+                    <span class="xrm">✕</span>
+                  </div>
+                  <div class="addblk">＋ Weiterer Zeitblock</div>
+                </div>
+              </div>
+              <div class="wd"><span class="day">Fr</span><span class="tm">09:00 – 18:00</span><span class="tg an"><i></i></span></div>
+              <div class="wd"><span class="day">Sa</span><span class="tm zu">Geschlossen</span><span class="tg aus"><i></i></span></div>
+              <div class="wd"><span class="day">So</span><span class="tm zu">Geschlossen</span><span class="tg aus"><i></i></span></div>
+            </div>
+          </div></div>
+          <div class="foot">
+            <div class="btn sec">Zurück</div>
+            <div class="btn prigrad">Weiter</div>
+          </div>
+        </div>
+      </div>
+      <div class="note good"><span class="i">✓</span><span>Standardfall ohne jede Tag-Interaktion fertig. Abweichung (Do) wird inline aufgeklappt — Mehrblock (E9) unverändert.</span></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="wh">📊 Ist es wirklich besser? — Aufwand für einen typischen Laden (Mo–Fr 9–18, Sa/So zu)</div>
+    <div class="wb">
+      <table>
+        <tr><th>Schritt</th><th>Vorher</th><th>Nachher</th></tr>
+        <tr><td>Bildschirme im Flow</td><td class="old">10</td><td class="new">3–4</td></tr>
+        <tr><td>Taps nur für Öffnungszeiten</td><td class="old">~14 (7 Tage × Chip + Weiter)</td><td class="new">0 (Vorbelegung passt)</td></tr>
+        <tr><td>Taps gesamt bis „Gespeichert“</td><td class="old">~20</td><td class="new">~5</td></tr>
+        <tr><td>Nach OSM-/Umkreis-Import</td><td class="old">noch ~9× „Weiter“</td><td class="new">1× „Übernehmen &amp; Speichern“</td></tr>
+      </table>
+      <ul>
+        <li><b>Hick’s Law:</b> eine Wochenübersicht statt sieben fast identischer Entscheidungen.</li>
+        <li><b>Sichtbarkeit:</b> ganze Woche auf einen Blick prüf- und korrigierbar, statt blind durch 7 Seiten zu klicken.</li>
+        <li><b>Ehrlicher Fortschritt:</b> der Balken zeigt 3 statt 10 Schritte — keine gefühlte Endlosschleife.</li>
+      </ul>
+      <span class="keep">✓ Scope-konform: E9 (Mehrblock/Tag) bleibt — geprüft, ist nur Datenmodell, nicht „7 Schritte“.</span>
+      <span class="delta" style="float:right;font-size:14px">≈ 75 % weniger Taps</span>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- ============================================================ -->
+<!-- BLOCK 2 — Methodenauswahl: Reihenfolge -->
+<!-- ============================================================ -->
+<section class="block">
+  <h2>2 · Methodenauswahl — „Orte in der Nähe“ nach oben</h2>
+  <p class="lead">Dein Wunsch: Die Umkreissuche soll an erster Stelle stehen. Sie ist der bequemste Weg
+     (Adresse + Zeiten kommen automatisch) und passt zur Heimatadresse, die beim Einstieg ohnehin gesetzt wird.</p>
+
+  <div class="pair">
+    <!-- VORHER -->
+    <div class="col">
+      <div class="cap"><span class="pill old">VORHER</span> <b>„Ort suchen“ zuerst</b></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+          <div class="body"><div class="pad">
+            <h3 class="q">Wie möchtest du beginnen?</h3>
+            <p class="hint">Lokale Suche füllt Adresse &amp; Zeiten automatisch.</p>
+            <div class="mt hot">
+              <div class="ic">🔎</div>
+              <div><div class="ti">Ort suchen</div><div class="su">In OpenStreetMap nach Namen suchen</div></div>
+              <div class="chev">›</div>
+            </div>
+            <div class="mt hot">
+              <div class="ic">📍</div>
+              <div><div class="ti">Orte in der Nähe</div><div class="su">Im Umkreis deiner Heimatadresse</div></div>
+              <div class="chev">›</div>
+            </div>
+            <div class="orsep"><span class="hr"></span>ODER<span class="hr"></span></div>
+            <div class="mt">
+              <div class="ic">✎</div>
+              <div><div class="ti">Manuell eingeben</div><div class="su">Alles selbst eintippen</div></div>
+              <div class="chev">›</div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NACHHER -->
+    <div class="col">
+      <div class="cap"><span class="pill new">NACHHER</span> <b>„Orte in der Nähe“ zuerst</b></div>
+      <div class="phone accent">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+          <div class="body"><div class="pad">
+            <h3 class="q">Wie möchtest du beginnen?</h3>
+            <p class="hint">Lokale Suche füllt Adresse &amp; Zeiten automatisch.</p>
+            <div class="mt hot">
+              <div class="ic">📍</div>
+              <div><div class="ti">Orte in der Nähe <span class="badge-rank">EMPFOHLEN</span></div><div class="su">Im Umkreis deiner Heimatadresse</div></div>
+              <div class="chev">›</div>
+            </div>
+            <div class="mt hot">
+              <div class="ic">🔎</div>
+              <div><div class="ti">Ort suchen</div><div class="su">In OpenStreetMap nach Namen suchen</div></div>
+              <div class="chev">›</div>
+            </div>
+            <div class="orsep"><span class="hr"></span>ODER<span class="hr"></span></div>
+            <div class="mt">
+              <div class="ic">✎</div>
+              <div><div class="ti">Manuell eingeben</div><div class="su">Alles selbst eintippen</div></div>
+              <div class="chev">›</div>
+            </div>
+          </div></div>
+        </div>
+      </div>
+      <div class="note good"><span class="i">✓</span><span>Reine Reihenfolge-Änderung in <code>start_auswahl_step.dart</code> — winziger, risikofreier Eingriff.</span></div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="wh">📊 Ist es wirklich besser?</div>
+    <div class="wb">
+      <ul>
+        <li><b>Erster Treffer = bequemster Weg:</b> die meisten Orte liegen im Alltag in der Nähe; der Nutzer sieht eine fertige Liste statt erst tippen zu müssen.</li>
+        <li><b>Konsistent mit dem Einstieg:</b> die Heimatadresse wird sowieso im Onboarding gesetzt (siehe Block 3) — „in der Nähe“ knüpft direkt daran an.</li>
+        <li><b>Optionales „EMPFOHLEN“-Label</b> macht den Standardweg sichtbar, ohne die anderen zu verstecken.</li>
+      </ul>
+      <span class="keep">Offen für dich: Soll „Orte in der Nähe“ ohne gesetzte Heimatadresse trotzdem oben stehen (dann direkt zur Adress-Eingabe leiten) — passt gut zu Block 3.</span>
+    </div>
+  </div>
+</section>
+
+<hr class="sep">
+
+<!-- ============================================================ -->
+<!-- BLOCK 3 — Heimatadresse: nicht bestätigt -->
+<!-- ============================================================ -->
+<section class="block">
+  <h2>3 · Heimatadresse beim Einstieg — kein stiller Verlust mehr <span class="pill new">dein Punkt</span></h2>
+  <p class="lead">Heute: Wer die Adresse eintippt, aber <b>nicht den Pfeil/Enter</b> drückt, löst nie eine Suche aus — beim
+     „Weiter“ ist die Adresse weg, ohne jede Meldung. Vorschlag: <b>Live-Suche</b> + bei genau einem Treffer
+     <b>automatische Übernahme</b>, sonst eine <b>klare Rückfrage</b> statt Stille.</p>
+
+  <div class="pair">
+    <!-- VORHER -->
+    <div class="col">
+      <div class="cap"><span class="pill old">VORHER</span> <b>getippt, nicht bestätigt</b></div>
+      <div class="phone">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="grow">Einrichten</span><span class="act">Überspringen</span></div>
+          <div class="body"><div class="pad">
+            <div style="width:74px;height:74px;border-radius:22px;background:var(--primary-10);display:flex;align-items:center;justify-content:center;font-size:32px;margin:6px 0 18px">🏠</div>
+            <h3 class="q">Deine Heimatadresse</h3>
+            <p class="hint">Damit „Orte in der Nähe“ funktioniert. Wird nur lokal gespeichert.</p>
+            <div class="tf foc"><span class="si">🔎</span><span class="txt">Hauptstraße 5, Köln</span><span class="arrow">→</span></div>
+            <div class="blkhint" style="margin-top:6px">Keine Adresse hinterlegt.</div>
+            <div class="note bad"><span class="i">✕</span><span>Tippt der Nutzer jetzt unten „Weiter“ <b>ohne den Pfeil</b>, passiert nichts: keine Suche, keine Übernahme, keine Warnung — die Adresse ist verloren.</span></div>
+          </div></div>
+          <div class="foot"><div class="btn prigrad">Weiter</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NACHHER A: Auto-Übernahme -->
+    <div class="col">
+      <div class="cap"><span class="pill new">NACHHER A</span> <b>eindeutiger Treffer → auto</b></div>
+      <div class="phone accent">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="grow">Einrichten</span><span class="act">Überspringen</span></div>
+          <div class="body"><div class="pad">
+            <div style="width:74px;height:74px;border-radius:22px;background:var(--primary-10);display:flex;align-items:center;justify-content:center;font-size:32px;margin:6px 0 18px">🏠</div>
+            <h3 class="q">Deine Heimatadresse</h3>
+            <p class="hint">Tippen genügt — wir suchen automatisch mit.</p>
+            <div class="tf foc"><span class="si">🔎</span><span class="txt">Hauptstraße 5, Köln</span></div>
+            <div class="res">
+              <div class="it sel">
+                <span class="pin">📍</span>
+                <div><div class="nm">Hauptstraße 5</div><div class="ds">50667 Köln, Deutschland</div></div>
+                <span class="ck">✓</span>
+              </div>
+            </div>
+            <div class="note good"><span class="i">✓</span><span>Genau <b>ein</b> Treffer → automatisch markiert. „Weiter“ übernimmt ihn — kein Extra-Tap nötig.</span></div>
+          </div></div>
+          <div class="foot"><div class="btn prigrad">Weiter</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NACHHER B: Rückfrage -->
+    <div class="col">
+      <div class="cap"><span class="pill new">NACHHER B</span> <b>mehrdeutig → Rückfrage</b></div>
+      <div class="phone accent">
+        <div class="screen">
+          <div class="statusbar"><span>9:41</span><span class="r">▮▮▮ ▾ 84%</span></div>
+          <div class="appbar"><span class="grow">Einrichten</span><span class="act">Überspringen</span></div>
+          <div class="body"><div class="pad">
+            <div style="width:74px;height:74px;border-radius:22px;background:var(--primary-10);display:flex;align-items:center;justify-content:center;font-size:32px;margin:6px 0 18px">🏠</div>
+            <h3 class="q">Deine Heimatadresse</h3>
+            <p class="hint">Tippen genügt — wir suchen automatisch mit.</p>
+            <div class="tf"><span class="si">🔎</span><span class="txt">Hauptstraße</span></div>
+            <div class="inlinewarn">
+              <span class="i">⚠</span>
+              <div class="tx"><b>Noch nicht bestätigt.</b> Wir haben mehrere Treffer gefunden — bitte wähle deine Adresse:
+                <span class="miniact">Treffer anzeigen</span>
+              </div>
+            </div>
+            <div class="res">
+              <div class="it"><span class="pin">📍</span><div><div class="nm">Hauptstraße 5</div><div class="ds">50667 Köln</div></div></div>
+              <div class="it"><span class="pin">📍</span><div><div class="nm">Hauptstraße 5</div><div class="ds">51063 Köln-Mülheim</div></div></div>
+            </div>
+            <div class="note good"><span class="i">✓</span><span>Bei mehreren/keinem Treffer keine stille Stille mehr — der „Weiter“-Tap erklärt, was fehlt.</span></div>
+          </div></div>
+          <div class="foot"><div class="btn prigrad">Weiter</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="why">
+    <div class="wh">📊 Ist es wirklich besser?</div>
+    <div class="wb">
+      <ul>
+        <li><b>Kein Datenverlust durch Stille:</b> der häufigste Fehlbedienpfad (tippen, dann „Weiter“) führt nicht mehr ins Leere.</li>
+        <li><b>Auto bei Eindeutigkeit (A):</b> spart in der Regel sogar einen Tap — der Normalfall ist „eine Adresse, ein Treffer“.</li>
+        <li><b>Rückfrage bei Mehrdeutigkeit (B):</b> ehrliche, lösbare Meldung statt generischer Leere — gilt auch für die Adress-Suche in den Einstellungen (gleiches Widget).</li>
+      </ul>
+      <span class="keep">Empfehlung: A + B kombinieren — Live-Suche (Debounce ~400 ms), 1 Treffer automatisch, mehrere/keiner → Rückfrage. Der Pfeil bleibt als manueller Fallback.</span>
+    </div>
+  </div>
+</section>
+
+<div class="closing">
+  <b>So liest du den Vergleich:</b> Die Mockups sind statisch und bewusst auf die strittigen Stellen reduziert — es geht ums Prinzip, nicht um pixelgenaues Finish.
+  <ul>
+    <li><b>Block 1</b> ist die große Strukturentscheidung (≈ 75 % weniger Taps, aber Aufwand „L“). Lohnt sich am meisten, braucht aber deinen Go.</li>
+    <li><b>Block 2</b> ist quasi gratis (Reihenfolge tauschen) — kann sofort mit rein.</li>
+    <li><b>Block 3</b> ist dein konkreter Wunsch und mittel-billig (Live-Suche + Auto-Übernahme), wirkt direkt beim Ersteindruck.</li>
+  </ul>
+  Sag mir, welche Richtung sich für dich „besser“ anfühlt — dann verfeinere ich das gewählte Mockup oder setze es im Code um.
+</div>
+
+</body>
+</html>

@@ -4,11 +4,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../../providers/locations_provider.dart';
-import '../../services/open_status_service.dart';
 import '../../services/validation_service.dart';
 import '../../theme/app_theme.dart';
 import '../../widgets/kategorie_dialog.dart';
-import 'day_entry_step.dart';
 import 'kategorie_step.dart';
 import 'name_step.dart';
 import 'optional_fields_step.dart';
@@ -16,6 +14,7 @@ import 'osm_search_step.dart';
 import 'quick_entry_state.dart';
 import 'start_auswahl_step.dart';
 import 'umkreis_search_step.dart';
+import 'week_hours_step.dart';
 
 /// Schnelleintrag-Flow (Workflow 1): 10 Schritte —
 /// Name · Mo–So (Mehrblock-Editor, E9) · Kategorie (E15) · Zusatzinfos.
@@ -227,6 +226,11 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
       if (zeiten != null) {
         for (final tag in zeiten) {
           _state.zeiten[tag.wochentag] = [...tag.zeiten];
+          // Nur Tage MIT erkannten Zeiten gelten als festgelegt; leere bleiben
+          // „noch festlegen" (keine stille Geschlossen-Annahme bei OSM-Lücken).
+          if (tag.zeiten.isNotEmpty) {
+            _state.festgelegt.add(tag.wochentag);
+          }
         }
       }
       _zeigeNameFehler = false;
@@ -246,16 +250,14 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
     final schritt = _state.aktuellerSchritt;
     final name = switch (schritt) {
       0 => l10n.qeSchrittName,
-      >= 1 && <= 7 => OpenStatusService.wochentagLang(
-          _state.aktuellerWochentag, l10n),
-      8 => l10n.qeSchrittKategorie,
+      1 => l10n.qeSchrittZeiten,
+      2 => l10n.qeSchrittKategorie,
       _ => l10n.qeSchrittZusatz,
     };
     return '${l10n.qeSchritt(schritt + 1, QuickEntryState.schritteGesamt)} · $name';
   }
 
   Widget _aktuellerStep() {
-    final l10n = AppLocalizations.of(context)!;
     final schritt = _state.aktuellerSchritt;
     if (schritt == 0) {
       return NameStep(
@@ -265,18 +267,13 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
         onWeiter: _weiter,
       );
     }
-    if (schritt >= 1 && schritt <= 7) {
-      final tag = _state.aktuellerWochentag;
-      return DayEntryStep(
-        key: ValueKey(tag),
-        tagName: OpenStatusService.wochentagLang(tag, l10n),
-        bloecke: _state.zeiten[tag]!,
-        vorschlag: _state.vorschlagFuer(tag),
-        onChanged: (bloecke) =>
-            setState(() => _state.zeiten[tag] = bloecke),
+    if (schritt == 1) {
+      return WeekHoursStep(
+        state: _state,
+        onChanged: () => setState(() {}),
       );
     }
-    if (schritt == 8) {
+    if (schritt == 2) {
       return KategorieStep(
         kategorien: ref.watch(kategorienProvider),
         gewaehlteId: _state.kategorieId,

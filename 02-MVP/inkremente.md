@@ -703,3 +703,50 @@ Backup geht ins eigene verschlüsselte Konto), Deep-Link-Filter auf `host=open` 
 Import-Größen-/Anzahllimit, osmType-Allowlist Modell+Service). Noch **nicht** am Emulator/Gerät
 gegengeprüft (Logik-Fixes, durch Unit-Tests abgedeckt; empfohlen: einmal Import einer großen Datei +
 Umkreissuche am Gerät gegenprüfen).
+
+---
+
+## P18 — UX-Redesign Ort-Anlegen (v1.1.0, 2026-06-15)
+
+**Ausgangspunkt:** Ergonomie-Analyse aller Dialog-/Wizard-Flows (Multi-Agent, 57 Findings +
+Konsistenzregeln; Vorher/Nachher-Mockups in `01-Konzept/mockups/`, maßgeblich
+`whenopen-oeffnungszeiten-final.html`). Größter Reibungspunkt: der „Tag-Marathon" — Öffnungszeiten
+über 7 einzelne Vollbild-Schritte (Mo–So), ~20 Taps für einen Standardladen.
+
+**Was gebaut:**
+- **„Eine Woche, ein Editor"** (`screens/quick_entry/week_hours_step.dart`, neu): EINE Wochenliste
+  mit Akkordeon (immer nur ein Tag aufgeklappt) ersetzt die 7 Tag-Schritte. Drei Zeilenzustände:
+  geöffnet / geschlossen / **„Noch festlegen"** (dezent gestrichelt, keine erfundenen Zeiten).
+  Editor pro Tag: Segment Geöffnet/Geschlossen (neutraler Start), Zeitblöcke (Mehrblock E9),
+  „＋ weiterer Zeitblock", **„Wie ‹Tag›"**-Kopierchip (einmalige Kopie via `vorschlagFuer()`,
+  keine Bindung), Auto-Advance-Button „Weiter zu ‹nächster offener Tag›".
+- **`QuickEntryState`**: `schritteGesamt` 10 → **4** (Name · Öffnungszeiten · Kategorie · Zusatz);
+  neues `Set<Wochentag> festgelegt` (trennt „bewusst gesetzt" von „noch festlegen", nicht
+  persistiert; „Noch festlegen" zählt beim Speichern als geschlossen); `naechsterUnbestimmter()`
+  für die geführte Navigation. `fromLocation` (Bearbeiten) markiert alle 7 als festgelegt.
+- **`QuickEntryScreen`**: Step-Mapping auf 4 Schritte, `day_entry_step.dart` entfernt (durch
+  Wochen-Editor ersetzt), OSM-Übernahme markiert nur Tage MIT Zeiten als festgelegt (Lücken
+  bleiben „Noch festlegen" — keine stille Geschlossen-Annahme).
+- **Methodenauswahl** (`start_auswahl_step.dart`): „Orte in der Nähe" an erste Stelle.
+- **Heimatadresse** (`heimat_adresse_eingabe.dart`): Debounce-**Live-Suche** (450 ms), bei genau
+  einem Treffer **Auto-Übernahme**, Treffer ohne Koordinaten gefiltert, Kein-Treffer-/Fehler-Text
+  statt stiller Leere; Pfeil bleibt als manueller Fallback. Strings `einstHeimatKeineTreffer`,
+  `einstHeimatSuchfehler`.
+- **Zeit-Obergrenze** im Block-Editor 23:30 → **23:59**.
+
+**Was fehlt / bewusst offen:** echte Über-Mitternacht-Zeiten (Bar bis 02:00 — Datenmodell verlangt
+`von < bis` je Tag; v2 via „bis nach Mitternacht"-Toggle); „Alle wie Montag"-Sammelaktion (von
+Marius bewusst weggelassen); Block-3-Rückfrage-Variante bei mehrdeutigen Adressen (Live-Suche +
+Auto-Übernahme decken den Fall hinreichend).
+
+**Was gelernt:**
+- Statt zwei Modi (Neuanlage geführt vs. Import/Bearbeiten frei) genügt EIN Modell: gleiche
+  Liste/Bedienung, nur der **Startzustand der Zeilen** unterscheidet die Fälle. Das löst den
+  lückenhaften-Import-Fall automatisch und verhindert Modus-Inkonsistenzen.
+- „Keine automatischen Änderungen" wörtlich genommen: „Wie ‹Tag›" ist eine einmalige Kopie (keine
+  lebende Bindung), OSM-Lücken werden nicht still geschlossen — beides vorhersehbar.
+
+**Verifiziert:** `flutter analyze` sauber, **104 Unit-Tests grün** (98 + 6 neue für den
+Wochen-Editor-State). Am **Emulator (Pixel_API35, Debug)** end-to-end per Screenshot: Methoden-
+reihenfolge („Orte in der Nähe" oben), 4-Schritt-Flow, Wochen-Editor (neutraler Start, Default-Block
+09–18, „Wie Montag"-Kopierchip, Auto-Advance Mo→Di→Mi, „Noch festlegen"-Zeilen).

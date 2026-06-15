@@ -219,6 +219,28 @@ class AppLocalizationsDe extends AppLocalizations {
   String get qeAbbrechen => 'Abbrechen';
 
   @override
+  String get qeSchrittZeiten => 'Öffnungszeiten';
+
+  @override
+  String get qeWocheTitel => 'Wann hat es geöffnet?';
+
+  @override
+  String get qeNochFestlegen => 'Noch festlegen';
+
+  @override
+  String qeWieTag(String tag) {
+    return 'Wie $tag';
+  }
+
+  @override
+  String qeWeiterZu(String tag) {
+    return 'Weiter zu $tag';
+  }
+
+  @override
+  String get qeFertig => 'Fertig';
+
+  @override
   String get qeStartFrage => 'Wie möchtest du den Ort anlegen?';
 
   @override
@@ -542,6 +564,13 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get einstHeimatEntfernen => 'Entfernen';
+
+  @override
+  String get einstHeimatKeineTreffer =>
+      'Keine Adresse gefunden — bitte Schreibweise prüfen.';
+
+  @override
+  String get einstHeimatSuchfehler => 'Suche nicht möglich — bist du online?';
 
   @override
   String get einstUmkreisTitel => 'Suchradius';

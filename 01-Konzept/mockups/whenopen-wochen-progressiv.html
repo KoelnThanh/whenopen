@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WhenOpen — Öffnungszeiten: progressiver Stapel (Block 1, final)</title>
+<style>
+  :root{
+    --bg:#0E1116; --surface:#161A22; --card:#1F242E; --chip:#242B39;
+    --line:#272D38; --ink:#ECEFF3; --muted:#98A0AD;
+    --primary:#6366F1; --primary-deep:#4F46E5; --primary-ink:#A5B4FC;
+    --open:#34D399; --danger:#E5534F; --warn:#E0A32E;
+    --primary-10:rgba(99,102,241,.12); --primary-16:rgba(99,102,241,.20);
+    --open-12:rgba(52,211,153,.14); --warn-12:rgba(224,163,46,.14);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",Roboto,system-ui,sans-serif;line-height:1.45}
+  header.page{padding:30px 26px 6px;max-width:1180px}
+  header.page h1{margin:0 0 6px;font-size:23px;letter-spacing:-.3px}
+  header.page h1 b{color:var(--primary-ink)}
+  header.page p{margin:0;color:var(--muted);font-size:14px;max-width:920px}
+
+  h2.sec{max-width:1120px;margin:26px 26px 2px;font-size:18px;letter-spacing:-.2px;
+    display:flex;align-items:center;gap:10px}
+  h2.sec .num{display:inline-flex;width:26px;height:26px;border-radius:8px;background:var(--primary);
+    color:#fff;font-size:13px;font-weight:700;align-items:center;justify-content:center}
+  p.lead{max-width:900px;margin:6px 26px 0;color:var(--muted);font-size:13.5px}
+  p.lead b{color:var(--ink)}
+
+  .story{display:flex;gap:20px;flex-wrap:wrap;padding:16px 26px 6px;align-items:flex-start}
+  .step{width:286px}
+  .step > .cap{font-size:13px;margin:0 0 9px 2px}
+  .step > .cap .n{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--primary);color:#fff;font-size:12px;font-weight:700;align-items:center;justify-content:center;margin-right:8px}
+  .step > .cap b{color:var(--ink);font-weight:600}
+  .arrow{align-self:center;color:var(--muted);font-size:24px;margin-top:150px}
+
+  .phone{background:#000;border-radius:34px;padding:8px;box-shadow:0 12px 40px rgba(0,0,0,.5)}
+  .phone.accent{box-shadow:0 12px 40px rgba(79,70,229,.26)}
+  .screen{background:var(--bg);border-radius:27px;overflow:hidden;height:548px;position:relative;display:flex;flex-direction:column}
+  .statusbar{display:flex;justify-content:space-between;align-items:center;padding:8px 16px 4px;font-size:10.5px;color:var(--muted)}
+  .appbar{padding:7px 11px;display:flex;align-items:center;gap:9px;font-size:15px;font-weight:600;border-bottom:1px solid var(--line)}
+  .appbar .back{font-size:19px;width:20px;text-align:center}
+  .appbar .grow{flex:1}
+  .prog{height:5px;border-radius:4px;background:var(--line);margin:11px 14px 6px;overflow:hidden}
+  .prog > i{display:block;height:100%;background:var(--primary);border-radius:4px}
+  .steplbl{font-size:11px;color:var(--muted);padding:0 14px 9px}
+  .steplbl b{color:var(--ink);font-weight:600}
+  .body{flex:1;overflow:auto;padding:0}
+  .pad{padding:6px 14px 12px}
+  h3.q{font-size:17px;font-weight:700;margin:6px 0 12px;letter-spacing:-.2px}
+
+  .done{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid var(--line);border-radius:11px;background:var(--surface);margin:0 0 8px}
+  .done .day{width:24px;font-size:13.5px;font-weight:600}
+  .done .tm{font-size:13px;font-variant-numeric:tabular-nums}
+  .done .tm.zu{color:var(--muted)}
+  .done .edit{margin-left:auto;color:var(--muted);font-size:15px}
+  .done.zu{opacity:.72}
+  .done.changed{border-color:var(--primary);background:var(--primary-10)}
+  .done.keepmark{border-color:rgba(52,211,153,.45)}
+
+  .active{border:1px solid rgba(99,102,241,.4);border-radius:14px;background:var(--primary-10);padding:13px 13px 14px;margin:2px 0 4px}
+  .active .ad{font-size:16px;font-weight:700;margin:0 0 11px}
+  .seg{display:flex;gap:8px;margin:0 0 12px}
+  .seg .c{flex:1;text-align:center;font-size:13px;font-weight:600;padding:10px 4px;border-radius:10px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+  .seg .c.on{background:var(--primary);border-color:var(--primary);color:#fff}
+
+  .takerow{display:flex;gap:8px;margin:0 0 6px;flex-wrap:wrap}
+  .tc{font-size:12.5px;font-weight:600;padding:9px 12px;border-radius:11px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+  .tc.on{background:var(--primary);border-color:var(--primary);color:#fff}
+  .tc.ghost{color:var(--muted)}
+
+  .trow{display:flex;align-items:center;gap:8px;margin:8px 0 9px}
+  .cell{flex:1;display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:10px;background:var(--surface);border:1px solid var(--line)}
+  .cell .lb{font-size:9.5px;color:var(--muted)}
+  .cell .vv{font-size:15px}
+  .dash{color:var(--muted)}
+  .xrm{color:var(--danger);font-size:14px;width:16px;text-align:center}
+  .addblk{color:var(--primary-ink);font-size:12.5px;font-weight:600;margin:1px 0 0}
+
+  .foot{display:flex;gap:10px;padding:11px 14px;border-top:1px solid var(--line)}
+  .btn{flex:1;text-align:center;font-size:14px;font-weight:600;padding:11px;border-radius:11px}
+  .btn.sec{background:var(--chip);color:var(--ink)}
+  .btn.prigrad{background:linear-gradient(135deg,var(--primary),var(--primary-deep));color:#fff}
+  .btn.wide{flex:2}
+
+  .ruleband{max-width:1120px;margin:6px 26px 0;display:flex;gap:11px;align-items:flex-start;
+    padding:13px 16px;border:1px solid rgba(52,211,153,.3);background:var(--open-12);border-radius:13px}
+  .ruleband .i{color:var(--open);font-size:17px;line-height:1.1}
+  .ruleband .t{font-size:13px;color:var(--ink)}
+  .ruleband .t b{color:#7ee0bf}
+
+  .sysbox{max-width:1120px;margin:16px 26px 0;border:1px solid var(--line);border-radius:14px;background:var(--surface);overflow:hidden}
+  .sysbox .h{padding:12px 16px;border-bottom:1px solid var(--line);font-weight:700;font-size:14px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{color:var(--muted);font-weight:600;font-size:11.5px;text-transform:uppercase;letter-spacing:.4px}
+  tr:last-child td{border-bottom:none}
+  td.mode{color:var(--ink);font-weight:600;white-space:nowrap}
+  td.def{color:var(--muted)}
+  td.def b{color:var(--ink)}
+  .noauto{display:inline-block;margin-left:6px;font-size:10px;font-weight:700;color:#7ee0bf;background:var(--open-12);border:1px solid rgba(52,211,153,.3);padding:1px 7px;border-radius:9px}
+
+  .ask{max-width:1120px;margin:22px 26px 60px;padding:15px 18px;border:1px solid rgba(224,163,46,.32);background:var(--warn-12);border-radius:14px;font-size:13.5px}
+  .ask b{color:#f3d999}
+  .ask ul{margin:8px 0 0;padding-left:18px;color:var(--ink)}
+  .ask ul li{margin:5px 0}
+  .codek{font-family:Consolas,monospace;font-size:12px;color:var(--primary-ink);background:var(--primary-10);padding:1px 5px;border-radius:5px}
+</style>
+</head>
+<body>
+
+<header class="page">
+  <h1>Öffnungszeiten — <b>progressiver Stapel</b> (Block 1, final)</h1>
+  <p>Der vertraute Ein-Tag-Editor, „in die Länge gefaltet“: immer ein Tag offen, bestätigte Tage stapeln sich nach
+     oben, alles in einem Screen. Clean — ohne In-App-Hinweistexte. Chips nur „Wie &lt;Tag&gt;“; die Zeiten stehen ja
+     schon in den Zeilen darüber.</p>
+</header>
+
+<!-- ================= 1 · AUFBAU ================= -->
+<h2 class="sec"><span class="num">1</span> Der Aufbau (neuer Ort)</h2>
+<p class="lead">Tag für Tag. Ab dem zweiten Tag: „Wie &lt;Vortag&gt;“ in einem Tap oder „Eigene Zeit“.</p>
+<div class="story">
+
+  <div class="step">
+    <div class="cap"><span class="n">1</span><b>Montag</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <h3 class="q">Wann hat es geöffnet?</h3>
+          <div class="active">
+            <div class="ad">Montag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">09:00</span></div><span class="dash">–</span>
+              <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">18:00</span></div><span class="xrm">✕</span>
+            </div>
+            <div class="addblk">＋ Weiterer Zeitblock</div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter zu Dienstag</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step">
+    <div class="cap"><span class="n">2</span><b>Dienstag — „Wie Montag“</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Dienstag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="takerow">
+              <div class="tc on">Wie Montag</div>
+              <div class="tc ghost">Eigene Zeit</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter zu Mittwoch</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step">
+    <div class="cap"><span class="n">3</span><b>Woche steht — ein Screen</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Di</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Mi</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Do</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Fr</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done zu"><span class="day">Sa</span><span class="tm zu">Geschlossen</span><span class="edit">✎</span></div>
+          <div class="done zu"><span class="day">So</span><span class="tm zu">Geschlossen</span><span class="edit">✎</span></div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ================= 2 · KOPIE ================= -->
+<h2 class="sec"><span class="num">2</span> „Wie &lt;Tag&gt;“ ist eine Kopie — keine Bindung</h2>
+<p class="lead">Dein Fall: Do = „Wie Dienstag“, danach Di ändern. <b>Do bleibt, wie es war.</b> Übernehmen kopiert einmalig;
+   kein Tag ändert sich später automatisch mit. Das ist vorhersehbar — und genau dein „keine automatischen Änderungen“.</p>
+<div class="story">
+
+  <div class="step">
+    <div class="cap"><span class="n">1</span><b>Do übernimmt Dienstag</b></div>
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Bearbeiten</span></div>
+        <div class="body"><div class="pad" style="padding-top:12px">
+          <div class="done"><span class="day">Di</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Mi</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Donnerstag</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="takerow">
+              <div class="tc on">Wie Dienstag</div>
+              <div class="tc ghost">Eigene Zeit</div>
+            </div>
+          </div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step">
+    <div class="cap"><span class="n">2</span><b>Später: Dienstag ändern</b></div>
+    <div class="phone">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Bearbeiten</span></div>
+        <div class="body"><div class="pad" style="padding-top:12px">
+          <div class="active">
+            <div class="ad">Dienstag <span style="font-size:12px;font-weight:500;color:var(--muted)">· angetippt</span></div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">12:00</span></div><span class="dash">–</span>
+              <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">22:00</span></div><span class="xrm">✕</span>
+            </div>
+            <div class="addblk">＋ Weiterer Zeitblock</div>
+          </div>
+          <div class="done"><span class="day">Mi</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Do</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Übernehmen</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step">
+    <div class="cap"><span class="n">3</span><b>Ergebnis — Do unberührt</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Bearbeiten</span></div>
+        <div class="body"><div class="pad" style="padding-top:12px">
+          <div class="done changed"><span class="day">Di</span><span class="tm">12:00 – 22:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Mi</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+          <div class="done keepmark"><span class="day">Do</span><span class="tm">11:30 – 23:00</span><span class="edit">✎</span></div>
+        </div>
+        <div style="padding:4px 14px 0;font-size:12px;color:var(--muted)">
+          <span style="color:#7ee0bf">Do</span> behält 11:30–23:00, obwohl Di jetzt anders ist.
+        </div>
+        </div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="ruleband">
+  <span class="i">✓</span>
+  <span class="t"><b>Regel:</b> „Wie &lt;Tag&gt;“ kopiert die Blöcke <b>einmalig</b> beim Antippen. Danach ist jeder Tag eigenständig —
+    Änderungen wirken nie rückwirkend auf andere. Willst du Do nachziehen, tippst du Do an und wählst erneut „Wie Dienstag“.</span>
+</div>
+
+<!-- ================= 3 · IMPORT / BEARBEITEN ================= -->
+<h2 class="sec"><span class="num">3</span> Wenn Zeiten schon da sind (Import &amp; Bearbeiten)</h2>
+<p class="lead">Kommen Zeiten aus OpenStreetMap oder aus einem bestehenden Ort, gibt es <b>keinen progressiven Aufbau</b>.
+   Die ganze Woche steht sofort als Liste; du tippst nur an, was du ändern willst. Nichts wird automatisch umgeschrieben.</p>
+<div class="story">
+
+  <div class="step">
+    <div class="cap"><span class="n">A</span><b>Aus OSM übernommen — Übersicht</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten · aus OpenStreetMap</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Di</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Mi</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Do</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Fr</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Sa</span><span class="tm">09:00 – 18:00</span><span class="edit">✎</span></div>
+          <div class="done zu"><span class="day">So</span><span class="tm zu">Geschlossen</span><span class="edit">✎</span></div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="arrow">›</div>
+
+  <div class="step">
+    <div class="cap"><span class="n">B</span><b>Einen Tag gezielt korrigieren</b></div>
+    <div class="phone accent">
+      <div class="screen">
+        <div class="statusbar"><span>9:41</span><span>▮▮▮ 84%</span></div>
+        <div class="appbar"><span class="back">‹</span><span class="grow">Neuer Ort</span></div>
+        <div class="prog"><i style="width:66%"></i></div>
+        <div class="steplbl"><b>Schritt 2 von 3</b> · Öffnungszeiten · aus OpenStreetMap</div>
+        <div class="body"><div class="pad">
+          <div class="done"><span class="day">Mo</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="done"><span class="day">Di</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+          <div class="active">
+            <div class="ad">Mittwoch</div>
+            <div class="seg"><div class="c on">Geöffnet</div><div class="c">Geschlossen</div></div>
+            <div class="trow">
+              <div class="cell"><span class="lb">ÖFFNET</span><span class="vv">09:00</span></div><span class="dash">–</span>
+              <div class="cell"><span class="lb">SCHLIESST</span><span class="vv">14:00</span></div><span class="xrm">✕</span>
+            </div>
+            <div class="addblk">＋ Weiterer Zeitblock</div>
+          </div>
+          <div class="done"><span class="day">Do</span><span class="tm">09:00 – 20:00</span><span class="edit">✎</span></div>
+        </div></div>
+        <div class="foot"><div class="btn sec">Zurück</div><div class="btn prigrad wide">Weiter</div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="sysbox">
+  <div class="h">⚙ Default-Systematik — welcher Startzustand je Modus</div>
+  <table>
+    <tr><th>Modus</th><th>Startzustand der Woche</th><th>Default-Regel</th></tr>
+    <tr>
+      <td class="mode">Neuer Ort (leer)</td>
+      <td class="def">Montag aktiv, übrige Tage folgen nach „Weiter“</td>
+      <td class="def">erster Tag startet mit Vorauswahl <b>Geöffnet 09–18</b> <span class="noauto">offene Frage</span></td>
+    </tr>
+    <tr>
+      <td class="mode">Aus OSM-Import</td>
+      <td class="def">alle gelieferten Tage <b>gesetzt</b> mit den erkannten Zeiten; nicht gelieferte Tage = <b>Geschlossen</b></td>
+      <td class="def">keine Auto-Vervollständigung, keine Auto-Korrektur <span class="noauto">keine Auto-Änderung</span></td>
+    </tr>
+    <tr>
+      <td class="mode">Bestehenden Ort bearbeiten</td>
+      <td class="def">alle 7 Tage <b>gesetzt</b> wie gespeichert</td>
+      <td class="def">zeigt exakt den Bestand; nur was du antippst, ändert sich <span class="noauto">keine Auto-Änderung</span></td>
+    </tr>
+  </table>
+</div>
+
+<div class="ask">
+  <b>Damit ist Block 1 entscheidungsreif — noch offen:</b>
+  <ul>
+    <li><b>Montag-Start (neuer Ort):</b> mit „Geöffnet 09–18“ vorausgewählt (schnell) — oder neutral, sodass man bewusst „Geöffnet/Geschlossen“ tippt?</li>
+    <li><b>„Alle wie Montag“-Abkürzung:</b> nach Montag ein optionaler Knopf, der die übrigen Tage in einem Tap füllt — dazunehmen oder weglassen?</li>
+    <li><b>Über Mitternacht</b> (Bar bis 02:00, Modell-Grenze aus dem Szenario-Test): vorerst nur bis 23:30 — oder „bis nach Mitternacht“ in den Scope?</li>
+  </ul>
+</div>
+
+</body>
+</html>

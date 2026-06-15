@@ -11,6 +11,42 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.1.0 — 2026-06-15 (P18: UX-Redesign Ort-Anlegen)
+
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.1.0/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.1.0 (`versionCode` 4).
+
+**Hintergrund:** Ergonomie-Analyse aller Dialog-/Wizard-Flows (Vorher/Nachher-Mockups in
+`01-Konzept/mockups/`). Der größte Reibungspunkt war der „Tag-Marathon": Öffnungszeiten liefen
+über **sieben einzelne Vollbild-Schritte** (Mo–So). Diese werden zu **einer Wochenübersicht**.
+
+**Neu / geändert:**
+- **Öffnungszeiten in einem Schritt** („Eine Woche, ein Editor"): statt 7 Vollbild-Seiten eine
+  Wochenliste mit Akkordeon-Editor. Der Schnelleintrag schrumpft von **10 auf 4 Schritte**; ein
+  Standardladen ist in deutlich weniger Taps angelegt. Jeder Tag ist *geöffnet*, *geschlossen*
+  oder *„Noch festlegen"* (nichts wird still angenommen). „Weiter" führt automatisch zum nächsten
+  offenen Tag, sodass sich die Woche von oben aufbaut. **„Wie ‹Tag›"** kopiert die Zeiten eines
+  früheren Tages in einem Tap (einmalige Kopie, keine Bindung). Mehrblock/Mittagspause (E9)
+  bleibt vollständig erhalten. Dasselbe Modell gilt für Neuanlage, OSM-Import (Lücken bleiben
+  „Noch festlegen") und Bearbeiten — kein Sondermodus mehr.
+- **Methodenauswahl:** „Orte in der Nähe" steht jetzt **an erster Stelle** (bequemster Weg).
+- **Heimatadresse:** **Live-Suche** statt Pflicht-Pfeil — wer tippt, sieht automatisch Treffer.
+  Ein **eindeutiger Treffer wird direkt übernommen**, sodass eine getippte, aber nicht
+  bestätigte Adresse nicht mehr still verloren geht. Kein Treffer / Suchfehler werden benannt
+  statt verschluckt.
+- **Zeit-Obergrenze** auf **23:59** angehoben (vorher 23:30), damit Läden bis kurz vor
+  Mitternacht erfassbar sind. (Echte Über-Mitternacht-Zeiten bleiben bewusst v2.)
+
+**Qualität:** `flutter analyze` sauber, **104 Unit-Tests grün** (6 neue: Wochen-Editor-State —
+`naechsterUnbestimmter`, `vorschlagFuer`, Bearbeiten-Festlegung). Am Emulator (Pixel_API35,
+Debug) end-to-end per Screenshot verifiziert: Methodenreihenfolge, 4-Schritt-Flow, Wochen-Editor
+(neutraler Start, Default-Block, „Wie Montag"-Kopie, Auto-Advance).
+
+**Basis:** baut auf v1.0.2 (P17) auf. Details: `02-MVP/inkremente.md` (Abschnitt P18).
+
+---
+
 ## v1.0.2 — 2026-06-14 (P17: Security- & Datenschutz-Härtung)
 
 **APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.0.2/WhenOpen.apk)

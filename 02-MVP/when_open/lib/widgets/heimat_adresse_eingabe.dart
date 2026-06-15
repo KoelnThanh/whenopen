@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -11,6 +13,11 @@ import '../theme/app_theme.dart';
 /// Genutzt in den Einstellungen und im Erstnutzer-Tutorial. Die Komponente
 /// fuehrt nur die Adresssuche und meldet die Auswahl nach oben — ob/wann
 /// gespeichert wird, entscheidet der Aufrufer ([onGewaehlt] / [onEntfernen]).
+///
+/// UX-Redesign 2026-06: **Live-Suche** (Debounce) statt Pflicht-Pfeil — wer
+/// tippt, sieht automatisch Treffer. Ein **eindeutiger** Treffer wird direkt
+/// übernommen, sodass eine getippte, aber nicht angetippte Adresse nicht mehr
+/// still verloren geht. Leere/Fehler werden benannt statt verschluckt.
 class HeimatAdresseEingabe extends ConsumerStatefulWidget {
   const HeimatAdresseEingabe({
     super.key,
@@ -37,43 +44,88 @@ class HeimatAdresseEingabe extends ConsumerStatefulWidget {
       _HeimatAdresseEingabeState();
 }
 
+enum _SuchStatus { leer, sucht, treffer, keineTreffer, fehler }
+
 class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
   final _suchController = TextEditingController();
+  Timer? _debounce;
   var _sucht = false;
-  List<NominatimResult> _suchErgebnisse = const [];
+  List<NominatimResult> _treffer = const [];
+  _SuchStatus _status = _SuchStatus.leer;
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _suchController.dispose();
     super.dispose();
   }
 
-  Future<void> _sucheAdresse() async {
-    final query = _suchController.text.trim();
-    if (query.length < 3) return;
-    FocusScope.of(context).unfocus();
-    setState(() => _sucht = true);
-    try {
-      final ergebnisse =
-          await ref.read(importServiceProvider).searchPlaces(query);
-      if (!mounted) return;
-      setState(() => _suchErgebnisse = ergebnisse);
-    } on Exception {
-      if (!mounted) return;
-      setState(() => _suchErgebnisse = const []);
-    } finally {
-      if (mounted) setState(() => _sucht = false);
+  /// Live-Suche: nach kurzer Tipp-Pause automatisch suchen (Nominatim-Policy:
+  /// max. 1 Request/s — der Debounce hält das ein).
+  void _onChanged(String text) {
+    _debounce?.cancel();
+    if (text.trim().length < 3) {
+      setState(() {
+        _treffer = const [];
+        _status = _SuchStatus.leer;
+      });
+      return;
     }
+    _debounce =
+        Timer(const Duration(milliseconds: 450), () => _sucheAdresse());
   }
 
-  void _gewaehlt(NominatimResult ergebnis) {
+  Future<void> _sucheAdresse() async {
+    _debounce?.cancel();
+    final query = _suchController.text.trim();
+    if (query.length < 3) return;
+    setState(() {
+      _sucht = true;
+      _status = _SuchStatus.sucht;
+    });
+    List<NominatimResult> ergebnisse;
+    try {
+      ergebnisse = await ref.read(importServiceProvider).searchPlaces(query);
+    } on Exception {
+      if (!mounted) return;
+      setState(() {
+        _sucht = false;
+        _treffer = const [];
+        _status = _SuchStatus.fehler;
+      });
+      return;
+    }
+    if (!mounted) return;
+    // Treffer ohne Koordinaten sind als Umkreis-Zentrum unbrauchbar → raus.
+    final mitKoord =
+        ergebnisse.where((e) => e.lat != null && e.lon != null).toList();
+    // Eindeutiger Treffer → direkt übernehmen (kein stiller Verlust mehr).
+    if (mitKoord.length == 1) {
+      _uebernehmen(mitKoord.single);
+      return;
+    }
+    setState(() {
+      _sucht = false;
+      _treffer = mitKoord;
+      _status =
+          mitKoord.isEmpty ? _SuchStatus.keineTreffer : _SuchStatus.treffer;
+    });
+  }
+
+  void _manuellSuchen() {
+    FocusScope.of(context).unfocus();
+    _sucheAdresse();
+  }
+
+  void _uebernehmen(NominatimResult ergebnis) {
     final lat = ergebnis.lat;
     final lon = ergebnis.lon;
-    // Ohne Koordinaten als Umkreis-Zentrum unbrauchbar — Treffer ignorieren.
     if (lat == null || lon == null) return;
     widget.onGewaehlt(ergebnis.adresse ?? ergebnis.displayName, lat, lon);
     setState(() {
-      _suchErgebnisse = const [];
+      _treffer = const [];
+      _status = _SuchStatus.leer;
+      _sucht = false;
       _suchController.clear();
     });
   }
@@ -97,7 +149,8 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
         TextField(
           controller: _suchController,
           textInputAction: TextInputAction.search,
-          onSubmitted: (_) => _sucheAdresse(),
+          onChanged: _onChanged,
+          onSubmitted: (_) => _manuellSuchen(),
           decoration: InputDecoration(
             hintText: l10n.einstHeimatSuchHint,
             prefixIcon: const Icon(Icons.search),
@@ -112,11 +165,15 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
                 : IconButton(
                     icon: const Icon(Icons.arrow_forward),
                     tooltip: l10n.einstHeimatSuchen,
-                    onPressed: _sucheAdresse,
+                    onPressed: _manuellSuchen,
                   ),
           ),
         ),
-        for (final ergebnis in _suchErgebnisse)
+        if (_status == _SuchStatus.keineTreffer)
+          _Hinweis(text: l10n.einstHeimatKeineTreffer)
+        else if (_status == _SuchStatus.fehler)
+          _Hinweis(text: l10n.einstHeimatSuchfehler),
+        for (final ergebnis in _treffer)
           ListTile(
             dense: true,
             contentPadding: EdgeInsets.zero,
@@ -127,9 +184,25 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontSize: 12, color: AppColors.muted)),
-            onTap: () => _gewaehlt(ergebnis),
+            onTap: () => _uebernehmen(ergebnis),
           ),
       ],
+    );
+  }
+}
+
+/// Dezenter Hinweis unter dem Suchfeld (kein Treffer / Fehler).
+class _Hinweis extends StatelessWidget {
+  const _Hinweis({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Text(text,
+          style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
     );
   }
 }

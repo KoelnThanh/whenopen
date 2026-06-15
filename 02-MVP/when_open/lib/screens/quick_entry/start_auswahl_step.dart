@@ -38,20 +38,22 @@ class StartAuswahlStep extends StatelessWidget {
           style: TextStyle(color: col.muted, fontSize: 13, height: 1.4),
         ),
         const SizedBox(height: 20),
-        _MethodeKachel(
-          icon: Icons.travel_explore,
-          titel: l10n.osmSuchTitel,
-          info: l10n.qeStartSuchenInfo,
-          hervorgehoben: true,
-          onTap: onSuchen,
-        ),
-        const SizedBox(height: 12),
+        // „Orte in der Nähe" steht bewusst an erster Stelle: bequemster Weg
+        // (Adresse + Zeiten kommen automatisch, knüpft an die Heimatadresse an).
         _MethodeKachel(
           icon: Icons.near_me_outlined,
           titel: l10n.umkreisSuchen,
           info: l10n.qeStartUmkreisInfo,
           hervorgehoben: true,
           onTap: onUmkreis,
+        ),
+        const SizedBox(height: 12),
+        _MethodeKachel(
+          icon: Icons.travel_explore,
+          titel: l10n.osmSuchTitel,
+          info: l10n.qeStartSuchenInfo,
+          hervorgehoben: true,
+          onTap: onSuchen,
         ),
         const SizedBox(height: 22),
         Row(

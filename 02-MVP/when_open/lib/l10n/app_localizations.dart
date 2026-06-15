@@ -484,6 +484,42 @@ abstract class AppLocalizations {
   /// **'Abbrechen'**
   String get qeAbbrechen;
 
+  /// No description provided for @qeSchrittZeiten.
+  ///
+  /// In de, this message translates to:
+  /// **'Öffnungszeiten'**
+  String get qeSchrittZeiten;
+
+  /// No description provided for @qeWocheTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Wann hat es geöffnet?'**
+  String get qeWocheTitel;
+
+  /// No description provided for @qeNochFestlegen.
+  ///
+  /// In de, this message translates to:
+  /// **'Noch festlegen'**
+  String get qeNochFestlegen;
+
+  /// No description provided for @qeWieTag.
+  ///
+  /// In de, this message translates to:
+  /// **'Wie {tag}'**
+  String qeWieTag(String tag);
+
+  /// No description provided for @qeWeiterZu.
+  ///
+  /// In de, this message translates to:
+  /// **'Weiter zu {tag}'**
+  String qeWeiterZu(String tag);
+
+  /// No description provided for @qeFertig.
+  ///
+  /// In de, this message translates to:
+  /// **'Fertig'**
+  String get qeFertig;
+
   /// No description provided for @qeStartFrage.
   ///
   /// In de, this message translates to:
@@ -1029,6 +1065,18 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Entfernen'**
   String get einstHeimatEntfernen;
+
+  /// No description provided for @einstHeimatKeineTreffer.
+  ///
+  /// In de, this message translates to:
+  /// **'Keine Adresse gefunden — bitte Schreibweise prüfen.'**
+  String get einstHeimatKeineTreffer;
+
+  /// No description provided for @einstHeimatSuchfehler.
+  ///
+  /// In de, this message translates to:
+  /// **'Suche nicht möglich — bist du online?'**
+  String get einstHeimatSuchfehler;
 
   /// No description provided for @einstUmkreisTitel.
   ///
