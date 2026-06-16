@@ -876,6 +876,8 @@ des Nutzers nach Analyse: **erst die App auf iOS lauffähig, das Home-Widget sp�
   analyze/test nicht sehen — er ist auf einem Windows-Projekt der einzige iOS-Build-Nachweis.
 
 **Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün** — auf dem **macOS-CI-Runner**
-ebenso (analyze + Tests grün). Der erste `flutter build ios` brach an `pod install` ab und deckte
-das iOS-14-Target von `workmanager_apple` auf → behoben (pbxproj 14.0), erneuter CI-Lauf läuft.
-Build/Run **am echten iPhone** weiterhin offen (Apple-Account/TestFlight, Phase 2 = Widget).
+ebenso. Der erste `flutter build ios` brach an `pod install` ab und deckte das iOS-14-Target von
+`workmanager_apple` auf → behoben (pbxproj 14.0). **Run #2 (Commit 1468ce3) grün: `flutter build
+ios --release --no-codesign` baut vollständig durch** — die iOS-App-Basis ist damit erstmals
+nachweislich baubar (end-to-end inkl. aller Plugins, ohne Signatur). Build/Run **am echten iPhone**
+weiterhin offen (Apple-Account 99 $/J + TestFlight); Phase 2 = WidgetKit-Widget.
