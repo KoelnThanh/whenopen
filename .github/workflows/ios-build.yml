@@ -1,0 +1,48 @@
+name: iOS Build (Kompilier-Check)
+
+# Beweist auf einem macOS-Cloud-Runner, dass das iOS-Projekt durchkompiliert —
+# ohne eigenen Mac und ohne Apple-Developer-Account. `--no-codesign` baut die
+# .app ohne Signatur (Signatur/TestFlight kaeme erst mit Apple-Account, 99 $/J).
+# Bei oeffentlichem Repo sind die macOS-Runner-Minuten kostenlos.
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '02-MVP/when_open/**'
+      - '.github/workflows/ios-build.yml'
+  workflow_dispatch: {}   # manuell ausloesbar (Actions-Tab -> Run workflow)
+
+jobs:
+  build-ios:
+    name: flutter build ios --no-codesign
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: 02-MVP/when_open
+
+    steps:
+      - name: Code auschecken
+        uses: actions/checkout@v4
+
+      - name: Flutter einrichten (gepinnt wie lokal)
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.1'
+          channel: stable
+          cache: true
+
+      - name: Flutter-Version anzeigen
+        run: flutter --version
+
+      - name: Abhaengigkeiten holen
+        run: flutter pub get
+
+      - name: Lint
+        run: flutter analyze
+
+      - name: Unit-Tests
+        run: flutter test
+
+      - name: iOS-Release bauen (ohne Signatur)
+        run: flutter build ios --release --no-codesign

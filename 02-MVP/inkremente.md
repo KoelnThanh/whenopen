@@ -818,3 +818,57 @@ Detail→Bearbeiten→Wochen-Editor) · **Live-Umschalter** schaltet sofort Hell
 unverändert (Regression) · **„EMPFOHLEN"-Badge** an „Orte in der Nähe" · **FAQ** mit 7 Karten
 (ausklappbar, Antwort lesbar) · **Mehrfach-Übernahme**: Bürgeramt → Montag aufgeklappt zeigt genau
 **„Wie Dienstag" + „Wie Donnerstag"** (Mi/Fr als Dubletten korrekt entfernt).
+
+## P20 — iOS-Portierung, Phase 1: App-Gerüst ohne Widget (2026-06-16)
+
+**Auftrag:** „Kannst du mir eine iOS-Version bauen, klappen da die Widgets auch noch?" Entscheidung
+des Nutzers nach Analyse: **erst die App auf iOS lauffähig, das Home-Widget später** (eigene Phase).
+
+**Plattform-Recherche (web-verifiziert, adversarial gegengeprüft):**
+- **Build nur auf macOS:** iOS-Apps werden zwingend mit Xcode kompiliert/signiert; auf Windows
+  unmöglich. Ohne eigenen Mac geht es über **Cloud-Mac-CI** (Codemagic signiert via App-Store-
+  Connect-API-Key ohne lokalen Mac; GitHub-Actions-`macos`-Runner, bei öffentlichem Repo gratis).
+  In **allen** Wegen Pflicht: **Apple Developer Program (99 USD/Jahr)**.
+- **Widget ist Neubau, kein Port:** `home_widget` liefert die Widget-UI **nicht** selbst
+  („requires writing the Widgets with native code") — nur Daten-Bridge (App-Group-UserDefaults) +
+  Reload-Trigger + Callback-Routing. iOS-Widget = **WidgetKit-Extension in SwiftUI**, neu zu bauen
+  (Pendant zu `WhenOpenWidgetProvider.kt`/`-Service.kt` + 4 XML-Layouts).
+- **Update-Mechanismus anders:** `android_alarm_manager_plus` ist **rein Android** (E16-Alarm
+  entfällt). iOS nutzt das **TimelineProvider-Modell** (~40–70 systemgesteuerte Reloads/Tag, keine
+  erzwingbaren Festzeit-Updates). Für ein Öffnungszeiten-Widget aber **gut geeignet**: vorab
+  gerenderte Timeline-Einträge an den Öffnungs-/Schließ-Grenzen schalten **punktgenau** um;
+  Datenänderungen passieren nur bei laufender App → `reloadTimelines` greift.
+- **Verteilung:** Kein Pendant zu „APK per Link/Obtainium". Praktisch nur **TestFlight** (mit dem
+  99-USD-Account; Builds alle 90 Tage erneuern) oder Xcode-Free-Provisioning (7-Tage-Verfall,
+  braucht selbst einen Mac).
+
+**Was gebaut:**
+- **iOS-Plattform-Gerüst angelegt:** `flutter create --platforms=ios --org com.whenopen .` →
+  `ios/`-Ordner (Runner-Xcode-Projekt, Info.plist, SceneDelegate). 40 Dateien.
+- **`.gitignore`** um den Standard-Flutter-iOS-Block ergänzt (`Pods/`, `.symlinks/`,
+  `Generated.xcconfig`, `GeneratedPluginRegistrant.*`, Frameworks …) — kein Build-Müll im Repo.
+- **Keine Dart-Änderungen am Logik-Code nötig:** Audit (`HomeWidget`/`AndroidAlarmManager`/
+  `Workmanager`) zeigt, dass **alle** Android-only-Aufrufe bereits hinter `if (Platform.isAndroid)`
+  liegen (main.dart-Init, `onDatenGeaendert`-Hook, `planeNaechstenAlarm`-Guard). Auf iOS wird davon
+  nichts erreicht → App startet ohne Widget-Code sauber. Die saubere E16-Kapselung zahlt sich aus.
+
+**Was fehlt / nächste Schritte (für eine neue Session):**
+- **Eigentlicher iOS-Build/-Run nicht möglich auf Windows** — Verifikation am iPhone/Simulator
+  steht aus und braucht den Cloud-Mac-Schritt. Hier nur analyze+Tests grün.
+- **Bundle-ID** ist `com.whenopen.whenOpen` (camelCase — iOS-IDs erlauben kein `_`, weicht
+  bewusst von Android `com.whenopen.when_open` ab; relevant für App-Group/Provisioning).
+- **Info.plist-Feinschliff** (nur am Mac sinnvoll testbar): URL-Scheme `whenopen://` für Deep-Links;
+  `LSApplicationQueriesSchemes` (`tel`, Maps) für `url_launcher`; ggf. Apple-Maps statt `geo:`.
+- **Cloud-CI + Apple-Developer-Account** einrichten (Voraussetzung, dass überhaupt etwas aufs
+  iPhone kommt).
+- **Phase 2 = Widget** in SwiftUI/WidgetKit (App-Group, TimelineProvider an Block-Grenzen,
+  Filter-Konfiguration via App-Intent, Deep-Link-Tap).
+
+**Was gelernt:**
+- Apple-**Bundle-IDs dürfen keinen Unterstrich** enthalten → `flutter create` macht aus `when_open`
+  automatisch `whenOpen`. Die iOS-ID kann daher nicht 1:1 der Android-App-ID gleichen.
+- Eine konsequente `Platform.isAndroid`-Kapselung (hier aus E16) macht die App **ohne jede
+  Code-Änderung** iOS-tauglich — die Plattform-Trennung war die halbe Portierungsarbeit.
+
+**Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün** (unverändert nach iOS-Gerüst).
+iOS-**Build/Run ausstehend** (macOS erforderlich — nicht auf dem Windows-Entwicklungsrechner).
