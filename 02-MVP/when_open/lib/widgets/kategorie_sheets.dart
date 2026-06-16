@@ -147,7 +147,7 @@ Future<void> zeigeKategorieAendernSheet({
                     fontSize: 15, fontWeight: FontWeight.w600)),
             Text(location.name,
                 style:
-                    const TextStyle(fontSize: 12, color: AppColors.muted)),
+                    TextStyle(fontSize: 12, color: context.col.muted)),
             const SizedBox(height: 10),
             Flexible(
               child: SingleChildScrollView(
@@ -212,12 +212,13 @@ class _SheetOption extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 11, horizontal: 4),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.line)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: col.line)),
         ),
         child: Row(
           children: [
@@ -234,7 +235,7 @@ class _SheetOption extends StatelessWidget {
                 height: 12,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  border: Border.all(color: AppColors.muted, width: 2),
+                  border: Border.all(color: col.muted, width: 2),
                 ),
               ),
             const SizedBox(width: 11),
@@ -248,11 +249,11 @@ class _SheetOption extends StatelessWidget {
               ),
             ),
             if (selected)
-              const Icon(Icons.check, size: 18, color: AppColors.primaryInk)
+              Icon(Icons.check, size: 18, color: col.primaryInk)
             else if (anzahl != null)
               Text('$anzahl',
-                  style: const TextStyle(
-                      fontSize: 12, color: AppColors.muted)),
+                  style: TextStyle(
+                      fontSize: 12, color: col.muted)),
           ],
         ),
       ),
@@ -278,11 +279,11 @@ class _SheetAktion extends StatelessWidget {
         decoration: BoxDecoration(
           border: letzte
               ? null
-              : const Border(bottom: BorderSide(color: AppColors.line)),
+              : Border(bottom: BorderSide(color: context.col.line)),
         ),
         child: Text(label,
             style:
-                const TextStyle(fontSize: 14, color: AppColors.primaryInk)),
+                TextStyle(fontSize: 14, color: context.col.primaryInk)),
       ),
     );
   }

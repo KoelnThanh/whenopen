@@ -146,9 +146,8 @@ extension AppPaletteX on BuildContext {
   AppPalette get col => Theme.of(this).extension<AppPalette>()!;
 }
 
-/// Aktives Theme (App nutzt aktuell Dunkel; Hell folgt in Schritt 3).
-ThemeData buildAppTheme() => buildDarkTheme();
-
+/// Hell + Dunkel werden parallel an `MaterialApp` gegeben; `themeMode`
+/// (gesteuert über [ThemeModus] in den Einstellungen) entscheidet zur Laufzeit.
 ThemeData buildDarkTheme() => _baseTheme(Brightness.dark, AppPalette.dark);
 
 ThemeData buildLightTheme() => _baseTheme(Brightness.light, AppPalette.light);
@@ -189,10 +188,11 @@ ThemeData _baseTheme(Brightness brightness, AppPalette p) {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     snackBarTheme: SnackBarThemeData(
-      backgroundColor:
-          brightness == Brightness.dark ? const Color(0xFF2A2F38) : const Color(0xFF2A2F38),
+      // Dunkle SnackBar in beiden Modi — gängiges Material-Muster, gut lesbar.
+      backgroundColor: const Color(0xFF2A2F38),
       contentTextStyle: const TextStyle(color: Colors.white, fontSize: 14),
-      actionTextColor: AppColors.primaryInk,
+      // SnackBar ist in beiden Modi dunkel → heller Indigo-Akzent passt fest.
+      actionTextColor: AppPalette.dark.primaryInk,
       behavior: SnackBarBehavior.floating,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
     ),

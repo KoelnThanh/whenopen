@@ -750,3 +750,71 @@ Auto-Übernahme decken den Fall hinreichend).
 Wochen-Editor-State). Am **Emulator (Pixel_API35, Debug)** end-to-end per Screenshot: Methoden-
 reihenfolge („Orte in der Nähe" oben), 4-Schritt-Flow, Wochen-Editor (neutraler Start, Default-Block
 09–18, „Wie Montag"-Kopierchip, Auto-Advance Mo→Di→Mi, „Noch festlegen"-Zeilen).
+
+---
+
+## P19 — Mehrfach-Übernahme, „Empfohlen", FAQ, Hell/Dunkel (v1.2.0, 2026-06-15)
+
+**Ausgangspunkt (4 Nutzerwünsche nach P18):** (1) Die Zeiten-Übernahme bot nur den *Vortag* an
+(„Wie Montag") — bei abwechselnden Tagen (jeder 2. anders) unpraktisch; Wunsch: aus **beliebigen**
+festgelegten Tagen übernehmen. (2) Das „Empfohlen"-Label aus den Mockups sollte zurück — als
+Hinweis auf **„Orte in der Nähe"** beim Hinzufügen (analog `whenopen-ux-vergleich`, Block 2).
+(3) Ein **FAQ-Bereich** für mehr Transparenz (Datenschutz, Bedingungen). (4) Der nie aktivierte
+**Hell-/Dunkelmodus** sollte in die Einstellungen.
+
+**Was gebaut:**
+- **Zeiten von beliebigen Tagen** (`quick_entry_state.dart`, `week_hours_step.dart`):
+  neue `uebernahmeVorschlaege(tag)` liefert die **distinct** Öffnungszeit-Profile aller bereits
+  *festgelegten* anderen Tage (Dedup nach Blockfolge; pro Profil der erste Tag in Mo–So-Reihenfolge;
+  aktueller Tag ausgenommen; geschlossene Tage taugen nicht als Vorlage). Der Editor zeigt darauf
+  einen **„Zeiten übernehmen"-Block mit je einem „Wie ‹Tag›"-Chip** (Wrap) statt nur des einen
+  Vortags-Chips. Jede Übernahme bleibt eine **einmalige Kopie** (keine Bindung). Ersetzt das alte
+  `_vorschlagTag` (single). `vorschlagFuer` bleibt (Rückwärtskompatibilität/Tests).
+- **„Empfohlen"-Badge** (`start_auswahl_step.dart`): `_MethodeKachel` bekommt optionalen
+  `badge`-Parameter → dezentes Indigo-Label „EMPFOHLEN" am Titel von **„Orte in der Nähe"**.
+- **FAQ-Screen** (`screens/faq_screen.dart`, neu; Route `/faq`; ⋮-Menüeintrag „Fragen & Antworten"
+  vor „Über WhenOpen"): 7 ausklappbare Karten (`ExpansionTile`) mit ehrlichen Antworten zu
+  Datenort, Internet, fehlender Standortfreigabe, Handy-Wechsel, Kostenlos-Modell,
+  Über-Mitternacht-Grenze und OSM-Datenherkunft. Texte **inline** (frei editierbar, wie die
+  „Über mich"-Prosa), UI-Chrome über l10n.
+- **Hell-/Dunkelmodus** (Theme-Kern): neues `ThemeModus`-Enum (`system`/`hell`/`dunkel`,
+  Default `system`, `unknownEnumValue`) in `AppEinstellungen` (Schema-Feld `theme_modus`,
+  `.g.dart` hand-ediert) + `setThemeModus`/`themeModusProvider`. `WhenOpenApp` → `ConsumerWidget`
+  mit `theme: buildLightTheme()` / `darkTheme: buildDarkTheme()` / reaktivem `themeMode`. Ungenutztes
+  `buildAppTheme()` entfernt; redundante SnackBar-Bedingung vereinfacht (dunkel in beiden Modi).
+  **Live-Umschalter „System/Hell/Dunkel"** (`SegmentedButton`) als erste Sektion „Darstellung" in
+  den Einstellungen — wirkt sofort und persistiert getrennt vom „Speichern"-Knopf.
+- **Farb-Migration für den Hellmodus** (P10-Schritt-3-Altlast endlich erledigt): **~70 fest-dunkle
+  `AppColors`-Neutralfarben** (`bg/panel→surface/card/chip/line/ink/muted`) über **16 Dateien** auf
+  das theme-abhängige `context.col` gezogen (panel → `col.surface`). Zusätzlich alle
+  `AppColors.primaryInk`-Akzenttexte auf `col.primaryInk` (sonst im Hellmodus zu blass) — Ausnahme
+  SnackBar (fest dunkel → `AppPalette.dark.primaryInk`). Markenfeste Farben (primary, danger, warn,
+  Kategorie-Swatches) unverändert.
+
+**Wie gebaut:** Die 4 Features + `primaryInk`-Korrektur selbst (verzahnte/geteilte Dateien); die
+~60 mechanischen Neutralfarb-Migrationen der übrigen 12 Screens als **paralleler Workflow** (ein
+Agent pro Datei, je `final col`-Alias + const-Entschärfung), danach projektweites `analyze` als
+hartes Gate.
+
+**Was fehlt / bewusst offen:** Theme-Auswahl des **Widgets** (RemoteViews) bleibt am System-Dark-
+Mode hängen (separates, natives Thema); echte Über-Mitternacht-Zeiten weiterhin v2.
+
+**Was gelernt:**
+- `AppColors.primaryInk` war fälschlich als „markenfest, nicht migrieren" eingestuft — es hat aber
+  eine Hell-Variante in der Palette. Auf hellem Grund ist der fest-helle Indigo unlesbar → überall
+  `col.primaryInk`, außer auf fest-dunklem Grund (SnackBar). Lehre: „markenfest" ≠ „hat keine
+  Theme-Variante" — vor dem Pauschal-Ausschluss die Palette gegenprüfen.
+- `panel` heißt in der `AppPalette` `surface` — ein Mapping-Detail, das die Migrations-Agenten
+  explizit brauchten, sonst wäre `AppColors.panel` falsch oder gar nicht gewandert worden.
+- Theme-Wechsel als **eigener, sofort persistierter** Pfad (nicht über den „Speichern"-Knopf) gibt
+  direktes Feedback und lässt ungespeicherte Heimat-/Umkreis-Eingaben unberührt (`copyWith` auf den
+  gespeicherten Stand).
+
+**Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün** (104 + 4 neue für
+`uebernahmeVorschlaege`: Distinct-Dedup, Ausschluss des aktuellen Tags, geschlossene & nicht
+festgelegte Tage). Signierte Release-Basis (Debug) am **Emulator (Pixel_API35)** end-to-end per
+Screenshot: **Hellmodus** flächendeckend (Home, Einstellungen, FAQ, Methodenauswahl,
+Detail→Bearbeiten→Wochen-Editor) · **Live-Umschalter** schaltet sofort Hell↔Dunkel · Dunkelmodus
+unverändert (Regression) · **„EMPFOHLEN"-Badge** an „Orte in der Nähe" · **FAQ** mit 7 Karten
+(ausklappbar, Antwort lesbar) · **Mehrfach-Übernahme**: Bürgeramt → Montag aufgeklappt zeigt genau
+**„Wie Dienstag" + „Wie Donnerstag"** (Mi/Fr als Dubletten korrekt entfernt).

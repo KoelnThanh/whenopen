@@ -43,6 +43,40 @@ void main() {
       expect(s.vorschlagFuer(Wochentag.mittwoch), [_b(11, 23)]);
     });
 
+    test('uebernahmeVorschlaege: distinct Profile, erster Tag je Profil', () {
+      final s = QuickEntryState();
+      s.zeiten[Wochentag.montag] = [_b(9, 18)];
+      s.zeiten[Wochentag.dienstag] = [_b(10, 14)];
+      s.zeiten[Wochentag.mittwoch] = [_b(9, 18)]; // identisch zu Montag
+      s.festgelegt
+          .addAll([Wochentag.montag, Wochentag.dienstag, Wochentag.mittwoch]);
+      final v = s.uebernahmeVorschlaege(Wochentag.donnerstag);
+      // Mittwoch fällt als Dublette von Montag weg; Reihenfolge Mo, Di.
+      expect(v.map((e) => e.key).toList(),
+          [Wochentag.montag, Wochentag.dienstag]);
+      expect(v.first.value, [_b(9, 18)]);
+    });
+
+    test('uebernahmeVorschlaege: schließt den aktuellen Tag aus', () {
+      final s = QuickEntryState();
+      s.zeiten[Wochentag.montag] = [_b(9, 18)];
+      s.festgelegt.add(Wochentag.montag);
+      expect(s.uebernahmeVorschlaege(Wochentag.montag), isEmpty);
+    });
+
+    test('uebernahmeVorschlaege: geschlossene Tage taugen nicht als Vorlage', () {
+      final s = QuickEntryState();
+      s.zeiten[Wochentag.montag] = []; // festgelegt, aber geschlossen
+      s.festgelegt.add(Wochentag.montag);
+      expect(s.uebernahmeVorschlaege(Wochentag.dienstag), isEmpty);
+    });
+
+    test('uebernahmeVorschlaege: nur bewusst festgelegte Tage', () {
+      final s = QuickEntryState();
+      s.zeiten[Wochentag.montag] = [_b(9, 18)]; // Zeiten da, aber NICHT festgelegt
+      expect(s.uebernahmeVorschlaege(Wochentag.dienstag), isEmpty);
+    });
+
     test('Bearbeiten: alle 7 Tage gelten als festgelegt', () {
       final ort = Location(
         id: 'x',

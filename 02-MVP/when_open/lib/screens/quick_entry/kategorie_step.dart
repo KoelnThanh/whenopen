@@ -26,6 +26,7 @@ class KategorieStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final col = context.col;
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -35,7 +36,7 @@ class KategorieStep extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 4),
           Text(l10n.qeKategorieHint,
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: col.muted, fontSize: 13)),
           const SizedBox(height: 16),
           Wrap(
             spacing: 8,
@@ -56,7 +57,7 @@ class KategorieStep extends StatelessWidget {
           ),
           const SizedBox(height: 12),
           Text(l10n.qeKategorieOhne,
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: col.muted, fontSize: 13)),
         ],
       ),
     );
@@ -73,22 +74,23 @@ class _KategorieChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.primary : AppColors.card,
+          color: selected ? AppColors.primary : col.card,
           border:
-              Border.all(color: selected ? AppColors.primary : AppColors.line),
+              Border.all(color: selected ? AppColors.primary : col.line),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontSize: 13,
-            color: selected ? Colors.white : AppColors.muted,
+            color: selected ? Colors.white : col.muted,
           ),
         ),
       ),
@@ -104,19 +106,20 @@ class _NeueKategorieChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.card,
-          border: Border.all(color: AppColors.line, style: BorderStyle.solid),
+          color: col.card,
+          border: Border.all(color: col.line, style: BorderStyle.solid),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           label,
-          style: const TextStyle(fontSize: 13, color: AppColors.primaryInk),
+          style: TextStyle(fontSize: 13, color: col.primaryInk),
         ),
       ),
     );

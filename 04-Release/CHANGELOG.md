@@ -11,6 +11,43 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.2.0 — 2026-06-15 (P19: Mehrfach-Übernahme, „Empfohlen", FAQ, Hell/Dunkel)
+
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.2.0/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.2.0 (`versionCode` 5).
+
+**Hintergrund:** Vier Nutzerwünsche aus dem Feedback zum Ort-Anlegen — flexiblere Zeiten-Übernahme,
+ein sichtbarer „Empfohlen"-Hinweis, ein Transparenz-FAQ und der lange vorbereitete, aber nie
+aktivierte Hell-/Dunkelmodus.
+
+**Neu / geändert:**
+- **Zeiten von beliebigen Tagen übernehmen:** Der Tages-Editor bot bisher nur den **Vortag**
+  („Wie Montag") an. Jetzt erscheinen **alle bereits festgelegten Tage** als „Wie ‹Tag›"-Chips —
+  **entdoppelt**: Sind mehrere Tage gleich, taucht das Profil nur einmal auf. So lässt sich auch
+  ein abwechselnder Wochenrhythmus (jeder 2. Tag anders) in je einem Tap zusammenstellen. Jede
+  Übernahme bleibt eine einmalige Kopie ohne Bindung.
+- **„Empfohlen"-Hinweis:** Beim Anlegen eines Orts trägt **„Orte in der Nähe"** jetzt ein dezentes
+  **„EMPFOHLEN"-Label** — der bequemste Weg ist auf einen Blick sichtbar.
+- **Fragen & Antworten (FAQ):** Neuer Bereich im ⋮-Menü mit ehrlichen Antworten zu den häufigsten
+  Fragen — wo die Daten liegen, ob Internet nötig ist, warum keine Standortfreigabe, Handy-Wechsel,
+  warum kostenlos und warum keine Zeiten über Mitternacht. Mehr Transparenz, passend zur
+  lokal-und-trackingfrei-Haltung.
+- **Hell-/Dunkelmodus:** In den Einstellungen gibt es jetzt unter **„Darstellung"** einen
+  Umschalter **System / Hell / Dunkel** — er wirkt **sofort**. Dafür wurde die App durchgängig
+  hell-/dunkelfähig gemacht (rund 70 Farbstellen über 16 Screens auf das umschaltbare Farbsystem
+  gezogen). Voreinstellung: dem System folgen. (Das Home-Widget folgt weiterhin dem System.)
+
+**Qualität:** `flutter analyze` sauber, **108 Unit-Tests grün** (4 neue für die Mehrfach-Übernahme:
+Entdopplung, Ausschluss des aktuellen Tags, geschlossene/nicht festgelegte Tage). Am Emulator
+(Pixel_API35) end-to-end per Screenshot verifiziert: Hellmodus flächendeckend, Live-Umschalter
+Hell↔Dunkel, Dunkelmodus unverändert, Empfohlen-Badge, FAQ (7 ausklappbare Karten), Mehrfach-
+Übernahme („Wie Dienstag" + „Wie Donnerstag" mit korrekter Entdopplung).
+
+**Basis:** baut auf v1.1.0 (P18) auf. Details: `02-MVP/inkremente.md` (Abschnitt P19).
+
+---
+
 ## v1.1.0 — 2026-06-15 (P18: UX-Redesign Ort-Anlegen)
 
 **APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.1.0/WhenOpen.apk)

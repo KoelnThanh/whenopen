@@ -45,6 +45,7 @@ class StartAuswahlStep extends StatelessWidget {
           titel: l10n.umkreisSuchen,
           info: l10n.qeStartUmkreisInfo,
           hervorgehoben: true,
+          badge: l10n.qeEmpfohlen,
           onTap: onUmkreis,
         ),
         const SizedBox(height: 12),
@@ -95,6 +96,7 @@ class _MethodeKachel extends StatelessWidget {
     required this.info,
     required this.hervorgehoben,
     required this.onTap,
+    this.badge,
   });
 
   final IconData icon;
@@ -102,6 +104,9 @@ class _MethodeKachel extends StatelessWidget {
   final String info;
   final bool hervorgehoben;
   final VoidCallback onTap;
+
+  /// Optionales Hinweis-Label am Titel (z. B. „Empfohlen") — dezent eingefärbt.
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -145,13 +150,23 @@ class _MethodeKachel extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      titel,
-                      style: TextStyle(
-                        fontSize: 15.5,
-                        fontWeight: FontWeight.w700,
-                        color: col.ink,
-                      ),
+                    Row(
+                      children: [
+                        Flexible(
+                          child: Text(
+                            titel,
+                            style: TextStyle(
+                              fontSize: 15.5,
+                              fontWeight: FontWeight.w700,
+                              color: col.ink,
+                            ),
+                          ),
+                        ),
+                        if (badge != null) ...[
+                          const SizedBox(width: 8),
+                          _Empfohlen(text: badge!),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -169,6 +184,33 @@ class _MethodeKachel extends StatelessWidget {
               Icon(Icons.chevron_right, color: col.muted, size: 20),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Dezentes „Empfohlen"-Label (Indigo-getönt) am Titel einer Methoden-Kachel.
+class _Empfohlen extends StatelessWidget {
+  const _Empfohlen({required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.16),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        text.toUpperCase(),
+        style: TextStyle(
+          fontSize: 9.5,
+          fontWeight: FontWeight.w800,
+          letterSpacing: 0.5,
+          color: context.col.primaryInk,
         ),
       ),
     );

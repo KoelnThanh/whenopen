@@ -45,6 +45,7 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final col = context.col;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.osmBestaetigeTitel)),
       body: SafeArea(
@@ -57,13 +58,13 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.card,
+                      color: col.card,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppColors.line),
+                      border: Border.all(color: col.line),
                     ),
                     child: Text(l10n.osmBestaetigeHint,
-                        style: const TextStyle(
-                            fontSize: 13, color: AppColors.muted)),
+                        style: TextStyle(
+                            fontSize: 13, color: col.muted)),
                   ),
                   const SizedBox(height: 16),
                   TextField(
@@ -84,8 +85,8 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
                   const SizedBox(height: 16),
                   if (_zeiten != null) ...[
                     Text(l10n.osmZeitenErkannt,
-                        style: const TextStyle(
-                            fontSize: 13, color: AppColors.primaryInk)),
+                        style: TextStyle(
+                            fontSize: 13, color: col.primaryInk)),
                     const SizedBox(height: 8),
                     for (final tag in _zeiten)
                       Padding(
@@ -97,8 +98,8 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
                               child: Text(
                                 OpenStatusService.wochentagKurz(
                                     tag.wochentag, l10n),
-                                style: const TextStyle(
-                                    fontSize: 13, color: AppColors.muted),
+                                style: TextStyle(
+                                    fontSize: 13, color: col.muted),
                               ),
                             ),
                             Expanded(
@@ -111,8 +112,8 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
                                 style: TextStyle(
                                   fontSize: 13,
                                   color: tag.geoeffnet
-                                      ? AppColors.ink
-                                      : AppColors.muted,
+                                      ? col.ink
+                                      : col.muted,
                                 ),
                               ),
                             ),
@@ -134,8 +135,8 @@ class _OsmConfirmStepState extends State<OsmConfirmStep> {
                     child: OutlinedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.ink,
-                        backgroundColor: AppColors.chip,
+                        foregroundColor: col.ink,
+                        backgroundColor: col.chip,
                         side: BorderSide.none,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                       ),

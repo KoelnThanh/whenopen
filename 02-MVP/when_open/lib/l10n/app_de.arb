@@ -275,5 +275,18 @@
   "spendeDialogText": "Du hast schon {anzahl} Orte gespeichert — schön, dass dir die App hilft! Sie ist und bleibt kostenlos. Wenn du magst, spendier mir einen Kaffee oder schick mir kurz Feedback.",
   "@spendeDialogText": { "placeholders": { "anzahl": { "type": "int" } } },
   "spendeDialogFeedback": "Feedback",
-  "spendeDialogSpaeter": "Später"
+  "spendeDialogSpaeter": "Später",
+
+  "qeEmpfohlen": "Empfohlen",
+  "qeUebernehmenTitel": "Zeiten übernehmen",
+
+  "menueFaq": "Fragen & Antworten",
+  "faqTitel": "Fragen & Antworten",
+  "faqUntertitel": "Kurz erklärt, wie WhenOpen mit deinen Daten umgeht.",
+
+  "einstDesignTitel": "Darstellung",
+  "einstDesignInfo": "Hell, dunkel oder automatisch dem System folgen.",
+  "themeSystem": "System",
+  "themeHell": "Hell",
+  "themeDunkel": "Dunkel"
 }

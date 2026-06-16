@@ -66,6 +66,27 @@ class QuickEntryState {
     return null;
   }
 
+  /// Distinct Oeffnungszeit-Profile bereits **festgelegter** anderer Tage als
+  /// Kopiervorlagen fuer [tag]. Haben mehrere Tage identische Bloecke, erscheint
+  /// nur der erste (in Wochenreihenfolge Mo–So); der aktuelle Tag bleibt aussen
+  /// vor. Bei Neuanlage sind das die schon ausgefuellten Tage davor, beim
+  /// Bearbeiten alle uebrigen Tage. Grundlage fuer die „Wie ‹Tag›"-Chips.
+  List<MapEntry<Wochentag, List<TimeBlock>>> uebernahmeVorschlaege(
+      Wochentag tag) {
+    final vorschlaege = <MapEntry<Wochentag, List<TimeBlock>>>[];
+    final gesehen = <String>{};
+    for (final w in Wochentag.values) {
+      if (w == tag || !festgelegt.contains(w)) continue;
+      final bloecke = zeiten[w]!;
+      if (bloecke.isEmpty) continue; // nur geoeffnete Tage taugen als Vorlage
+      final schluessel = bloecke.map((b) => b.toString()).join('|');
+      if (gesehen.add(schluessel)) {
+        vorschlaege.add(MapEntry(w, bloecke));
+      }
+    }
+    return vorschlaege;
+  }
+
   /// Erster noch nicht festgelegter Tag nach [tag] (Wochenreihenfolge), sonst
   /// null — Grundlage für die geführte Weiter-Navigation im Wochen-Editor.
   Wochentag? naechsterUnbestimmter(Wochentag tag) {

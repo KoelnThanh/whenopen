@@ -67,6 +67,7 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     final einst = ref.watch(einstellungenProvider);
     return Scaffold(
@@ -79,8 +80,8 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
                 padding: const EdgeInsets.fromLTRB(16, 14, 16, 0),
                 child: Row(
                   children: [
-                    const Icon(Icons.near_me,
-                        size: 16, color: AppColors.muted),
+                    Icon(Icons.near_me,
+                        size: 16, color: col.muted),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -89,8 +90,8 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
                             einst.heimatAdresse!),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 12, color: AppColors.muted),
+                        style: TextStyle(
+                            fontSize: 12, color: col.muted),
                       ),
                     ),
                   ],
@@ -104,8 +105,8 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.ink,
-                    backgroundColor: AppColors.chip,
+                    foregroundColor: col.ink,
+                    backgroundColor: col.chip,
                     side: BorderSide.none,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
@@ -120,6 +121,7 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
   }
 
   Widget _inhalt(AppLocalizations l10n) {
+    final col = context.col;
     switch (_zustand) {
       case _Zustand.laedt:
         return Center(
@@ -129,7 +131,7 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
               const CircularProgressIndicator(),
               const SizedBox(height: 16),
               Text(l10n.umkreisLaedt,
-                  style: const TextStyle(color: AppColors.muted)),
+                  style: TextStyle(color: col.muted)),
             ],
           ),
         );
@@ -151,13 +153,13 @@ class _UmkreisSearchStepState extends ConsumerState<UmkreisSearchStep> {
                   ? Text(ergebnis.adresse!,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.muted))
+                      style: TextStyle(
+                          fontSize: 12, color: col.muted))
                   : null,
               trailing: Icon(
                 hatZeiten ? Icons.schedule : Icons.help_outline,
                 size: 18,
-                color: hatZeiten ? AppColors.primary : AppColors.muted,
+                color: hatZeiten ? AppColors.primary : col.muted,
               ),
               onTap: () => _trefferGewaehlt(ergebnis),
             );
@@ -179,7 +181,7 @@ class _Hinweis extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Text(text,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.muted)),
+            style: TextStyle(color: context.col.muted)),
       ),
     );
   }

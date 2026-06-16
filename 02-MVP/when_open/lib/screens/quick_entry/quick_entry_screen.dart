@@ -291,6 +291,7 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     final fortschritt =
         (_state.aktuellerSchritt + 1) / QuickEntryState.schritteGesamt;
@@ -331,14 +332,14 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
                     child: LinearProgressIndicator(
                       value: fortschritt,
                       minHeight: 6,
-                      backgroundColor: AppColors.line,
+                      backgroundColor: col.line,
                       color: AppColors.primary,
                     ),
                   ),
                   const SizedBox(height: 7),
                   Text(_schrittLabel(l10n),
-                      style: const TextStyle(
-                          fontSize: 12, color: AppColors.muted)),
+                      style: TextStyle(
+                          fontSize: 12, color: col.muted)),
                 ],
               ),
             ),
@@ -357,8 +358,8 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
                     child: OutlinedButton(
                       onPressed: _zurueck,
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.ink,
-                        backgroundColor: AppColors.chip,
+                        foregroundColor: col.ink,
+                        backgroundColor: col.chip,
                         side: BorderSide.none,
                         padding: const EdgeInsets.symmetric(vertical: 13),
                       ),

@@ -120,6 +120,7 @@ class _OsmSearchStepState extends ConsumerState<OsmSearchStep> {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.osmSuchTitel)),
@@ -146,8 +147,8 @@ class _OsmSearchStepState extends ConsumerState<OsmSearchStep> {
                 child: OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: AppColors.ink,
-                    backgroundColor: AppColors.chip,
+                    foregroundColor: col.ink,
+                    backgroundColor: col.chip,
                     side: BorderSide.none,
                     padding: const EdgeInsets.symmetric(vertical: 13),
                   ),
@@ -185,7 +186,7 @@ class _OsmSearchStepState extends ConsumerState<OsmSearchStep> {
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
                 style:
-                    const TextStyle(fontSize: 12, color: AppColors.muted),
+                    TextStyle(fontSize: 12, color: context.col.muted),
               ),
               onTap: () => _trefferGewaehlt(ergebnis),
             );
@@ -207,7 +208,7 @@ class _Hinweis extends StatelessWidget {
         padding: const EdgeInsets.all(24),
         child: Text(text,
             textAlign: TextAlign.center,
-            style: const TextStyle(color: AppColors.muted)),
+            style: TextStyle(color: context.col.muted)),
       ),
     );
   }

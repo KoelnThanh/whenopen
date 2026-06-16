@@ -30,7 +30,7 @@ class OptionalFieldsStep extends StatelessWidget {
               style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 4),
           Text(l10n.qeZusatzHint,
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: context.col.muted, fontSize: 13)),
           const SizedBox(height: 16),
           TextField(
             controller: adresseController,

@@ -1407,6 +1407,66 @@ abstract class AppLocalizations {
   /// In de, this message translates to:
   /// **'Später'**
   String get spendeDialogSpaeter;
+
+  /// No description provided for @qeEmpfohlen.
+  ///
+  /// In de, this message translates to:
+  /// **'Empfohlen'**
+  String get qeEmpfohlen;
+
+  /// No description provided for @qeUebernehmenTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Zeiten übernehmen'**
+  String get qeUebernehmenTitel;
+
+  /// No description provided for @menueFaq.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen & Antworten'**
+  String get menueFaq;
+
+  /// No description provided for @faqTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Fragen & Antworten'**
+  String get faqTitel;
+
+  /// No description provided for @faqUntertitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Kurz erklärt, wie WhenOpen mit deinen Daten umgeht.'**
+  String get faqUntertitel;
+
+  /// No description provided for @einstDesignTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Darstellung'**
+  String get einstDesignTitel;
+
+  /// No description provided for @einstDesignInfo.
+  ///
+  /// In de, this message translates to:
+  /// **'Hell, dunkel oder automatisch dem System folgen.'**
+  String get einstDesignInfo;
+
+  /// No description provided for @themeSystem.
+  ///
+  /// In de, this message translates to:
+  /// **'System'**
+  String get themeSystem;
+
+  /// No description provided for @themeHell.
+  ///
+  /// In de, this message translates to:
+  /// **'Hell'**
+  String get themeHell;
+
+  /// No description provided for @themeDunkel.
+  ///
+  /// In de, this message translates to:
+  /// **'Dunkel'**
+  String get themeDunkel;
 }
 
 class _AppLocalizationsDelegate

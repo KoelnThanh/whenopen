@@ -74,6 +74,7 @@ class _KategorieDialogState extends State<_KategorieDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     return AlertDialog(
       title: Text(widget.titel ?? l10n.katNeuTitel),
@@ -82,7 +83,7 @@ class _KategorieDialogState extends State<_KategorieDialog> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(l10n.katNeuHint,
-              style: const TextStyle(color: AppColors.muted, fontSize: 13)),
+              style: TextStyle(color: col.muted, fontSize: 13)),
           const SizedBox(height: 12),
           TextField(
             controller: _nameController,
@@ -92,7 +93,7 @@ class _KategorieDialogState extends State<_KategorieDialog> {
           ),
           const SizedBox(height: 14),
           Text(l10n.katFarbe,
-              style: const TextStyle(color: AppColors.muted, fontSize: 12)),
+              style: TextStyle(color: col.muted, fontSize: 12)),
           const SizedBox(height: 8),
           Row(
             children: [

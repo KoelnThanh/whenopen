@@ -22,6 +22,13 @@ AppEinstellungen _$AppEinstellungenFromJson(Map<String, dynamic> json) =>
           ) ??
           TutorialStatus.offen,
       spendenhinweisGezeigt: json['spendenhinweis_gezeigt'] as bool? ?? false,
+      themeModus:
+          $enumDecodeNullable(
+            _$ThemeModusEnumMap,
+            json['theme_modus'],
+            unknownValue: ThemeModus.system,
+          ) ??
+          ThemeModus.system,
     );
 
 Map<String, dynamic> _$AppEinstellungenToJson(AppEinstellungen instance) =>
@@ -32,10 +39,17 @@ Map<String, dynamic> _$AppEinstellungenToJson(AppEinstellungen instance) =>
       'umkreis_meter': instance.umkreisMeter,
       'tutorial_status': _$TutorialStatusEnumMap[instance.tutorialStatus]!,
       'spendenhinweis_gezeigt': instance.spendenhinweisGezeigt,
+      'theme_modus': _$ThemeModusEnumMap[instance.themeModus]!,
     };
 
 const _$TutorialStatusEnumMap = {
   TutorialStatus.offen: 'offen',
   TutorialStatus.abgelehnt: 'abgelehnt',
   TutorialStatus.abgeschlossen: 'abgeschlossen',
+};
+
+const _$ThemeModusEnumMap = {
+  ThemeModus.system: 'system',
+  ThemeModus.hell: 'hell',
+  ThemeModus.dunkel: 'dunkel',
 };

@@ -12,6 +12,13 @@ part 'app_einstellungen.g.dart';
 /// - [abgeschlossen]: Tutorial wurde durchlaufen/uebersprungen.
 enum TutorialStatus { offen, abgelehnt, abgeschlossen }
 
+/// Vom Nutzer gewähltes Erscheinungsbild.
+///
+/// - [system]: folgt der Geräteeinstellung (Default, auch für Altdaten OHNE
+///   dieses Feld — siehe `unknownEnumValue`).
+/// - [hell] / [dunkel]: erzwingt das jeweilige Theme unabhängig vom System.
+enum ThemeModus { system, hell, dunkel }
+
 /// App-Einstellungen (Schema 2.1).
 ///
 /// Heute: optionale **Heimatadresse** + Suchradius fuer die „Orte in der
@@ -29,6 +36,7 @@ class AppEinstellungen {
     this.umkreisMeter = AppEinstellungen.standardUmkreis,
     this.tutorialStatus = TutorialStatus.offen,
     this.spendenhinweisGezeigt = false,
+    this.themeModus = ThemeModus.system,
   });
 
   /// Standard-Suchradius in Metern (1 km — bewusst eng fuer die Erstnutzung).
@@ -59,6 +67,11 @@ class AppEinstellungen {
   /// Feld in Altdaten, gilt `false` (Hinweis darf einmal erscheinen).
   final bool spendenhinweisGezeigt;
 
+  /// Gewähltes Erscheinungsbild. `unknownEnumValue` fängt unbekannte/fehlende
+  /// Werte aus älteren Dateien ab → wirkt wie [ThemeModus.system].
+  @JsonKey(unknownEnumValue: ThemeModus.system)
+  final ThemeModus themeModus;
+
   /// True, wenn eine nutzbare Heimatposition hinterlegt ist.
   @JsonKey(includeFromJson: false, includeToJson: false)
   bool get hatHeimat => heimatLat != null && heimatLon != null;
@@ -76,6 +89,7 @@ class AppEinstellungen {
     int? umkreisMeter,
     TutorialStatus? tutorialStatus,
     bool? spendenhinweisGezeigt,
+    ThemeModus? themeModus,
   }) =>
       AppEinstellungen(
         heimatAdresse:
@@ -86,5 +100,6 @@ class AppEinstellungen {
         tutorialStatus: tutorialStatus ?? this.tutorialStatus,
         spendenhinweisGezeigt:
             spendenhinweisGezeigt ?? this.spendenhinweisGezeigt,
+        themeModus: themeModus ?? this.themeModus,
       );
 }

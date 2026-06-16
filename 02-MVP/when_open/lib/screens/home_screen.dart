@@ -468,10 +468,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
           children: [
             Text(
               quelle,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontFamily: 'monospace',
-                color: AppColors.muted,
+                color: context.col.muted,
               ),
             ),
             const SizedBox(height: 10),
@@ -482,7 +482,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             const SizedBox(height: 8),
             Text(
               l10n.wiederherstellenWarnung(aktuelle),
-              style: const TextStyle(fontSize: 12, color: AppColors.muted),
+              style: TextStyle(fontSize: 12, color: context.col.muted),
             ),
           ],
         ),
@@ -569,6 +569,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             onTeilen: _teilen,
             onWiederherstellen: _wiederherstellen,
             onEinstellungen: () => context.push('/einstellungen'),
+            onFaq: () => context.push('/faq'),
             onUeber: () => context.push('/ueber'),
           ),
           Expanded(
@@ -641,6 +642,7 @@ class _HomeHeader extends StatelessWidget {
     required this.onTeilen,
     required this.onWiederherstellen,
     required this.onEinstellungen,
+    required this.onFaq,
     required this.onUeber,
   });
 
@@ -654,6 +656,7 @@ class _HomeHeader extends StatelessWidget {
   final VoidCallback onTeilen;
   final VoidCallback onWiederherstellen;
   final VoidCallback onEinstellungen;
+  final VoidCallback onFaq;
   final VoidCallback onUeber;
 
   @override
@@ -712,6 +715,8 @@ class _HomeHeader extends StatelessWidget {
                         onWiederherstellen();
                       case 5:
                         onUeber();
+                      case 6:
+                        onFaq();
                     }
                   },
                   itemBuilder: (context) => [
@@ -752,6 +757,13 @@ class _HomeHeader extends StatelessWidget {
                       ),
                     ),
                     const PopupMenuDivider(),
+                    PopupMenuItem(
+                      value: 6,
+                      child: _MenueZeile(
+                        icon: Icons.help_outline,
+                        text: l10n.menueFaq,
+                      ),
+                    ),
                     PopupMenuItem(
                       value: 5,
                       child: _MenueZeile(

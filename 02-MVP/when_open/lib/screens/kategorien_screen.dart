@@ -161,13 +161,14 @@ class KategorienScreen extends ConsumerWidget {
               footer: _SonstigeZeile(
                   l10n: l10n, anzahl: anzahl(null)),
               itemBuilder: (context, index) {
+                final col = context.col;
                 final kategorie = kategorien[index];
                 final orte = anzahl(kategorie.id);
                 return Container(
                   key: ValueKey(kategorie.id),
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     border:
-                        Border(bottom: BorderSide(color: AppColors.line)),
+                        Border(bottom: BorderSide(color: col.line)),
                   ),
                   child: Row(
                     children: [
@@ -193,8 +194,8 @@ class KategorienScreen extends ConsumerWidget {
                                       fontWeight: FontWeight.w500)),
                               Text(
                                 orte == 1 ? l10n.katEinOrt : l10n.katOrte(orte),
-                                style: const TextStyle(
-                                    fontSize: 12, color: AppColors.muted),
+                                style: TextStyle(
+                                    fontSize: 12, color: col.muted),
                               ),
                             ],
                           ),
@@ -202,15 +203,15 @@ class KategorienScreen extends ConsumerWidget {
                       ),
                       ReorderableDragStartListener(
                         index: index,
-                        child: const Padding(
-                          padding: EdgeInsets.all(8),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8),
                           child: Icon(Icons.drag_handle,
-                              color: Color(0xFF5B626D), size: 20),
+                              color: col.muted, size: 20),
                         ),
                       ),
                       PopupMenuButton<String>(
-                        icon: const Icon(Icons.more_vert,
-                            color: Color(0xFF5B626D), size: 20),
+                        icon: Icon(Icons.more_vert,
+                            color: col.muted, size: 20),
                         onSelected: (aktion) {
                           switch (aktion) {
                             case 'bearbeiten':
@@ -258,10 +259,11 @@ class _SonstigeZeile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: AppColors.line)),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: col.line)),
       ),
       child: Row(
         children: [
@@ -285,7 +287,7 @@ class _SonstigeZeile extends StatelessWidget {
                     ? '${l10n.katSonstigeHint} · ${anzahl == 1 ? l10n.katEinOrt : l10n.katOrte(anzahl)}'
                     : l10n.katSonstigeHint,
                 style:
-                    const TextStyle(fontSize: 12, color: AppColors.muted),
+                    TextStyle(fontSize: 12, color: col.muted),
               ),
             ],
           ),

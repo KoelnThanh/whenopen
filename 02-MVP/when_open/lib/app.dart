@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import 'l10n/app_localizations.dart';
+import 'models/app_einstellungen.dart';
+import 'providers/locations_provider.dart';
 import 'screens/detail_screen.dart';
 import 'screens/einstellungen_screen.dart';
+import 'screens/faq_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/kategorien_screen.dart';
 import 'screens/onboarding_screen.dart';
@@ -49,6 +53,10 @@ final GoRouter appRouter = GoRouter(
           path: 'ueber',
           builder: (context, state) => const UeberScreen(),
         ),
+        GoRoute(
+          path: 'faq',
+          builder: (context, state) => const FaqScreen(),
+        ),
         // Deep-Link-Ziel fuer Widget-Taps: whenopen://open/:id
         GoRoute(
           path: 'open/:id',
@@ -60,14 +68,24 @@ final GoRouter appRouter = GoRouter(
   ],
 );
 
-class WhenOpenApp extends StatelessWidget {
+class WhenOpenApp extends ConsumerWidget {
   const WhenOpenApp({super.key});
 
+  /// Mappt das gespeicherte [ThemeModus]-Enum auf Flutters [ThemeMode].
+  ThemeMode _themeMode(ThemeModus modus) => switch (modus) {
+        ThemeModus.system => ThemeMode.system,
+        ThemeModus.hell => ThemeMode.light,
+        ThemeModus.dunkel => ThemeMode.dark,
+      };
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final modus = ref.watch(themeModusProvider);
     return MaterialApp.router(
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
-      theme: buildAppTheme(),
+      theme: buildLightTheme(),
+      darkTheme: buildDarkTheme(),
+      themeMode: _themeMode(modus),
       routerConfig: appRouter,
       localizationsDelegates: const [
         AppLocalizations.delegate,

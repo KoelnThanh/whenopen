@@ -55,16 +55,6 @@ class _WeekHoursStepState extends State<WeekHoursStep> {
   bool _istOffen(Wochentag tag) => _state.zeiten[tag]!.isNotEmpty;
   bool _istFestgelegt(Wochentag tag) => _state.festgelegt.contains(tag);
 
-  /// Der Tag, dessen Blöcke „Wie …" anbieten würde (letzter offener davor).
-  Wochentag? _vorschlagTag(Wochentag tag) {
-    for (var i = tag.index - 1; i >= 0; i--) {
-      if (_state.zeiten[Wochentag.values[i]]!.isNotEmpty) {
-        return Wochentag.values[i];
-      }
-    }
-    return null;
-  }
-
   void _oeffneTag(Wochentag tag) => setState(() => _aktiv = tag);
 
   void _weiter(Wochentag tag) =>
@@ -89,12 +79,11 @@ class _WeekHoursStepState extends State<WeekHoursStep> {
     _weiter(tag); // geschlossen ist eine vollständige Entscheidung → weiter
   }
 
-  void _uebernimmVortag(Wochentag tag) {
-    final vorschlag = _state.vorschlagFuer(tag);
-    if (vorschlag == null) return;
+  /// Übernimmt die Blöcke eines anderen Tags (einmalige Kopie, keine Bindung).
+  void _uebernimm(Wochentag tag, List<TimeBlock> bloecke) {
     setState(() {
       _state.festgelegt.add(tag);
-      _state.zeiten[tag] = [...vorschlag];
+      _state.zeiten[tag] = [...bloecke];
     });
     _melde();
   }
@@ -167,11 +156,11 @@ class _WeekHoursStepState extends State<WeekHoursStep> {
                       offen: _istOffen(tag),
                       festgelegt: _istFestgelegt(tag),
                       bloecke: _state.zeiten[tag]!,
-                      vorschlagTag: _vorschlagTag(tag),
+                      vorschlaege: _state.uebernahmeVorschlaege(tag),
                       naechster: _state.naechsterUnbestimmter(tag),
                       onGeoeffnet: () => _waehleGeoeffnet(tag),
                       onGeschlossen: () => _waehleGeschlossen(tag),
-                      onUebernehmen: () => _uebernimmVortag(tag),
+                      onUebernehmen: (bloecke) => _uebernimm(tag, bloecke),
                       onVonTap: (i) => _zeitWaehlen(tag, i, true),
                       onBisTap: (i) => _zeitWaehlen(tag, i, false),
                       onBlockEntfernen: (i) => _blockEntfernen(tag, i),
@@ -281,7 +270,7 @@ class _TagEditor extends StatelessWidget {
     required this.offen,
     required this.festgelegt,
     required this.bloecke,
-    required this.vorschlagTag,
+    required this.vorschlaege,
     required this.naechster,
     required this.onGeoeffnet,
     required this.onGeschlossen,
@@ -299,11 +288,13 @@ class _TagEditor extends StatelessWidget {
   final bool offen;
   final bool festgelegt;
   final List<TimeBlock> bloecke;
-  final Wochentag? vorschlagTag;
+
+  /// Distinct Kopiervorlagen anderer Tage (Quelltag → dessen Blöcke).
+  final List<MapEntry<Wochentag, List<TimeBlock>>> vorschlaege;
   final Wochentag? naechster;
   final VoidCallback onGeoeffnet;
   final VoidCallback onGeschlossen;
-  final VoidCallback onUebernehmen;
+  final ValueChanged<List<TimeBlock>> onUebernehmen;
   final ValueChanged<int> onVonTap;
   final ValueChanged<int> onBisTap;
   final ValueChanged<int> onBlockEntfernen;
@@ -362,13 +353,36 @@ class _TagEditor extends StatelessWidget {
           ),
           if (offen) ...[
             const SizedBox(height: 12),
-            if (vorschlagTag != null)
+            if (vorschlaege.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(bottom: 10),
-                child: _WieChip(
-                  label: l10n.qeWieTag(
-                      OpenStatusService.wochentagLang(vorschlagTag!, l10n)),
-                  onTap: onUebernehmen,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 7, left: 1),
+                      child: Text(
+                        l10n.qeUebernehmenTitel,
+                        style: TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: col.muted,
+                        ),
+                      ),
+                    ),
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
+                      children: [
+                        for (final v in vorschlaege)
+                          _WieChip(
+                            label: l10n.qeWieTag(
+                                OpenStatusService.wochentagLang(v.key, l10n)),
+                            onTap: () => onUebernehmen(v.value),
+                          ),
+                      ],
+                    ),
+                  ],
                 ),
               ),
             for (var i = 0; i < bloecke.length; i++) ...[
@@ -517,9 +531,9 @@ class _BlockRow extends StatelessWidget {
         Expanded(
             child: _ZeitZelle(
                 label: oeffnetLabel, zeit: block.von, onTap: onVonTap)),
-        const Padding(
-          padding: EdgeInsets.symmetric(horizontal: 8),
-          child: Text('–', style: TextStyle(color: AppColors.muted)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text('–', style: TextStyle(color: context.col.muted)),
         ),
         Expanded(
             child: _ZeitZelle(

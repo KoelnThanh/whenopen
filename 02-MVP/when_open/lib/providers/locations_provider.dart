@@ -122,6 +122,13 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
     await setEinstellungen(aktuell.copyWith(tutorialStatus: status));
   }
 
+  /// Erscheinungsbild (Hell/Dunkel/System) dauerhaft speichern.
+  Future<void> setThemeModus(ThemeModus modus) async {
+    final aktuell =
+        state.valueOrNull?.einstellungen ?? const AppEinstellungen();
+    await setEinstellungen(aktuell.copyWith(themeModus: modus));
+  }
+
   /// Datierte, teilbare Sicherungskopie für den Teilen-Dialog (P10).
   Future<File> exportKopie() async => (await _repo).exportKopie();
 
@@ -172,6 +179,11 @@ final locationsProvider = Provider<List<Location>>((ref) {
 final einstellungenProvider = Provider<AppEinstellungen>((ref) {
   return ref.watch(appDataProvider).valueOrNull?.einstellungen ??
       const AppEinstellungen();
+});
+
+/// Gewähltes Erscheinungsbild (Hell/Dunkel/System) — steuert `themeMode`.
+final themeModusProvider = Provider<ThemeModus>((ref) {
+  return ref.watch(einstellungenProvider).themeModus;
 });
 
 /// True, wenn der Erstnutzer-Tutorial-Dialog angeboten werden soll: Daten

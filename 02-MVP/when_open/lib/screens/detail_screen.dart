@@ -26,6 +26,7 @@ class DetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     final asyncDaten = ref.watch(appDataProvider);
     final locations = ref.watch(locationsProvider);
@@ -74,7 +75,7 @@ class DetailScreen extends ConsumerWidget {
                   color: kategorie.isNotEmpty
                       ? farbeAusHex(kategorie.single.farbe)
                           .withValues(alpha: 0.22)
-                      : AppColors.chip,
+                      : col.chip,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -88,7 +89,7 @@ class DetailScreen extends ConsumerWidget {
                     letterSpacing: 0.5,
                     color: kategorie.isNotEmpty
                         ? farbeAusHex(kategorie.single.farbe)
-                        : AppColors.muted,
+                        : col.muted,
                   ),
                 ),
               ),
@@ -140,8 +141,8 @@ class DetailScreen extends ConsumerWidget {
                   }
                 },
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.primaryInk,
-                  backgroundColor: AppColors.chip,
+                  foregroundColor: col.primaryInk,
+                  backgroundColor: col.chip,
                   side: BorderSide.none,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
@@ -159,8 +160,8 @@ class DetailScreen extends ConsumerWidget {
                     onPressed: () =>
                         context.push('/quick-entry?editId=${location.id}'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: AppColors.ink,
-                      backgroundColor: AppColors.chip,
+                      foregroundColor: col.ink,
+                      backgroundColor: col.chip,
                       side: BorderSide.none,
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
@@ -205,6 +206,7 @@ class _WochenZeile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final kurz = OpenStatusService.wochentagKurz(tag.wochentag, l10n);
     final zeiten = tag.geoeffnet
         ? tag.zeiten.map((b) => b.toString()).join(' · ')
@@ -216,7 +218,7 @@ class _WochenZeile extends StatelessWidget {
         color: istHeute
             ? AppColors.primary.withValues(alpha: 0.18)
             : Colors.transparent,
-        border: const Border(bottom: BorderSide(color: AppColors.line)),
+        border: Border(bottom: BorderSide(color: col.line)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -227,7 +229,7 @@ class _WochenZeile extends StatelessWidget {
               istHeute ? '$kurz · ${l10n.detailHeute}' : kurz,
               style: TextStyle(
                 fontSize: 13.5,
-                color: istHeute ? AppColors.primaryInk : AppColors.muted,
+                color: istHeute ? AppColors.primaryInk : col.muted,
                 fontWeight: istHeute ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
@@ -239,7 +241,7 @@ class _WochenZeile extends StatelessWidget {
               style: TextStyle(
                 fontSize: 13.5,
                 fontFeatures: const [FontFeature.tabularFigures()],
-                color: tag.geoeffnet ? AppColors.ink : AppColors.muted,
+                color: tag.geoeffnet ? col.ink : col.muted,
               ),
             ),
           ),
@@ -264,26 +266,27 @@ class _InfoZeile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return InkWell(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: AppColors.line)),
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: col.line)),
         ),
         child: Row(
           children: [
-            Icon(icon, size: 20, color: AppColors.muted),
+            Icon(icon, size: 20, color: col.muted),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(label,
-                    style: const TextStyle(
-                        fontSize: 11, color: AppColors.muted)),
+                    style: TextStyle(
+                        fontSize: 11, color: col.muted)),
                 Text(wert,
-                    style: const TextStyle(
-                        fontSize: 14, color: AppColors.primaryInk)),
+                    style: TextStyle(
+                        fontSize: 14, color: col.primaryInk)),
               ],
             ),
           ],

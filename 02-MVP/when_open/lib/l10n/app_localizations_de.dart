@@ -763,4 +763,36 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get spendeDialogSpaeter => 'Später';
+
+  @override
+  String get qeEmpfohlen => 'Empfohlen';
+
+  @override
+  String get qeUebernehmenTitel => 'Zeiten übernehmen';
+
+  @override
+  String get menueFaq => 'Fragen & Antworten';
+
+  @override
+  String get faqTitel => 'Fragen & Antworten';
+
+  @override
+  String get faqUntertitel =>
+      'Kurz erklärt, wie WhenOpen mit deinen Daten umgeht.';
+
+  @override
+  String get einstDesignTitel => 'Darstellung';
+
+  @override
+  String get einstDesignInfo =>
+      'Hell, dunkel oder automatisch dem System folgen.';
+
+  @override
+  String get themeSystem => 'System';
+
+  @override
+  String get themeHell => 'Hell';
+
+  @override
+  String get themeDunkel => 'Dunkel';
 }

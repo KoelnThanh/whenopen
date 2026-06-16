@@ -24,6 +24,7 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
   double? _heimatLat;
   double? _heimatLon;
   late int _umkreis;
+  late ThemeModus _themeModus;
 
   @override
   void initState() {
@@ -33,6 +34,16 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
     _heimatLat = einst.heimatLat;
     _heimatLon = einst.heimatLon;
     _umkreis = einst.umkreisMeter;
+    _themeModus = einst.themeModus;
+  }
+
+  /// Theme sofort umschalten und persistieren — getrennt vom „Speichern"-Knopf
+  /// (Heimat/Umkreis), damit der Wechsel direkt sichtbar wird. `setThemeModus`
+  /// nutzt `copyWith` auf dem gespeicherten Stand, lässt ungespeicherte
+  /// Heimat-/Umkreis-Eingaben dieses Screens also unberührt.
+  void _themeWaehlen(ThemeModus modus) {
+    setState(() => _themeModus = modus);
+    ref.read(appDataProvider.notifier).setThemeModus(modus);
   }
 
   bool get _hatHeimat => _heimatLat != null && _heimatLon != null;
@@ -74,11 +85,40 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
+            Text(l10n.einstDesignTitel,
+                style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 4),
+            Text(l10n.einstDesignInfo,
+                style: TextStyle(fontSize: 12, color: context.col.muted)),
+            const SizedBox(height: 12),
+            SegmentedButton<ThemeModus>(
+              segments: [
+                ButtonSegment(
+                  value: ThemeModus.system,
+                  label: Text(l10n.themeSystem),
+                  icon: const Icon(Icons.brightness_auto_outlined, size: 18),
+                ),
+                ButtonSegment(
+                  value: ThemeModus.hell,
+                  label: Text(l10n.themeHell),
+                  icon: const Icon(Icons.light_mode_outlined, size: 18),
+                ),
+                ButtonSegment(
+                  value: ThemeModus.dunkel,
+                  label: Text(l10n.themeDunkel),
+                  icon: const Icon(Icons.dark_mode_outlined, size: 18),
+                ),
+              ],
+              selected: {_themeModus},
+              onSelectionChanged: (auswahl) => _themeWaehlen(auswahl.first),
+              showSelectedIcon: false,
+            ),
+            const Divider(height: 36),
             Text(l10n.einstHeimatTitel,
                 style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(l10n.einstHeimatInfo,
-                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                style: TextStyle(fontSize: 12, color: context.col.muted)),
             const SizedBox(height: 12),
             HeimatAdresseEingabe(
               adresse: _heimatAdresse,
@@ -97,9 +137,9 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
                 Text(l10n.einstUmkreisTitel,
                     style: Theme.of(context).textTheme.titleMedium),
                 Text(umkreisLabel(_umkreis, l10n),
-                    style: const TextStyle(
+                    style: TextStyle(
                         fontWeight: FontWeight.w600,
-                        color: AppColors.primaryInk)),
+                        color: context.col.primaryInk)),
               ],
             ),
             Slider(
@@ -126,8 +166,7 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
             const SizedBox(height: 20),
             Center(
               child: Text(l10n.einstAttribution,
-                  style:
-                      const TextStyle(fontSize: 11, color: AppColors.muted)),
+                  style: TextStyle(fontSize: 11, color: context.col.muted)),
             ),
           ],
         ),

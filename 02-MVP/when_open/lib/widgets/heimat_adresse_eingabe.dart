@@ -132,6 +132,7 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     final l10n = AppLocalizations.of(context)!;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,7 +145,7 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
           )
         else
           Text(l10n.einstHeimatKeine,
-              style: const TextStyle(fontSize: 13, color: AppColors.muted)),
+              style: TextStyle(fontSize: 13, color: col.muted)),
         const SizedBox(height: 12),
         TextField(
           controller: _suchController,
@@ -183,7 +184,7 @@ class _HeimatAdresseEingabeState extends ConsumerState<HeimatAdresseEingabe> {
             subtitle: Text(ergebnis.displayName,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(fontSize: 12, color: AppColors.muted)),
+                style: TextStyle(fontSize: 12, color: col.muted)),
             onTap: () => _uebernehmen(ergebnis),
           ),
       ],
@@ -202,7 +203,7 @@ class _Hinweis extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
       child: Text(text,
-          style: const TextStyle(fontSize: 12.5, color: AppColors.muted)),
+          style: TextStyle(fontSize: 12.5, color: context.col.muted)),
     );
   }
 }
@@ -220,12 +221,13 @@ class _HeimatKarte extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final col = context.col;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AppColors.card,
+        color: col.card,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.line),
+        border: Border.all(color: col.line),
       ),
       child: Row(
         children: [
