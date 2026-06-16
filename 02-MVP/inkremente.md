@@ -869,6 +869,13 @@ des Nutzers nach Analyse: **erst die App auf iOS lauffähig, das Home-Widget sp�
   automatisch `whenOpen`. Die iOS-ID kann daher nicht 1:1 der Android-App-ID gleichen.
 - Eine konsequente `Platform.isAndroid`-Kapselung (hier aus E16) macht die App **ohne jede
   Code-Änderung** iOS-tauglich — die Plattform-Trennung war die halbe Portierungsarbeit.
+- **`workmanager` zieht auf iOS `workmanager_apple` mit Mindest-iOS 14.0** — das Flutter-Default-
+  Target (13.0 bei 3.44) reicht nicht, `pod install` bricht („requires a higher minimum iOS
+  deployment version"). Fix: `IPHONEOS_DEPLOYMENT_TARGET` im pbxproj 13.0 → **14.0** (alle 3
+  Konfigs). Lehre: Der CI-`build ios`-Schritt fängt genau solche **nur-am-Mac**-Fehler ab, die
+  analyze/test nicht sehen — er ist auf einem Windows-Projekt der einzige iOS-Build-Nachweis.
 
-**Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün** (unverändert nach iOS-Gerüst).
-iOS-**Build/Run ausstehend** (macOS erforderlich — nicht auf dem Windows-Entwicklungsrechner).
+**Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün** — auf dem **macOS-CI-Runner**
+ebenso (analyze + Tests grün). Der erste `flutter build ios` brach an `pod install` ab und deckte
+das iOS-14-Target von `workmanager_apple` auf → behoben (pbxproj 14.0), erneuter CI-Lauf läuft.
+Build/Run **am echten iPhone** weiterhin offen (Apple-Account/TestFlight, Phase 2 = Widget).
