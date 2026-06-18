@@ -63,6 +63,13 @@ final GoRouter appRouter = GoRouter(
           redirect: (context, state) =>
               '/detail/${state.pathParameters['id']}',
         ),
+        // Deep-Link vom Widget-Kopf (Zeit/Datum): whenopen://app/home —
+        // landet zuverlaessig auf dem Startbildschirm und setzt den Stack
+        // zurueck, egal wo die App vorher stand.
+        GoRoute(
+          path: 'home',
+          redirect: (context, state) => '/',
+        ),
       ],
     ),
   ],

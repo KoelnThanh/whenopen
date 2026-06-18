@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
+import es.antonborri.home_widget.HomeWidgetBackgroundIntent
 import es.antonborri.home_widget.HomeWidgetPlugin
 import org.json.JSONObject
 
@@ -60,10 +61,12 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
             val filter = gespeicherterFilter(context, appWidgetId)
             var kopf = context.getString(R.string.widget_alle_orte)
             var datum = ""
+            var aktualisiert = ""
             if (datenJson != null) {
                 try {
                     val json = JSONObject(datenJson)
                     datum = json.optString("datum", "")
+                    aktualisiert = json.optString("aktualisiert", "")
                     kopf = when (filter) {
                         FILTER_ALLE -> json.optString(
                             "alleOrteText", kopf
@@ -98,7 +101,11 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
                 }
             }
             views.setTextViewText(R.id.widget_kategorie, "$kopf ▾")
-            views.setTextViewText(R.id.widget_datum, datum)
+            // "Stand HH:mm · <Datum>" — bei fehlender Uhrzeit nur das Datum.
+            val datumText = if (aktualisiert.isNotEmpty())
+                context.getString(R.string.widget_stand_format, aktualisiert, datum)
+            else datum
+            views.setTextViewText(R.id.widget_datum, datumText)
 
             // Listen-Adapter (RemoteViewsService), appWidgetId in der Intent-URI,
             // damit jede Instanz ihren eigenen Filter bekommt.
@@ -130,7 +137,7 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widget_empty, openApp)
 
-            // Kopf-Tap: Filter dieses Widgets neu konfigurieren
+            // Kategorie-Tap: Filter dieses Widgets neu konfigurieren
             val configIntent = Intent(context, WhenOpenWidgetConfigActivity::class.java).apply {
                 putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
                 data = Uri.parse("whenopen://widget-config/$appWidgetId")
@@ -141,7 +148,29 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
                 configIntent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-            views.setOnClickPendingIntent(R.id.widget_header, configPending)
+            views.setOnClickPendingIntent(R.id.widget_kategorie, configPending)
+
+            // Aktualisieren-Tap: home_widget-Hintergrund-Callback (Dart rechnet
+            // neu). Daten sind global, daher genuegt ein gemeinsamer Broadcast.
+            views.setOnClickPendingIntent(
+                R.id.widget_refresh,
+                HomeWidgetBackgroundIntent.getBroadcast(
+                    context, Uri.parse("whenopen://widget/refresh")
+                )
+            )
+
+            // Zeit/Datum-Tap: App direkt am Startbildschirm oeffnen
+            val homeIntent = Intent(context, MainActivity::class.java).apply {
+                action = Intent.ACTION_VIEW
+                data = Uri.parse("whenopen://app/home")
+            }
+            val homePending = PendingIntent.getActivity(
+                context,
+                appWidgetId + 300000,
+                homeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            views.setOnClickPendingIntent(R.id.widget_datum, homePending)
 
             appWidgetManager.updateAppWidget(appWidgetId, views)
             appWidgetManager.notifyAppWidgetViewDataChanged(

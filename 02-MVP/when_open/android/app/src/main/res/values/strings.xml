@@ -9,4 +9,7 @@
     <string name="widget_hinzufuegen">Hinzufügen</string>
     <string name="widget_abbrechen">Abbrechen</string>
     <string name="widget_leer">Keine Einträge gespeichert — tippe hier, um zu starten</string>
+    <string name="widget_aktualisieren">Jetzt aktualisieren</string>
+    <!-- %1$s = Uhrzeit der letzten Aktualisierung, %2$s = Datum -->
+    <string name="widget_stand_format">Stand %1$s · %2$s</string>
 </resources>

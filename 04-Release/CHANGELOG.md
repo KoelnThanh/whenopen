@@ -11,6 +11,35 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.3.0 — 2026-06-18 (P21: Widget — Stand-Anzeige, Aktualisieren-Knopf, Direktsprung)
+
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.3.0/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~59 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.3.0 (`versionCode` 6).
+
+**Hintergrund:** Das Home-Widget zog den Offen/Zu-Status spürbar verzögert nach (es zeigt
+vorberechnete Daten; aktualisiert wird ereignisgetrieben + per Alarm/WorkManager) — ohne dass man
+sah, wie alt der Stand ist, und ohne Möglichkeit, manuell nachzuladen. Außerdem führte der einzige
+Einstieg vom Widget in die App stets in eine Detailansicht.
+
+**Neu / geändert:**
+- **„Stand HH:mm" in der Widget-Kopfzeile:** Du siehst jetzt rechts oben, wann zuletzt gerechnet
+  wurde (z. B. „Stand 14:32 · Do. 18.6.") — die Frische ist auf einen Blick erkennbar.
+- **Aktualisieren-Knopf (⟳):** Ein Tipp auf das Symbol in der Kopfzeile lädt die Daten **sofort**
+  neu (rechnet im Hintergrund frisch, auch wenn die App geschlossen ist) und repariert dabei die
+  geplante Auto-Aktualisierung.
+- **Direktsprung zum Startbildschirm:** Ein Tipp auf **Zeit/Datum** öffnet die App direkt auf der
+  Übersicht — kein Umweg mehr über einen Eintrag und zurück.
+- Die Kopfzeilen-Tipps sind jetzt aufgeteilt: **Kategorie** → Filter wählen (wie bisher),
+  **⟳** → aktualisieren, **Zeit/Datum** → App öffnen.
+
+**Qualität:** `flutter analyze` sauber, **108 Unit-Tests grün**. Am Emulator (Pixel_API35)
+end-to-end verifiziert: Widget-Daten mit Stand-Zeitstempel; Aktualisieren-Knopf rechnet bei
+geschlossener App neu (frischer Zeitstempel); Zeit/Datum-Tipp springt aus einer Detailansicht
+zurück auf den Startbildschirm.
+
+---
+
 ## v1.2.0 — 2026-06-15 (P19: Mehrfach-Übernahme, „Empfohlen", FAQ, Hell/Dunkel)
 
 **APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.2.0/WhenOpen.apk)

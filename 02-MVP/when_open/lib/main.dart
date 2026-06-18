@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:home_widget/home_widget.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:workmanager/workmanager.dart';
 
@@ -23,6 +24,11 @@ Future<void> main() async {
       await WidgetService.pushWidgetDaten(daten);
       await WidgetService.planeNaechstenAlarm(daten.eintraege);
     };
+
+    // Aktualisieren-Knopf im Widget: ruft widgetInteraktionCallback im
+    // Hintergrund-Isolate auf (Handle wird persistent gespeichert, wirkt
+    // also auch bei beendeter App).
+    await HomeWidget.registerInteractivityCallback(widgetInteraktionCallback);
 
     await AndroidAlarmManager.initialize();
 

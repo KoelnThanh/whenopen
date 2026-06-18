@@ -881,3 +881,53 @@ ebenso. Der erste `flutter build ios` brach an `pod install` ab und deckte das i
 ios --release --no-codesign` baut vollständig durch** — die iOS-App-Basis ist damit erstmals
 nachweislich baubar (end-to-end inkl. aller Plugins, ohne Signatur). Build/Run **am echten iPhone**
 weiterhin offen (Apple-Account 99 $/J + TestFlight); Phase 2 = WidgetKit-Widget.
+
+---
+
+## P21 — Widget: Stand-Anzeige, Aktualisieren-Knopf, Direktsprung Startbildschirm (v1.3.0, 2026-06-18)
+
+**Hintergrund:** Marius beobachtet, dass das Home-Widget den Offen/Zu-Status erst verzögert
+nachzieht (das Widget rendert nur **vorberechnete** Daten; aktualisiert wird ereignisgetrieben +
+per Alarm/WorkManager). Drei Wünsche: (1) sehen, wie alt der Stand ist, (2) manuell nachladen
+können, (3) direkt in die App **zum Startbildschirm** springen — bisher führte der einzige
+App-Einstieg über eine Listenzeile in die **Detailansicht**, von der man zurückspringen musste.
+
+**Was gebaut:**
+- **„Stand HH:mm" in der Kopfzeile:** `WidgetService.pushWidgetDaten` schreibt jetzt zusätzlich
+  ein `aktualisiert`-Feld (`HH:mm`) ins Widget-JSON; das Datum wurde auf die kürzere Form
+  `EEE d.M.` (z. B. „Do. 18.6.") umgestellt, damit „Stand 14:32 · Do. 18.6." einzeilig passt. Der
+  native `WhenOpenWidgetProvider` baut den Text über die neue String-Ressource
+  `widget_stand_format` (Fallback: nur Datum).
+- **Aktualisieren-Knopf (⟳):** neues `ImageView` `widget_refresh` (Vektor `widget_refresh.xml`,
+  Farbe `widget_muted`) in der Kopfzeile. Tap → `home_widget`-Interaktivitäts-Broadcast
+  (`whenopen://widget/refresh`) an `HomeWidgetBackgroundReceiver` → Hintergrund-Isolate ruft den
+  neuen `@pragma('vm:entry-point') widgetInteraktionCallback` → `aktualisiereWidget()` rechnet neu,
+  pusht und **plant den E16-Alarm neu** (repariert eine ggf. abgerissene Kette). Registriert via
+  `HomeWidget.registerInteractivityCallback` in `main()` (Android-Zweig).
+- **Tap-Ziele in der Kopfzeile aufgeteilt** (bisher öffnete der *ganze* Header die Filter-Config):
+  Kategorie-Text → Filter-Config (wie bisher) · ⟳ → Aktualisieren · Zeit/Datum → App öffnen.
+- **Direktsprung zum Startbildschirm:** Zeit/Datum-Tap feuert `whenopen://app/home`; neue
+  go_router-Redirect-Route `home → /` setzt den Stack zurück, egal wo die App stand.
+- **Manifest:** `HomeWidgetBackgroundReceiver` + `HomeWidgetBackgroundService` deklariert (das
+  Plugin registriert sie nicht selbst).
+
+**Was fehlt / bewusst nicht im Scope:**
+- Tiefere Stale-Härtung (häufigeres WorkManager-Netz / Foreground-Service) — Knopf + Stand-Anzeige
+  adressieren das Symptom direkt; höhere Update-Frequenz wäre eine separate Akku-Abwägung.
+- iOS-Widget (P20 Phase 2, WidgetKit) ist hiervon unberührt.
+
+**Was gelernt:**
+- `home_widget` 0.7.0 kann interaktive Widget-Knöpfe (`registerInteractivityCallback` +
+  `HomeWidgetBackgroundIntent.getBroadcast`), **registriert** den `HomeWidgetBackgroundReceiver`/
+  `-Service` aber **nicht automatisch** — beide müssen ins App-Manifest (Vorlage: Paket-Example).
+- Die Statuslogik liegt rein in Dart (`OpenStatusService`, zeitparametrisiert) — ein „Refresh"
+  **muss** daher den Dart-Code anstoßen; native Neuberechnung wäre Duplizierung. Der
+  Interaktivitäts-Callback reiht sich sauber neben `widgetAlarmCallback`/`widgetWorkmanagerDispatcher`.
+
+**Verifiziert:** `flutter analyze` sauber, **108 Unit-Tests grün**. Am Emulator (Pixel_API35,
+Debug) end-to-end per adb: Widget-JSON enthält `aktualisiert`=„08:36" + Datum „Do. 18.6."; der
+Refresh-Broadcast startet bei **beendeter App** Prozess + `HomeWidgetBackgroundService`, rechnet in
+Dart neu und schreibt einen frischen Zeitstempel (08:35→08:36); der Home-Deep-Link setzt aus der
+Bürgeramt-Detailansicht auf den Startbildschirm zurück. Die Pixel-Darstellung der Kopfzeile prüft
+Marius am Gerät (Widget-Platzierung per adb nicht zuverlässig automatisierbar; Layout-XML valide,
+Build grün).

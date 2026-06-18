@@ -41,10 +41,14 @@ abstract final class WidgetService {
         OpenStatusService.buildWidgetData(daten.eintraege, jetzt, l10n);
 
     await initializeDateFormatting('de');
-    final datum = DateFormat('EEE · d. MMMM', 'de').format(jetzt);
+    // Kurzform, damit "Stand HH:mm · <Datum>" einzeilig in die Kopfzeile passt.
+    final datum = DateFormat('EEE d.M.', 'de').format(jetzt);
+    final aktualisiert = DateFormat('HH:mm', 'de').format(jetzt);
 
     final json = jsonEncode({
       'datum': datum,
+      // Uhrzeit der letzten Neuberechnung — der Nutzer sieht so die Frische.
+      'aktualisiert': aktualisiert,
       'leerText': l10n.widgetLeer,
       'alleOrteText': l10n.alleOrte,
       'sonstigeText': l10n.sonstige,
@@ -110,5 +114,15 @@ abstract final class WidgetService {
 /// Einstiegspunkt fuer den AlarmManager (separates Hintergrund-Isolate).
 @pragma('vm:entry-point')
 Future<void> widgetAlarmCallback() async {
+  await WidgetService.aktualisiereWidget();
+}
+
+/// Einstiegspunkt fuer den Aktualisieren-Knopf im Widget (home_widget-
+/// Interaktivitaet, separates Hintergrund-Isolate). [uri] ist der vom Knopf
+/// mitgegebene Deep Link (whenopen://widget/refresh) — derzeit gibt es nur
+/// eine Aktion, daher ohne Verzweigung. aktualisiereWidget() rechnet neu,
+/// pusht und plant den E16-Alarm neu (repariert eine abgerissene Kette).
+@pragma('vm:entry-point')
+Future<void> widgetInteraktionCallback(Uri? uri) async {
   await WidgetService.aktualisiereWidget();
 }
