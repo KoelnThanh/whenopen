@@ -12,4 +12,17 @@
     <string name="widget_aktualisieren">Jetzt aktualisieren</string>
     <!-- %1$s = Uhrzeit der letzten Aktualisierung, %2$s = Datum -->
     <string name="widget_stand_format">Stand %1$s · %2$s</string>
+    <string name="widget_aktualisiert">✓ Aktualisiert</string>
+
+    <!-- Statuszeile im Widget — identisch zu den Dart-ARB-Texten (statusBis …) -->
+    <string name="status_bis">bis %s</string>
+    <string name="status_ab">ab %s</string>
+    <string name="status_morgen_ab">morgen ab %s</string>
+    <!-- %1$s = Wochentag kurz, %2$s = Uhrzeit -->
+    <string name="status_tag_ab">ab %1$s %2$s</string>
+    <string name="status_keine_zeiten">Keine Öffnungszeiten</string>
+    <string-array name="tage_kurz">
+        <item>Mo</item><item>Di</item><item>Mi</item><item>Do</item>
+        <item>Fr</item><item>Sa</item><item>So</item>
+    </string-array>
 </resources>

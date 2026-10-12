@@ -27,6 +27,9 @@ void loescheMitUndo({
   final snackBar = messenger.showSnackBar(SnackBar(
     content: Text(l10n.geloescht(location.name)),
     duration: const Duration(seconds: 5),
+    // Seit Flutter 3.35 bleiben SnackBars mit Aktion standardmaessig stehen
+    // (persist = action != null) — dann wuerde nie endgueltig geloescht.
+    persist: false,
     action: SnackBarAction(
       label: l10n.rueckgaengig.toUpperCase(),
       onPressed: () {

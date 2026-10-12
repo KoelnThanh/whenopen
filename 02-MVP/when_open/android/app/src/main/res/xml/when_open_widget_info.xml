@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Widget-Metadaten (E14/E16): updatePeriodMillis=0 — Updates kommen
-     ereignisgetrieben + per AlarmManager/WorkManager aus der App. -->
+<!-- Widget-Metadaten (E14/E16): updatePeriodMillis=0 — das Widget plant
+     seinen Takt selbst (WidgetTakt: Alarm auf die naechste Oeffnungs-/
+     Schliesszeit) und wird nach jeder Datenaenderung aus der App angestossen. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="180dp"

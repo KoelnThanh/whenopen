@@ -8,8 +8,9 @@ import '../models/wochentag.dart';
 /// Scheduling-Fundament fuer E16 (naechsteAenderung).
 ///
 /// Zustandslos und ohne `DateTime.now()` — die Zeit kommt immer als
-/// Parameter, damit jeder Zeitpunkt testbar ist. Wird auch vom
-/// Widget-Hintergrundprozess genutzt (kein Riverpod-State hier).
+/// Parameter, damit jeder Zeitpunkt testbar ist. Das Android-Widget rechnet
+/// mit einem Kotlin-Spiegel (OeffnungsLogik.kt) — Aenderungen an der
+/// Blocklogik immer auf beiden Seiten nachziehen.
 abstract final class OpenStatusService {
   /// Ist [location] zum Zeitpunkt [now] geoeffnet?
   /// Geoeffnet ⇔ now liegt in irgendeinem Block (von <= t < bis) des Tages.
@@ -96,34 +97,7 @@ abstract final class OpenStatusService {
     return DateTime(now.year, now.month, now.day + 1);
   }
 
-  /// Bereitet die Widget-Daten auf: offen oben, geschlossen unten,
-  /// alphabetisch sortiert, mit fertigem Statustext (alle Strings via ARB).
-  static WidgetData buildWidgetData(
-      List<Location> locations, DateTime now, AppLocalizations l10n) {
-    final geoeffnet = <WidgetEntry>[];
-    final geschlossen = <WidgetEntry>[];
-
-    for (final location in locations) {
-      final status = isOpenNow(location, now);
-      final entry = WidgetEntry(
-        id: location.id,
-        name: location.name,
-        statusText: statusText(status, l10n),
-        offen: status.offen,
-        kategorieId: location.kategorie,
-      );
-      (status.offen ? geoeffnet : geschlossen).add(entry);
-    }
-
-    int nachName(WidgetEntry a, WidgetEntry b) =>
-        a.name.toLowerCase().compareTo(b.name.toLowerCase());
-    geoeffnet.sort(nachName);
-    geschlossen.sort(nachName);
-
-    return WidgetData(geoeffnet: geoeffnet, geschlossen: geschlossen);
-  }
-
-  /// Kurzer Statustext fuer Liste und Widget.
+  /// Kurzer Statustext fuer die Liste (Kotlin-Spiegel: OeffnungsLogik.status).
   static String statusText(OpenStatus status, AppLocalizations l10n) {
     if (status.offen) {
       return l10n.statusBis(status.schliesstUm!.alsString);

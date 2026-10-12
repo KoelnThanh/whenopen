@@ -788,6 +788,20 @@ class AppLocalizationsDe extends AppLocalizations {
       'Hell, dunkel oder automatisch dem System folgen.';
 
   @override
+  String get einstWidgetTitel => 'Home-Widget';
+
+  @override
+  String get einstWidgetGenau =>
+      'Das Widget springt minutengenau um, sobald ein Ort öffnet oder schließt.';
+
+  @override
+  String get einstWidgetUngenau =>
+      'Android verzögert die Widget-Aktualisierung derzeit um bis zu 10 Minuten. Erlaube „Wecker & Erinnerungen“, damit es minutengenau umspringt.';
+
+  @override
+  String get einstWidgetErlauben => 'Minutengenau erlauben';
+
+  @override
   String get themeSystem => 'System';
 
   @override

@@ -11,6 +11,36 @@ Installationshinweise: siehe [`README.md`](README.md).
 
 ---
 
+## v1.4.0 — 2026-10-13 (P22: Widget rechnet selbst — zuverlässig und sofort)
+
+**APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.4.0/WhenOpen.apk)
+· signiert (`CN=WhenOpen`, APK Signature Scheme v2) · ~58 MB · App-ID `com.whenopen.when_open` ·
+`versionName` 1.4.0 (`versionCode` 7).
+
+**Hintergrund:** Das Widget hing beim Offen/Zu-Status oft hinterher (z. B. „bis 14:30" noch um
+14:31), und der ⟳-Knopf reagierte träge. Jede Aktualisierung musste bisher erst den Flutter-Teil
+der App im Hintergrund hochfahren.
+
+**Neu / geändert:**
+- **Das Widget rechnet jetzt selbst:** Es ist bei jedem Neuzeichnen auf dem aktuellen Stand und
+  springt exakt zu jeder Öffnungs- und Schließzeit um. Bei dunklem Display wird dafür nichts
+  geweckt; die Anzeige ist beim Einschalten sofort richtig.
+- **⟳ wirkt sofort:** Ein Tipp aktualisiert ohne Verzögerung, kurz erscheint „✓ Aktualisiert".
+- **Robust bei Zeitumstellung, Neustart und App-Update:** Das Widget plant sich selbst neu.
+- **Einstellungen → „Home-Widget":** Zeigt, ob das Widget minutengenau umspringen darf. Falls
+  nicht (Android 14+ erteilt das nicht automatisch), führt „Minutengenau erlauben" direkt zur
+  passenden System-Einstellung. Ohne diese Erlaubnis kann Android bis zu 10 min verzögern.
+- **Fix:** Gelöschte Orte wurden teils nie endgültig gelöscht, weil die „Rückgängig"-Leiste
+  stehen blieb. Sie verschwindet jetzt nach 5 s wie vorgesehen.
+- **Fix:** „Über WhenOpen" zeigte eine veraltete Versionsnummer.
+- **Schlanker:** zwei Hintergrund-Bibliotheken entfernt (AlarmManager-Plugin, WorkManager).
+
+**Qualität:** `flutter analyze` sauber, 110 Dart-Tests und 6 Kotlin-Tests grün. Am Emulator mit
+echten Daten end-to-end verifiziert: selbstständiges Umspringen an einer Schließzeit, ⟳,
+Update-Installation, Löschen → Widget, Erlaubnis-Flow.
+
+---
+
 ## v1.3.0 — 2026-06-18 (P21: Widget — Stand-Anzeige, Aktualisieren-Knopf, Direktsprung)
 
 **APK:** GitHub-Release-Asset [`WhenOpen.apk`](https://github.com/KoelnThanh/whenopen/releases/download/v1.3.0/WhenOpen.apk)

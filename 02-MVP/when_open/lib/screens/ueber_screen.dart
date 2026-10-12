@@ -19,7 +19,7 @@ const String kSpendenUrl = 'https://paypal.me/koelnthanh';
 const String kKontaktEmail = 'koeln.thanh@gmail.com';
 
 /// App-Version — synchron zu `pubspec.yaml` halten (kein package_info nötig).
-const String kAppVersion = '1.2.0';
+const String kAppVersion = '1.4.0';
 
 /// Persönlicher „Über mich"-Text. Frei editierbar — das ist Thanhs eigene
 /// Stimme, bewusst nicht über l10n geführt, damit die Prosa ohne ARB-

@@ -286,6 +286,10 @@
 
   "einstDesignTitel": "Darstellung",
   "einstDesignInfo": "Hell, dunkel oder automatisch dem System folgen.",
+  "einstWidgetTitel": "Home-Widget",
+  "einstWidgetGenau": "Das Widget springt minutengenau um, sobald ein Ort öffnet oder schließt.",
+  "einstWidgetUngenau": "Android verzögert die Widget-Aktualisierung derzeit um bis zu 10 Minuten. Erlaube „Wecker & Erinnerungen“, damit es minutengenau umspringt.",
+  "einstWidgetErlauben": "Minutengenau erlauben",
   "themeSystem": "System",
   "themeHell": "Hell",
   "themeDunkel": "Dunkel"

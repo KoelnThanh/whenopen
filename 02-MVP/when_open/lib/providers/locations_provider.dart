@@ -23,7 +23,7 @@ final downloadsBackupServiceProvider =
 /// Widget-Aktualisierung (P06) einen gemeinsamen Pfad haben.
 class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
   /// Hook fuer P06: wird nach jeder Datenaenderung aufgerufen
-  /// (Widget-Daten schreiben + Redraw + Alarm neu planen).
+  /// (Widget neu zeichnen lassen — Status rechnet das Widget nativ).
   static Future<void> Function(WhenOpenData daten)? onDatenGeaendert;
 
   @override
@@ -42,8 +42,6 @@ class AppDataNotifier extends AsyncNotifier<WhenOpenData> {
     final repo = await _repo;
     final daten = await repo.laden();
     state = AsyncData(daten);
-    // Widget-Update darf das Speichern nie blockieren oder scheitern
-    // lassen — das WorkManager-Netz (E16) faengt verpasste Updates ab.
     try {
       await onDatenGeaendert?.call(daten);
     } catch (e, st) {

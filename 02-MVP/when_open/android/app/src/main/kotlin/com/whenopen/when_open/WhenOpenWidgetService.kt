@@ -6,11 +6,9 @@ import android.content.Intent
 import android.net.Uri
 import android.widget.RemoteViews
 import android.widget.RemoteViewsService
-import es.antonborri.home_widget.HomeWidgetPlugin
-import org.json.JSONArray
-import org.json.JSONObject
+import java.time.LocalDateTime
 
-/** Liefert die Listenzeilen des Widgets aus den vorberechneten Dart-Daten. */
+/** Liefert die Listenzeilen des Widgets, Status live berechnet. */
 class WhenOpenWidgetService : RemoteViewsService() {
     override fun onGetViewFactory(intent: Intent): RemoteViewsFactory {
         val appWidgetId = intent.getIntExtra(
@@ -44,108 +42,65 @@ private class WhenOpenViewsFactory(
     override fun onDataSetChanged() = ladeDaten()
 
     /**
-     * Workflow 2: offen oben, geschlossen unten (je alphabetisch — kommt
-     * bereits sortiert aus Dart). Bei "Alle Orte" nach Kategorie gruppiert
-     * (E10), bei festem Filter flache Liste (E14).
+     * Workflow 2: je Gruppe offen oben, geschlossen unten, jeweils
+     * alphabetisch. Bei "Alle Orte" nach Kategorie gruppiert (E10), bei
+     * festem Filter flache Liste (E14). Der Status wird hier zum aktuellen
+     * Zeitpunkt berechnet — jedes Neuzeichnen ist damit automatisch richtig.
      */
     private fun ladeDaten() {
-        val json = HomeWidgetPlugin.getData(context)
-            .getString("widget_daten", null) ?: run {
-            zeilen = emptyList()
-            return
-        }
-        try {
-            val daten = JSONObject(json)
-            val filter =
-                WhenOpenWidgetProvider.gespeicherterFilter(context, appWidgetId)
-            val geoeffnet = eintraege(daten.optJSONArray("geoeffnet"), true)
-            val geschlossen = eintraege(daten.optJSONArray("geschlossen"), false)
+        val bestand = WidgetDaten.laden(context)
+        val texte = WidgetDaten.statusTexte(context)
+        val jetzt = LocalDateTime.now()
+        val bekannteKategorien = bestand.kategorien.map { it.id }.toSet()
 
-            zeilen = if (filter == WhenOpenWidgetProvider.FILTER_ALLE) {
-                graupiertNachKategorie(daten, geoeffnet, geschlossen)
-            } else {
-                val kategorieId =
-                    if (filter == WhenOpenWidgetProvider.FILTER_SONSTIGE) null
-                    else filter
-                (geoeffnet + geschlossen).filter { it.kategorieId == kategorieId }
-                    .map { it.zeile }
-            }
-        } catch (_: Exception) {
-            zeilen = emptyList()
-        }
-    }
-
-    private data class EintragMitKategorie(
-        val kategorieId: String?,
-        val zeile: Zeile.Ort
-    )
-
-    private fun eintraege(
-        array: JSONArray?,
-        offen: Boolean
-    ): List<EintragMitKategorie> {
-        if (array == null) return emptyList()
-        val ergebnis = mutableListOf<EintragMitKategorie>()
-        for (i in 0 until array.length()) {
-            val e = array.getJSONObject(i)
-            ergebnis.add(
-                EintragMitKategorie(
-                    kategorieId = if (e.has("kategorieId"))
-                        e.getString("kategorieId") else null,
-                    zeile = Zeile.Ort(
-                        id = e.getString("id"),
-                        name = e.getString("name"),
-                        statusText = e.getString("statusText"),
-                        offen = offen
-                    )
-                )
+        // Unbekannte Kategorie-IDs (z. B. geloeschte Kategorie) zaehlen als Sonstige
+        val bewertet = bestand.orte.map { ort ->
+            val status = OeffnungsLogik.status(ort, jetzt, texte)
+            Bewertet(
+                kategorieId = ort.kategorieId?.takeIf { it in bekannteKategorien },
+                zeile = Zeile.Ort(ort.id, ort.name, status.text, status.offen)
             )
+        }.sortedWith(
+            compareByDescending<Bewertet> { it.zeile.offen }
+                .thenBy { it.zeile.name.lowercase() }
+        )
+
+        val filter = WhenOpenWidgetProvider.gespeicherterFilter(context, appWidgetId)
+        zeilen = when (filter) {
+            WhenOpenWidgetProvider.FILTER_ALLE -> gruppiert(bestand.kategorien, bewertet)
+            WhenOpenWidgetProvider.FILTER_SONSTIGE ->
+                bewertet.filter { it.kategorieId == null }.map { it.zeile }
+            else -> bewertet.filter { it.kategorieId == filter }.map { it.zeile }
         }
-        return ergebnis
     }
 
-    private fun graupiertNachKategorie(
-        daten: JSONObject,
-        geoeffnet: List<EintragMitKategorie>,
-        geschlossen: List<EintragMitKategorie>
-    ): List<Zeile> {
-        val alle = geoeffnet + geschlossen
-        val ergebnis = mutableListOf<Zeile>()
-        val kategorien = daten.optJSONArray("kategorien") ?: JSONArray()
+    private data class Bewertet(val kategorieId: String?, val zeile: Zeile.Ort)
 
+    private fun gruppiert(kategorien: List<Kategorie>, alle: List<Bewertet>): List<Zeile> {
         // Ohne Kategorien: schlichte Liste (offen oben, geschlossen unten)
-        if (kategorien.length() == 0) {
-            return alle.map { it.zeile }
-        }
+        if (kategorien.isEmpty()) return alle.map { it.zeile }
 
-        for (i in 0 until kategorien.length()) {
-            val kategorie = kategorien.getJSONObject(i)
-            val id = kategorie.getString("id")
-            val gruppe = alle.filter { it.kategorieId == id }
-            if (gruppe.isEmpty()) continue
-            ergebnis.add(
-                Zeile.Kopf(kategorie.optString("name", ""), gruppe.size)
-            )
-            ergebnis.addAll(gruppe.map { it.zeile })
+        val ergebnis = mutableListOf<Zeile>()
+        fun gruppe(name: String, eintraege: List<Bewertet>) {
+            if (eintraege.isEmpty()) return
+            ergebnis.add(Zeile.Kopf(name, eintraege.size))
+            ergebnis.addAll(eintraege.map { it.zeile })
         }
-        val sonstige = alle.filter { it.kategorieId == null }
-        if (sonstige.isNotEmpty()) {
-            ergebnis.add(
-                Zeile.Kopf(
-                    daten.optString(
-                        "sonstigeText",
-                        context.getString(R.string.widget_sonstige)
-                    ),
-                    sonstige.size
-                )
-            )
-            ergebnis.addAll(sonstige.map { it.zeile })
+        for (kategorie in kategorien) {
+            gruppe(kategorie.name, alle.filter { it.kategorieId == kategorie.id })
         }
+        gruppe(
+            context.getString(R.string.widget_sonstige),
+            alle.filter { it.kategorieId == null }
+        )
         return ergebnis
     }
 
     override fun getViewAt(position: Int): RemoteViews {
-        return when (val zeile = zeilen[position]) {
+        // Liste kann sich zwischen getCount und getViewAt aendern
+        val zeile = zeilen.getOrNull(position)
+            ?: return RemoteViews(context.packageName, R.layout.when_open_widget_row)
+        return when (zeile) {
             is Zeile.Kopf -> RemoteViews(
                 context.packageName, R.layout.when_open_widget_header_row
             ).apply {

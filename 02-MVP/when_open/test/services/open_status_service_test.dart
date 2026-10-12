@@ -208,37 +208,12 @@ void main() {
     });
   });
 
-  group('buildWidgetData', () {
+  group('statusText', () {
     final l10n = lookupAppLocalizations(const Locale('de'));
+    String text(Location ort, DateTime now) =>
+        OpenStatusService.statusText(OpenStatusService.isOpenNow(ort, now), l10n);
 
-    test('teilt korrekt in offen/geschlossen und sortiert alphabetisch', () {
-      final orte = [
-        _ort(id: 'c', name: 'Zebra-Laden', woche: {
-          Wochentag.mittwoch: [_block(8, 0, 20, 0)],
-        }),
-        _ort(id: 'a', name: 'Apotheke', woche: {
-          Wochentag.mittwoch: [_block(8, 0, 20, 0)],
-        }),
-        _ort(id: 'b', name: 'Behoerde', woche: {
-          Wochentag.donnerstag: [_block(8, 0, 12, 0)],
-        }),
-      ];
-
-      final daten = OpenStatusService.buildWidgetData(
-          orte, _am(Wochentag.mittwoch, 9, 30), l10n);
-
-      expect(daten.geoeffnet.map((e) => e.name), ['Apotheke', 'Zebra-Laden']);
-      expect(daten.geschlossen.map((e) => e.name), ['Behoerde']);
-      expect(daten.geoeffnet.first.statusText, 'bis 20:00');
-    });
-
-    test('statusText-Varianten', () {
-      String text(Location ort, DateTime now) =>
-          OpenStatusService.buildWidgetData([ort], now, l10n)
-              .alle
-              .single
-              .statusText;
-
+    test('Varianten', () {
       // offen → "bis HH:MM"
       expect(text(werktagsOrt, _am(Wochentag.mittwoch, 10, 0)), 'bis 18:00');
       // Pause → "ab HH:MM" (naechster Block heute)

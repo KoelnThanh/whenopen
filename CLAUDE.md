@@ -22,6 +22,13 @@ P01–P15 implementiert und **end-to-end am Emulator verifiziert** (Debug + Rele
 gebaut (`CN=WhenOpen`, v2). Offen: nur kontoabhängige Play-Store-Schritte sowie die
 Verteilungs-/Ausroll-Entscheidungen (`01-Konzept/1.6-ausrollen-distribution.md`).
 
+## Widget-Architektur (seit v1.4.0 / P22)
+
+Das Home-Widget rechnet **nativ**: `OeffnungsLogik.kt` (Kotlin-Spiegel von
+`OpenStatusService`) liest die App-Datei direkt (`WidgetDaten.kt`), `WidgetTakt.kt` plant
+den Alarm auf die nächste Öffnungs-/Schließgrenze. Dart stößt nur `HomeWidget.updateWidget` an.
+**Änderungen an der Öffnungslogik immer in Dart UND Kotlin nachziehen** (gespiegelte Tests).
+
 ## Entwicklungsumgebung
 
 | Sache | Wert |
@@ -39,7 +46,8 @@ sonst macht MSYS aus `/sdcard/x.png` einen Windows-Pfad.
 ## Häufige Befehle (aus `02-MVP/when_open/`)
 
 ```bash
-/c/flutter/bin/flutter.bat test            # 54 Unit-Tests
+/c/flutter/bin/flutter.bat test            # Dart-Unit-/Widget-Tests
+(cd android && ./gradlew :app:testDebugUnitTest)   # Kotlin-Tests der Widget-Logik
 /c/flutter/bin/flutter.bat analyze         # Lint
 /c/flutter/bin/flutter.bat build apk --debug
 ADB=/c/Users/nnguy/AppData/Local/Android/Sdk/platform-tools/adb.exe

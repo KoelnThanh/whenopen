@@ -73,3 +73,9 @@ kotlin {
 flutter {
     source = "../.."
 }
+
+// JVM-Unit-Tests der nativen Widget-Logik (OeffnungsLogik):
+// cd android && ./gradlew :app:testDebugUnitTest
+dependencies {
+    testImplementation("junit:junit:4.13.2")
+}

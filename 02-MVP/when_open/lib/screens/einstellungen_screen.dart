@@ -6,6 +6,7 @@ import '../models/app_einstellungen.dart';
 import '../providers/locations_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/heimat_adresse_eingabe.dart';
+import '../widget/widget_service.dart';
 import '../widgets/umkreis_format.dart';
 
 /// Einstellungen: **Heimatadresse** (einmalig per Nominatim geocodet, lokal
@@ -26,15 +27,33 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
   late int _umkreis;
   late ThemeModus _themeModus;
 
+  /// null = noch unbekannt (Abschnitt bleibt bis zur Antwort verborgen).
+  bool? _widgetExakt;
+  AppLifecycleListener? _lifecycle;
+
   @override
   void initState() {
     super.initState();
+    _pruefeWidgetExakt();
+    // Nach Rueckkehr aus der System-Einstellung neu pruefen
+    _lifecycle = AppLifecycleListener(onResume: _pruefeWidgetExakt);
     final einst = ref.read(einstellungenProvider);
     _heimatAdresse = einst.heimatAdresse;
     _heimatLat = einst.heimatLat;
     _heimatLon = einst.heimatLon;
     _umkreis = einst.umkreisMeter;
     _themeModus = einst.themeModus;
+  }
+
+  @override
+  void dispose() {
+    _lifecycle?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pruefeWidgetExakt() async {
+    final exakt = await WidgetService.exaktErlaubt();
+    if (mounted) setState(() => _widgetExakt = exakt);
   }
 
   /// Theme sofort umschalten und persistieren — getrennt vom „Speichern"-Knopf
@@ -113,6 +132,25 @@ class _EinstellungenScreenState extends ConsumerState<EinstellungenScreen> {
               onSelectionChanged: (auswahl) => _themeWaehlen(auswahl.first),
               showSelectedIcon: false,
             ),
+            if (_widgetExakt != null) ...[
+              const Divider(height: 36),
+              Text(l10n.einstWidgetTitel,
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 4),
+              Text(
+                  _widgetExakt!
+                      ? l10n.einstWidgetGenau
+                      : l10n.einstWidgetUngenau,
+                  style: TextStyle(fontSize: 12, color: context.col.muted)),
+              if (!_widgetExakt!) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: WidgetService.exaktAnfragen,
+                  icon: const Icon(Icons.alarm_on_outlined, size: 18),
+                  label: Text(l10n.einstWidgetErlauben),
+                ),
+              ],
+            ],
             const Divider(height: 36),
             Text(l10n.einstHeimatTitel,
                 style: Theme.of(context).textTheme.titleMedium),

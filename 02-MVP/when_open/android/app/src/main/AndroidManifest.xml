@@ -1,7 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- E16: AlarmManager (grenzgenaue Widget-Updates) + Neustart-Replan -->
+    <!-- E16: grenzgenauer Widget-Takt (WidgetTakt) + Neuplanung nach Neustart -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.WAKE_LOCK"/>
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
     <!-- Nur fuer den optionalen OSM-Import (P08b) -->
     <uses-permission android:name="android.permission.INTERNET"/>
@@ -56,6 +55,13 @@
             android:label="WhenOpen">
             <intent-filter>
                 <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+                <!-- E16 nativ: Uhr/Zeitzone verstellt, Neustart, App-Update
+                     (die beiden letzten loeschen geplante Alarme) -->
+                <action android:name="android.intent.action.TIME_SET"/>
+                <action android:name="android.intent.action.TIMEZONE_CHANGED"/>
+                <action android:name="android.intent.action.BOOT_COMPLETED"/>
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED"/>
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED"/>
             </intent-filter>
             <meta-data
                 android:name="android.appwidget.provider"
@@ -65,19 +71,6 @@
             android:name=".WhenOpenWidgetService"
             android:permission="android.permission.BIND_REMOTEVIEWS"/>
 
-        <!-- home_widget-Interaktivitaet (Aktualisieren-Knopf): Empfaenger +
-             Service werden vom Plugin NICHT automatisch deklariert -->
-        <receiver
-            android:name="es.antonborri.home_widget.HomeWidgetBackgroundReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="es.antonborri.home_widget.action.BACKGROUND"/>
-            </intent-filter>
-        </receiver>
-        <service
-            android:name="es.antonborri.home_widget.HomeWidgetBackgroundService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="true"/>
         <activity
             android:name=".WhenOpenWidgetConfigActivity"
             android:exported="true"
@@ -86,24 +79,6 @@
                 <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE"/>
             </intent-filter>
         </activity>
-
-        <!-- android_alarm_manager_plus (E16): Komponenten muessen manuell
-             deklariert werden — der Plugin-Manifest-Merge liefert sie nicht -->
-        <service
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmService"
-            android:permission="android.permission.BIND_JOB_SERVICE"
-            android:exported="false"/>
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.AlarmBroadcastReceiver"
-            android:exported="false"/>
-        <receiver
-            android:name="dev.fluttercommunity.plus.androidalarmmanager.RebootBroadcastReceiver"
-            android:enabled="false"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED"/>
-            </intent-filter>
-        </receiver>
 
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

@@ -1450,6 +1450,30 @@ abstract class AppLocalizations {
   /// **'Hell, dunkel oder automatisch dem System folgen.'**
   String get einstDesignInfo;
 
+  /// No description provided for @einstWidgetTitel.
+  ///
+  /// In de, this message translates to:
+  /// **'Home-Widget'**
+  String get einstWidgetTitel;
+
+  /// No description provided for @einstWidgetGenau.
+  ///
+  /// In de, this message translates to:
+  /// **'Das Widget springt minutengenau um, sobald ein Ort öffnet oder schließt.'**
+  String get einstWidgetGenau;
+
+  /// No description provided for @einstWidgetUngenau.
+  ///
+  /// In de, this message translates to:
+  /// **'Android verzögert die Widget-Aktualisierung derzeit um bis zu 10 Minuten. Erlaube „Wecker & Erinnerungen“, damit es minutengenau umspringt.'**
+  String get einstWidgetUngenau;
+
+  /// No description provided for @einstWidgetErlauben.
+  ///
+  /// In de, this message translates to:
+  /// **'Minutengenau erlauben'**
+  String get einstWidgetErlauben;
+
   /// No description provided for @themeSystem.
   ///
   /// In de, this message translates to:

@@ -931,3 +931,73 @@ Dart neu und schreibt einen frischen Zeitstempel (08:35→08:36); der Home-Deep-
 Bürgeramt-Detailansicht auf den Startbildschirm zurück. Die Pixel-Darstellung der Kopfzeile prüft
 Marius am Gerät (Widget-Platzierung per adb nicht zuverlässig automatisierbar; Layout-XML valide,
 Build grün).
+
+## P22 — Widget rechnet nativ: zuverlässiger Takt, sofortiges Aktualisieren (v1.4.0, 2026-10-13)
+
+**Hintergrund:** Trotz P21 blieb das Widget „unhandlich": Status hing oft hinterher, ⟳ wirkte
+träge. Am Emulator reproduziert (echte Nutzerdaten, 15 Orte): Uhr auf 14:31 → Widget zeigt
+weiter „Pizzeria Portofino **bis 14:30**" (grün) und „Stand 12:17". Ursache: Das Widget zeigte nur
+**vorberechnete Texte**; jede Aktualisierung (Alarm, WorkManager, ⟳) musste erst eine
+Flutter-Engine in einem Hintergrund-Isolate starten. Das ist langsam (Sekunden), unter Doze/
+Akku-Optimierung unzuverlässig, und nach App-Update/Zeitumstellung riss die Kette ab.
+
+**Was gebaut:**
+- **Statuslogik nativ** (`OeffnungsLogik.kt`): Kotlin-Spiegel von `OpenStatusService`
+  (`isOpenNow`/`statusText`/`naechsteAenderung`, gleiche Halboffen-Regel `von <= t < bis`).
+  `WidgetDaten.kt` liest **direkt die App-Datei** `app_flutter/whenopen_data.json` (Flutter
+  schreibt atomar). Das Widget berechnet den Status bei **jedem Neuzeichnen zum aktuellen
+  Zeitpunkt** und ist damit nie „vorberechnet veraltet".
+- **Takt nativ** (`WidgetTakt.kt`): ein `AlarmManager`-Alarm auf die nächste Block-Grenze (+5 s),
+  Typ **RTC** (nicht WAKEUP): Bei dunklem Display wird nichts geweckt, der fällige Alarm kommt
+  beim Einschalten sofort. Mit Exakt-Recht `setExact`, sonst `setWindow`.
+- **Provider empfängt selbst:** ⟳-Broadcast, Takt, `TIME_SET`, `TIMEZONE_CHANGED`,
+  `BOOT_COMPLETED`, `MY_PACKAGE_REPLACED`, `SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED`.
+- **⟳ sofort + sichtbare Bestätigung:** nativer Broadcast, gemessen **~34 ms** bis Redraw.
+  Danach 2 s „✓ Aktualisiert" in der Kopfzeile (per `goAsync` + Handler), dann wieder „Stand".
+  Ein Toast war die erste Idee, wird aber ohne Benachrichtigungsrecht unterdrückt
+  („Suppressing toast … by user request").
+- **Einstellungen → „Home-Widget":** Zeigt, ob das Widget minutengenau umspringen darf; sonst
+  Knopf „Minutengenau erlauben" → System-Einstellung „Wecker & Erinnerungen"
+  (MethodChannel `com.whenopen/widget`). Nach Rückkehr wird der Status neu geprüft (Lifecycle).
+- **Dart entschlackt:** `WidgetService` ruft nur noch `HomeWidget.updateWidget` auf. Entfernt
+  wurden `android_alarm_manager_plus`, `workmanager`, die Hintergrund-Callbacks,
+  `widget_background_callback.dart`, `buildWidgetData` mit `WidgetData`/`WidgetEntry`, der
+  Lifecycle-Wrapper sowie die Manifest-Einträge für Alarm-Plugin, home_widget-Background und
+  `WAKE_LOCK`.
+- Konfig-Dialog liest die Kategorien jetzt ebenfalls aus der Datendatei. Unbekannte
+  Kategorie-IDs zählen im Widget als „Sonstige" (vorher verschwanden sie).
+- **Bugfix Löschen:** Seit Flutter 3.35 gilt bei SnackBars mit Aktion `persist = action != null`.
+  Die „Gelöscht – Rückgängig"-Leiste blieb deshalb stehen, und das endgültige Löschen passierte
+  nie bzw. ging beim Beenden der App verloren. Lösung: `persist: false` (auch beim
+  Heimatadresse-Hinweis im Schnellerfassen).
+- **„Über WhenOpen"** zeigte noch „1.2.0" → `kAppVersion` korrigiert und per Test an
+  `pubspec.yaml` gekoppelt.
+
+**Was fehlt / bewusst nicht im Scope:**
+- Blocklogik existiert jetzt zweimal (Dart + Kotlin). Abgesichert durch gespiegelte Testfälle
+  (`OeffnungsLogikTest.kt` ↔ `open_status_service_test.dart`). **Änderungen immer auf beiden
+  Seiten nachziehen.**
+- Ohne Exakt-Recht dehnt Android das Fenster auf ≥ 10 min (`window=+10m` in `dumpsys alarm`).
+  Der Einstellungs-Hinweis adressiert das. Die Alternative `USE_EXACT_ALARM` wäre Play-Policy-
+  kritisch (nur für Wecker-/Kalender-Apps).
+- R8/Minify könnte ohne WorkManager wieder an (der Crash-Grund ist weg) → separat testen.
+
+**Was gelernt:**
+- Für Widgets mit zeitabhängigem Inhalt gehört die Logik **in den Widget-Prozess** (nativ). Die
+  P21-Annahme „native Neuberechnung wäre bloß Duplizierung" war falsch abgewogen: Die
+  Duplizierung ist klein und testbar, ein Flutter-Isolate pro Update dagegen teuer und fragil.
+- Android 14+ erteilt `SCHEDULE_EXACT_ALARM` neuen Installationen nicht mehr automatisch.
+  `setWindow` wird dann auf mindestens 10 min gedehnt.
+- `AlarmManager.RTC` (ohne WAKEUP) passt für Widgets ideal, weil verpasste Alarme beim
+  Display-Einschalten sofort ausgeliefert werden.
+- Flutter 3.35: SnackBars mit `action` schließen sich nicht mehr selbst (`persist`).
+
+**Verifiziert:** `flutter analyze` sauber, **110 Dart-Tests grün** (neu: Undo-Löschen mit
+Gegenprobe ohne Fix, Versions-Kopplung), **6 Kotlin-Unit-Tests grün**
+(`./gradlew :app:testDebugUnitTest`). Am Emulator (Pixel_API35, Release-APK, echte Nutzerdaten)
+geprüft:
+- Update-Installation über v1.3.0 → Widget korrigiert sich sofort (Portofino „ab 16:30").
+- Uhr 14:59:50 → um 15:00:05 springt „Christiane Thiele" von selbst auf „bis 17:00".
+- ⟳ in ~34 ms, mit „✓ Aktualisiert".
+- Löschen in der App → nach Ablauf der Frist sofort aus dem Widget (ESSEN 6→5).
+- Exakt-Recht erteilen → Takt wird exakt neu geplant (`window=0`, `exactAllowReason=permission`).

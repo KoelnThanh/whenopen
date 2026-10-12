@@ -12,8 +12,6 @@ import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.ScrollView
 import android.widget.TextView
-import es.antonborri.home_widget.HomeWidgetPlugin
-import org.json.JSONObject
 
 /**
  * Widget-Konfiguration (E14): beim Platzieren eine Kategorie waehlen.
@@ -58,28 +56,15 @@ class WhenOpenWidgetConfigActivity : Activity() {
                 getString(R.string.widget_alle_orte)
             )
         )
-        val json = HomeWidgetPlugin.getData(this)
-            .getString("widget_daten", null) ?: return optionen
-        try {
-            val daten = JSONObject(json)
-            val kategorien = daten.optJSONArray("kategorien") ?: return optionen
-            for (i in 0 until kategorien.length()) {
-                val k = kategorien.getJSONObject(i)
-                optionen.add(Option(k.getString("id"), k.optString("name", "")))
-            }
-            if (kategorien.length() > 0) {
-                optionen.add(
-                    Option(
-                        WhenOpenWidgetProvider.FILTER_SONSTIGE,
-                        daten.optString(
-                            "sonstigeText",
-                            getString(R.string.widget_sonstige)
-                        )
-                    )
+        val kategorien = WidgetDaten.laden(this).kategorien
+        kategorien.forEach { optionen.add(Option(it.id, it.name)) }
+        if (kategorien.isNotEmpty()) {
+            optionen.add(
+                Option(
+                    WhenOpenWidgetProvider.FILTER_SONSTIGE,
+                    getString(R.string.widget_sonstige)
                 )
-            }
-        } catch (_: Exception) {
-            // Korrupte Daten → nur "Alle Orte"
+            )
         }
         return optionen
     }

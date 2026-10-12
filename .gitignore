@@ -67,3 +67,6 @@ app.*.map.json
 **/ios/.symlinks/
 **/ios/Flutter/Flutter.framework
 **/ios/Flutter/Flutter.podspec
+
+# Persoenliche Datensicherungen (enthalten u. a. die Heimatadresse) — nie committen
+03-Produktion/*.json

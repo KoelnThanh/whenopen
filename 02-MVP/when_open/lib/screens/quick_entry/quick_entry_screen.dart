@@ -194,6 +194,7 @@ class _QuickEntryScreenState extends ConsumerState<QuickEntryScreen> {
     if (!ref.read(einstellungenProvider).hatHeimat) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(l10n.umkreisKeineHeimat),
+        persist: false, // Hinweis soll von selbst verschwinden
         action: SnackBarAction(
           label: l10n.umkreisZuEinstellungen,
           onPressed: () => context.push('/einstellungen'),

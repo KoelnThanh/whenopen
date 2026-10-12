@@ -1,20 +1,25 @@
 package com.whenopen.when_open
 
+import android.app.AlarmManager
 import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.widget.RemoteViews
-import es.antonborri.home_widget.HomeWidgetBackgroundIntent
-import es.antonborri.home_widget.HomeWidgetPlugin
-import org.json.JSONObject
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 /**
  * Home-Widget (E14): fester Kategorie-Filter pro Instanz, Kopfzeile mit
- * Kategorie links / Datum rechts, kein Schriftzug. Die Daten kommen
- * vorberechnet aus Dart (home_widget SharedPreferences, Key "widget_daten").
+ * Kategorie links / Stand rechts. Status und Sortierung rechnet das Widget
+ * selbst aus der App-Datendatei (WidgetDaten/OeffnungsLogik) — bei jedem
+ * Neuzeichnen frisch, ohne Flutter-Hintergrundprozess. Den Takt bis zur
+ * naechsten Oeffnungs-/Schliesszeit plant WidgetTakt.
  */
 class WhenOpenWidgetProvider : AppWidgetProvider() {
 
@@ -26,7 +31,39 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
         for (id in appWidgetIds) {
             aktualisiere(context, appWidgetManager, id)
         }
+        WidgetTakt.planen(context)
     }
+
+    override fun onReceive(context: Context, intent: Intent) {
+        when (intent.action) {
+            WidgetTakt.AKTION_AKTUALISIEREN -> {
+                // Sichtbare Bestaetigung im Widget selbst (Toasts unterdrueckt
+                // Android ohne Benachrichtigungsrecht): kurz "✓ Aktualisiert",
+                // danach wieder der normale Stand.
+                WidgetTakt.allesAktualisieren(context, bestaetigt = true)
+                val ausstehend = goAsync()
+                Handler(Looper.getMainLooper()).postDelayed({
+                    WidgetTakt.allesAktualisieren(context)
+                    ausstehend.finish()
+                }, 2000)
+            }
+            // Takt-Alarm sowie alles, was Uhr/Datum verschiebt oder geplante
+            // Alarme loescht (Neustart, App-Update)
+            WidgetTakt.AKTION_TAKT,
+            Intent.ACTION_TIME_CHANGED,
+            Intent.ACTION_TIMEZONE_CHANGED,
+            Intent.ACTION_BOOT_COMPLETED,
+            Intent.ACTION_MY_PACKAGE_REPLACED,
+            // Exakt-Wecker-Recht erteilt → ab sofort minutengenau planen
+            AlarmManager.ACTION_SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED ->
+                WidgetTakt.allesAktualisieren(context)
+            else -> super.onReceive(context, intent)
+        }
+    }
+
+    override fun onEnabled(context: Context) = WidgetTakt.planen(context)
+
+    override fun onDisabled(context: Context) = WidgetTakt.abbrechen(context)
 
     override fun onDeleted(context: Context, appWidgetIds: IntArray) {
         val prefs = filterPrefs(context).edit()
@@ -51,61 +88,31 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
         fun aktualisiere(
             context: Context,
             appWidgetManager: AppWidgetManager,
-            appWidgetId: Int
+            appWidgetId: Int,
+            bestaetigt: Boolean = false
         ) {
             val views = RemoteViews(context.packageName, R.layout.when_open_widget)
 
-            // Kopfzeile: Kategoriename + Datum aus den Dart-Daten
-            val datenJson =
-                HomeWidgetPlugin.getData(context).getString("widget_daten", null)
+            // Kopfzeile: Filtername links, "Stand HH:mm · Di. 13.10." rechts
             val filter = gespeicherterFilter(context, appWidgetId)
-            var kopf = context.getString(R.string.widget_alle_orte)
-            var datum = ""
-            var aktualisiert = ""
-            if (datenJson != null) {
-                try {
-                    val json = JSONObject(datenJson)
-                    datum = json.optString("datum", "")
-                    aktualisiert = json.optString("aktualisiert", "")
-                    kopf = when (filter) {
-                        FILTER_ALLE -> json.optString(
-                            "alleOrteText", kopf
-                        )
-                        FILTER_SONSTIGE -> json.optString(
-                            "sonstigeText",
-                            context.getString(R.string.widget_sonstige)
-                        )
-                        else -> {
-                            val kategorien = json.optJSONArray("kategorien")
-                            var name = kopf
-                            if (kategorien != null) {
-                                for (i in 0 until kategorien.length()) {
-                                    val k = kategorien.getJSONObject(i)
-                                    if (k.optString("id") == filter) {
-                                        name = k.optString("name", name)
-                                    }
-                                }
-                            }
-                            name
-                        }
-                    }
-                    views.setTextViewText(
-                        R.id.widget_empty,
-                        json.optString(
-                            "leerText",
-                            context.getString(R.string.widget_leer)
-                        )
-                    )
-                } catch (_: Exception) {
-                    // Korrupte Daten: zuletzt bekannter Stand bleibt stehen.
-                }
+            val kopf = when (filter) {
+                FILTER_ALLE -> context.getString(R.string.widget_alle_orte)
+                FILTER_SONSTIGE -> context.getString(R.string.widget_sonstige)
+                else -> WidgetDaten.laden(context).kategorien
+                    .firstOrNull { it.id == filter }?.name
+                    ?: context.getString(R.string.widget_alle_orte)
             }
+            val jetzt = LocalDateTime.now()
             views.setTextViewText(R.id.widget_kategorie, "$kopf ▾")
-            // "Stand HH:mm · <Datum>" — bei fehlender Uhrzeit nur das Datum.
-            val datumText = if (aktualisiert.isNotEmpty())
-                context.getString(R.string.widget_stand_format, aktualisiert, datum)
-            else datum
-            views.setTextViewText(R.id.widget_datum, datumText)
+            views.setTextViewText(
+                R.id.widget_datum,
+                if (bestaetigt) context.getString(R.string.widget_aktualisiert)
+                else context.getString(
+                    R.string.widget_stand_format,
+                    jetzt.format(DateTimeFormatter.ofPattern("HH:mm")),
+                    jetzt.format(DateTimeFormatter.ofPattern("EEE d.M.", Locale.GERMAN))
+                )
+            )
 
             // Listen-Adapter (RemoteViewsService), appWidgetId in der Intent-URI,
             // damit jede Instanz ihren eigenen Filter bekommt.
@@ -150,13 +157,11 @@ class WhenOpenWidgetProvider : AppWidgetProvider() {
             )
             views.setOnClickPendingIntent(R.id.widget_kategorie, configPending)
 
-            // Aktualisieren-Tap: home_widget-Hintergrund-Callback (Dart rechnet
-            // neu). Daten sind global, daher genuegt ein gemeinsamer Broadcast.
+            // Aktualisieren-Tap: nativer Broadcast an diesen Provider —
+            // zeichnet sofort neu, ohne Flutter-Engine.
             views.setOnClickPendingIntent(
                 R.id.widget_refresh,
-                HomeWidgetBackgroundIntent.getBroadcast(
-                    context, Uri.parse("whenopen://widget/refresh")
-                )
+                WidgetTakt.broadcast(context, WidgetTakt.AKTION_AKTUALISIEREN, 1)
             )
 
             // Zeit/Datum-Tap: App direkt am Startbildschirm oeffnen
